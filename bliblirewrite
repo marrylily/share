@@ -1,6 +1,7 @@
 [rewrite_local]
 ^https?:\/\/i.\.hdslb\.com\/bfs\/subtitle\/.+\.json$ url script-response-body https://raw.githubusercontent.com/krisstibex/404Zone/main/Script/Bili%20Translate.js
-
+# ～ BiliBili_哔哩哔哩_去除统一设置的皮肤@ddgksf2013
+^https?:\/\/app\.bilibili\.com\/x\/resource\/show\/skin\? url script-response-body https://github.com/ddgksf2013/Scripts/raw/master/bilibili_json.js
 [mitm]
 
 hostname=i0.hdslb.com
