@@ -40,3 +40,5 @@ DOMAIN-SUFFIX,kr.embymv.tk:8096
 DOMAIN-SUFFIX,sana.emby.eu.org:443
 #mulgore-莫雷高
 DOMAIN-SUFFIX,202.61.255.248:8096
+#jellyfin
+DOMAIN-SUFFIX,s2.amazing910.top:8096
