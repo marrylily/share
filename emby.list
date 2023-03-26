@@ -20,6 +20,8 @@ DOMAIN-SUFFIX,nl-s1.gfwemby.org:8096
 DOMAIN-SUFFIX,de.mjjemby.org:8080
 #垃圾影音
 DOMAIN-SUFFIX,cf.emby.ml:80
+#一元公费
+DOMAIN-SUFFIX,cfca.emby.ml:80
 #蓝海
 DOMAIN-SUFFIX,bsem.ddns.me:8096
 #infinityfly
@@ -41,4 +43,8 @@ DOMAIN-SUFFIX,sana.emby.eu.org:443
 #mulgore-莫雷高
 DOMAIN-SUFFIX,202.61.255.248:8096
 #jellyfin
-DOMAIN-SUFFIX,s2.amazing910.top:8096
+DOMAIN-SUFFIX,ws.jellyfin.asia:443
+#纸片人小站
+DOMAIN-SUFFIX,embyplus.org:443
+#佛系emby
+DOMAIN-SUFFIX,1.4545.cf:4002
