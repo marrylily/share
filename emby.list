@@ -48,3 +48,5 @@ DOMAIN-SUFFIX,ws.jellyfin.asia:443
 DOMAIN-SUFFIX,embyplus.org:443
 #佛系emby
 DOMAIN-SUFFIX,1.4545.cf:4002
+#charontv
+DOMAIN-SUFFIX,play.charontv.com:443
