@@ -28,8 +28,9 @@ DOMAIN-SUFFIX,emby.kim/:443
 DOMAIN-SUFFIX,embymv.tk:8096
 #CC
 DOMAIN-SUFFIX,cc.coemn.com:80
-#mulgore-莫雷高
-DOMAIN-SUFFIX,202.61.255.248:8096
+#尘烬
+DOMAIN-SUFFIX,free.emby.eu.org:80
+DOMAIN-SUFFIX,9wfree.emby.eu.org:80
 #jellyfin
 DOMAIN-SUFFIX,ws1.jellyfin.asia:7099
 #纸片人小站
