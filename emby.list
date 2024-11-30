@@ -1,5 +1,5 @@
 #mjj
-DOMAIN-SUFFIX,de.mjjemby.org
+DOMAIN-SUFFIX,yhemby.top:8096
 #垃圾影音
 DOMAIN-SUFFIX,line.xmsl.org
 #一元公费
@@ -26,6 +26,7 @@ DOMAIN-SUFFIX,film.hovervan.org
 DOMAIN-SUFFIX,emby.kim
 #peach_公益服
 DOMAIN-SUFFIX,embymv.tk
+DOMAIN-SUFFIX,embymv.link:8096
 #CC
 DOMAIN-SUFFIX,cc.coemn.com
 #尘烬
@@ -55,3 +56,14 @@ DOMAIN-SUFFIX,api.apopcloud.me
 DOMAIN-SUFFIX,emby.apopcloud.me
 #阿甘
 DOMAIN-SUFFIX,sss.889393.xyz
+#卡戎
+DOMAIN-SUFFIX,play.charontv.com
+#飞越
+DOMAIN-SUFFIX,z.sfcj.org
+DOMAIN-SUFFIX,jg.sfcj.org
+DOMAIN-SUFFIX,ju.sfcj.org
+DOMAIN-SUFFIX,jg6.sfcj.org
+DOMAIN-SUFFIX,v6.sfcj.org
+DOMAIN-SUFFIX,cf.sfcj.org
+#nanflix
+DOMAIN-SUFFIX,nanflix.net
