@@ -32,6 +32,7 @@ DOMAIN-SUFFIX,embymv.link
 DOMAIN-SUFFIX,play.embymv.link
 #CC
 DOMAIN-SUFFIX,cc.coemn.com
+DOMAIN-SUFFIX,cc.embycc.link
 #尘烬
 DOMAIN-SUFFIX,free.emby.eu.org
 DOMAIN-SUFFIX,9wfree.emby.eu.org
@@ -70,3 +71,10 @@ DOMAIN-SUFFIX,v6.sfcj.org
 DOMAIN-SUFFIX,cf.sfcj.org
 #nanflix
 DOMAIN-SUFFIX,nanflix.net
+#终点站
+DOMAIN-SUFFIX,pub3.emby.wtf
+DOMAIN-SUFFIX,pub1.emby.wtf
+DOMAIN-SUFFIX,pub1.term.wtf
+DOMAIN-SUFFIX,pub2.emby.wtf
+DOMAIN-SUFFIX,pub3.term.wtf
+DOMAIN-SUFFIX,pub2.term.wtf
