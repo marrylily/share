@@ -81,3 +81,8 @@ DOMAIN-SUFFIX,pub1.term.wtf
 DOMAIN-SUFFIX,pub2.emby.wtf
 DOMAIN-SUFFIX,pub3.term.wtf
 DOMAIN-SUFFIX,pub2.term.wtf
+#守候
+DOMAIN-SUFFIX,lite.cn2gias.uk
+DOMAIN-SUFFIX,lite-v6.cn2gias.uk
+#shrek
+DOMAIN-SUFFIX,public.shrekmedia.org
