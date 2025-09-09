@@ -102,3 +102,7 @@ DOMAIN-SUFFIX,mperformance.mebimmer.de
 #kfc
 DOMAIN-SUFFIX,emby.v50.su
 DOMAIN-SUFFIX,cloudflare.v50.su
+#misaya
+DOMAIN-SUFFIX,emby.misaya.org
+DOMAIN-SUFFIX,usemby.misaya.org
+DOMAIN-SUFFIX,sgemby.misaya.org
