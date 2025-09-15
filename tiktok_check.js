@@ -1,20 +1,14 @@
 /*
- Surge v5 TikTok 检测脚本 (改进版)
+ Surge v5 TikTok 检测脚本 (面板版)
+ - 手动点击面板按钮运行
  - 检测 www.tiktok.com 和 api.tiktokv.com
- - 更好地区识别
- - 仅在状态变化时通知
+ - 直接在面板显示结果
 */
 
 const urls = [
   "https://www.tiktok.com/",
   "https://api.tiktokv.com/aweme/v1/passport/web/status/"
 ];
-
-const STORE_KEY = "tiktok_status";
-
-function notify(title, subtitle, body) {
-  $notification.post(title, subtitle, body);
-}
 
 function httpGet(url) {
   return new Promise(resolve => {
@@ -25,7 +19,6 @@ function httpGet(url) {
       let region = headers["x-region"] || headers["x-country"] || headers["location"] || "";
 
       if ([200, 301, 302].includes(status)) {
-        // 如果是 HTML，尝试从 <html lang="xx-XX"> 提取地区
         if (!region && data && data.includes("<html")) {
           const m = data.match(/lang="([a-zA-Z-]+)"/);
           if (m) region = m[1];
@@ -42,22 +35,13 @@ function httpGet(url) {
   const results = await Promise.all(urls.map(httpGet));
   const ok = results.find(r => r.ok);
 
-  const currentStatus = ok ? "unlocked" : "locked";
-  const region = ok ? (ok.region || "未知") : "";
-  const detail = results.map(r => `${r.url} → ${r.ok ? "可用" : "不可用"} (${r.status || r.reason})`).join("\n");
+  const statusText = ok ? `✅ 已解锁，地区: ${ok.region || "未知"}` : `❌ 无法访问 TikTok`;
+  const detail = results.map(r => `${r.ok ? "✅" : "❌"} ${r.url} → ${r.status || r.reason}`).join("\n");
 
-  const lastStatus = $persistentStore.read(STORE_KEY);
-
-  if (lastStatus !== currentStatus) {
-    if (ok) {
-      notify("TikTok 检测结果 ✅", `已解锁，地区: ${region}`, detail);
-    } else {
-      notify("TikTok 检测结果 ❌", "无法访问 TikTok", detail);
-    }
-    $persistentStore.write(currentStatus, STORE_KEY);
-  } else {
-    console.log(`[TikTokCheck] 状态无变化: ${currentStatus}`);
-  }
-
-  $done();
+  $done({
+    title: "TikTok 检测结果",
+    content: `${statusText}\n\n${detail}`,
+    icon: "airplane.circle.fill",
+    "icon-color": ok ? "#00CC66" : "#FF0033"
+  });
 })();
