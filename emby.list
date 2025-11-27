@@ -1,127 +1,67 @@
-#网盘
+# > 网盘挂载与辅助
 DOMAIN-SUFFIX,list.87445211.xyz
 DOMAIN-SUFFIX,xxlb.net
 DOMAIN-SUFFIX,carryz.net
-DOMAIN-SUFFIX,zjcdn.com
-#nya
+
+# > Emby Servers
+# Nya / Alist / MJJ
 DOMAIN-SUFFIX,emby.bangumi.ca
-DOMAIN-SUFFIX,ap-cn01.emby.bangumi.ca
-DOMAIN-SUFFIX,ap-cn02.emby.bangumi.ca
-#alist
 DOMAIN-SUFFIX,kuake.ybnf.fun
-#mjj
 DOMAIN-SUFFIX,yhemby.top
-#垃圾影音
-DOMAIN-SUFFIX,line.xmsl.org
-#一元公费
-DOMAIN-SUFFIX,cf.xmsl.org
-DOMAIN-SUFFIX,free.xmsl.org
-#叔服
-DOMAIN-SUFFIX,emby3.mcjoker.xyz
-DOMAIN-SUFFIX,jz.mcjoker.xyz
-#infinityfly
+# 垃圾影音 / 叔服 / Infinityfly
+DOMAIN-SUFFIX,xmsl.org
+DOMAIN-SUFFIX,mcjoker.xyz
 DOMAIN-SUFFIX,infinityfly.top
-#放映厅
+# 放映厅 / 特卡 / Paul
 DOMAIN-SUFFIX,emby.9191001.xyz
-#特卡
-DOMAIN-SUFFIX,emby.carlos.trade
-DOMAIN-SUFFIX,emby.carlos.trade
-DOMAIN-SUFFIX,cf.carlos.trade
-DOMAIN-SUFFIX,us.carlos.trade
-DOMAIN-SUFFIX,emby.carlos.trade
-#paul_电报服
+DOMAIN-SUFFIX,carlos.trade
 DOMAIN-SUFFIX,emby.imetyou.top
-#nmemby
+# Nmemby / 熊猫 / Peach
 DOMAIN-SUFFIX,film.hovervan.org
-#熊猫emby
 DOMAIN-SUFFIX,emby.kim
-#peach_公益服
 DOMAIN-SUFFIX,embymv.tk
 DOMAIN-SUFFIX,embymv.link
-DOMAIN-SUFFIX,play.embymv.link
-#CC
+# CC / 尘烬 / Jellyfin / 纸片人
 DOMAIN-SUFFIX,cc.coemn.com
 DOMAIN-SUFFIX,cc.embycc.link
-#尘烬
-DOMAIN-SUFFIX,free.emby.eu.org
-DOMAIN-SUFFIX,9wfree.emby.eu.org
-#jellyfin
+DOMAIN-SUFFIX,emby.eu.org
 DOMAIN-SUFFIX,ws1.jellyfin.asia
-#纸片人小站
 DOMAIN-SUFFIX,embyplus.org
-#temby
+# Temby / Pilipili / 飞越彩虹
 DOMAIN-SUFFIX,temby.285286.xyz
-#pilipili
-DOMAIN-SUFFIX,emby.pilipiliultra.top
-DOMAIN-SUFFIX,emby.pilipiliultra.com
+DOMAIN-SUFFIX,pilipiliultra.top
 DOMAIN-SUFFIX,pilipiliultra.com
-#飞越彩虹
 DOMAIN-SUFFIX,7777777.buzz
 DOMAIN-SUFFIX,581658.best
-#牢大emby
-DOMAIN-SUFFIX,emby-us-v4.mius.uk
-DOMAIN-SUFFIX,emby-fr-v6.mius.uk
-#StarCat
+# 牢大 / StarCat / 卷毛鼠
+DOMAIN-SUFFIX,mius.uk
 DOMAIN-SUFFIX,flare.catlinks.co.uk
-#卷毛鼠
-DOMAIN-SUFFIX,cf.jmsooo.com
-DOMAIN-SUFFIX,cf1.jmsuper.com
-DOMAIN-SUFFIX,mini.jmsuper.com
-DOMAIN-SUFFIX,nano.jmsuper.com
-#Apopvemby
-DOMAIN-SUFFIX,api.apopcloud.me 
-DOMAIN-SUFFIX,emby.apopcloud.me
-#阿甘
+DOMAIN-SUFFIX,jmsooo.com
+DOMAIN-SUFFIX,jmsuper.com
+# Apop / 阿甘 / 卡戎 / 飞越
+DOMAIN-SUFFIX,apopcloud.me
 DOMAIN-SUFFIX,sss.889393.xyz
-#卡戎
 DOMAIN-SUFFIX,play.charontv.com
-#飞越
-DOMAIN-SUFFIX,z.sfcj.org
-DOMAIN-SUFFIX,jg.sfcj.org
-DOMAIN-SUFFIX,ju.sfcj.org
-DOMAIN-SUFFIX,jg6.sfcj.org
-DOMAIN-SUFFIX,v6.sfcj.org
-DOMAIN-SUFFIX,cf.sfcj.org
-#nanflix
+DOMAIN-SUFFIX,sfcj.org
+# Nanflix / 终点站 / 守候
 DOMAIN-SUFFIX,nanflix.net
-#终点站
-DOMAIN-SUFFIX,pub3.emby.wtf
-DOMAIN-SUFFIX,pub1.emby.wtf
-DOMAIN-SUFFIX,pub1.term.wtf
-DOMAIN-SUFFIX,pub2.emby.wtf
-DOMAIN-SUFFIX,pub3.term.wtf
-DOMAIN-SUFFIX,pub2.term.wtf
-#守候
-DOMAIN-SUFFIX,lite.cn2gias.uk
-DOMAIN-SUFFIX,lite-v6.cn2gias.uk
-#shrek
+DOMAIN-SUFFIX,emby.wtf
+DOMAIN-SUFFIX,term.wtf
+DOMAIN-SUFFIX,cn2gias.uk
+# Shrek / 琉璃门 / Me
 DOMAIN-SUFFIX,public.shrekmedia.org
-#琉璃门
 DOMAIN-SUFFIX,emby.kongcheng666.dpdns.org
-#me
-DOMAIN-SUFFIX,bava.mebimmer.de
-DOMAIN-SUFFIX,mperformance.mebimmer.de
-#kfc
-DOMAIN-SUFFIX,emby.v50.su
-DOMAIN-SUFFIX,cloudflare.v50.su
-#misaya
-DOMAIN-SUFFIX,emby.misaya.org
-DOMAIN-SUFFIX,usemby.misaya.org
-DOMAIN-SUFFIX,sgemby.misaya.org
-#亿夏
+DOMAIN-SUFFIX,mebimmer.de
+# KFC / Misaya / 亿夏
+DOMAIN-SUFFIX,v50.su
+DOMAIN-SUFFIX,misaya.org
 DOMAIN-SUFFIX,de.yixia.io
-#hohai
+# Hohai / 一之濑 / Ikun / Dada
 DOMAIN-SUFFIX,emby.hohai.eu.org
-#一之濑琴美电视台
 DOMAIN-SUFFIX,emby.191920.xyz
-#ikun emby
 DOMAIN-SUFFIX,o808o.com
-#embydada
 DOMAIN-SUFFIX,10520.xyz
-#emos
+# Emos / 临小境 / OkEmby
 DOMAIN-SUFFIX,yxh20190608-my.sharepoint.com
-#临小境
 DOMAIN-SUFFIX,lite.liminalnet.com
-#okemby
-DOMAIN-SUFFIX,link00.okemby.org:8443
-DOMAIN-SUFFIX,link01.okemby.org:8443
+DOMAIN-SUFFIX,okemby.org
