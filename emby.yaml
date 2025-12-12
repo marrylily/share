@@ -1,0 +1,81 @@
+payload:
+  # > 网盘挂载与辅助
+  - DOMAIN-SUFFIX,list.87445211.xyz
+  - DOMAIN-SUFFIX,xxlb.net
+  - DOMAIN-SUFFIX,carryz.net
+
+  # > Emby Servers
+  # Nya / Alist / MJJ
+  - DOMAIN-SUFFIX,emby.bangumi.ca
+  - DOMAIN-SUFFIX,kuake.ybnf.fun
+  - DOMAIN-SUFFIX,yhemby.top
+
+  # 垃圾影音 / 叔服 / Infinityfly
+  - DOMAIN-SUFFIX,xmsl.org
+  - DOMAIN-SUFFIX,mcjoker.xyz
+  - DOMAIN-SUFFIX,infinityfly.top
+
+  # 放映厅 / 特卡 / Paul
+  - DOMAIN-SUFFIX,emby.9191001.xyz
+  - DOMAIN-SUFFIX,carlos.trade
+  - DOMAIN-SUFFIX,emby.imetyou.top
+  - DOMAIN-SUFFIX,cf.imetyou.top
+
+  # Nmemby / 熊猫 / Peach
+  - DOMAIN-SUFFIX,film.hovervan.org
+  - DOMAIN-SUFFIX,emby.kim
+  - DOMAIN-SUFFIX,embymv.tk
+  - DOMAIN-SUFFIX,embymv.link
+
+  # CC / 尘烬 / Jellyfin / 纸片人
+  - DOMAIN-SUFFIX,cc.coemn.com
+  - DOMAIN-SUFFIX,cc.embycc.link
+  - DOMAIN-SUFFIX,emby.eu.org
+  - DOMAIN-SUFFIX,ws1.jellyfin.asia
+  - DOMAIN-SUFFIX,embyplus.org
+
+  # Temby / Pilipili / 飞越彩虹
+  - DOMAIN-SUFFIX,temby.285286.xyz
+  - DOMAIN-SUFFIX,pilipiliultra.top
+  - DOMAIN-SUFFIX,pilipiliultra.com
+  - DOMAIN-SUFFIX,7777777.buzz
+  - DOMAIN-SUFFIX,581658.best
+
+  # 牢大 / StarCat / 卷毛鼠
+  - DOMAIN-SUFFIX,mius.uk
+  - DOMAIN-SUFFIX,flare.catlinks.co.uk
+  - DOMAIN-SUFFIX,jmsooo.com
+  - DOMAIN-SUFFIX,jmsuper.com
+
+  # Apop / 阿甘 / 卡戎 / 飞越
+  - DOMAIN-SUFFIX,apopcloud.me
+  - DOMAIN-SUFFIX,sss.889393.xyz
+  - DOMAIN-SUFFIX,play.charontv.com
+  - DOMAIN-SUFFIX,sfcj.org
+
+  # Nanflix / 终点站 / 守候
+  - DOMAIN-SUFFIX,nanflix.net
+  - DOMAIN-SUFFIX,emby.wtf
+  - DOMAIN-SUFFIX,term.wtf
+  - DOMAIN-SUFFIX,cn2gias.uk
+
+  # Shrek / 琉璃门 / Me
+  - DOMAIN-SUFFIX,public.shrekmedia.org
+  - DOMAIN-SUFFIX,emby.kongcheng666.dpdns.org
+  - DOMAIN-SUFFIX,mebimmer.de
+
+  # KFC / Misaya / 亿夏
+  - DOMAIN-SUFFIX,v50.su
+  - DOMAIN-SUFFIX,misaya.org
+  - DOMAIN-SUFFIX,de.yixia.io
+
+  # Hohai / 一之濑 / Ikun / Dada
+  - DOMAIN-SUFFIX,emby.hohai.eu.org
+  - DOMAIN-SUFFIX,emby.191920.xyz
+  - DOMAIN-SUFFIX,o808o.com
+  - DOMAIN-SUFFIX,10520.xyz
+
+  # Emos / 临小境 / OkEmby
+  - DOMAIN-SUFFIX,yxh20190608-my.sharepoint.com
+  - DOMAIN-SUFFIX,lite.liminalnet.com
+  - DOMAIN-SUFFIX,okemby.org
