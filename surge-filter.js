@@ -6,21 +6,23 @@
  * proto: 允许的协议类型，用逗号分隔。例如: ss,vmess,trojan
  * network: (仅针对VMess) 允许的传输方式。例如: ws,tcp
  */
-
+/**
+ * Surge 协议清洗 (防崩溃改良版)
+ */
 module.exports = (proxies, target, args) => {
-  // --- 1. 定义默认配置 (如果未传入参数，则使用这些默认值) ---
-  const defaultProtos = ['ss', 'ssr', 'vmess', 'trojan', 'http', 'socks5', 'snell', 'hysteria2', 'tuic', 'wireguard', 'ponie'];
-  const defaultVmessNet = ['tcp', 'ws', 'grpc']; // 默认只保留 TCP, WebSocket, gRPC
+  // --- 安全检查：如果输入不是数组，直接返回空 ---
+  if (!Array.isArray(proxies)) return [];
 
-  // --- 2. 解析用户传入的参数 (Args) ---
-  // 处理协议白名单
+  // --- 1. 定义默认配置 ---
+  const defaultProtos = ['ss', 'ssr', 'vmess', 'trojan', 'http', 'https', 'socks5', 'snell', 'hysteria2', 'tuic', 'wireguard', 'ponie'];
+  const defaultVmessNet = ['tcp', 'ws', 'grpc'];
+
+  // --- 2. 解析用户传入的参数 ---
   let allowedProtos = defaultProtos;
   if (args && args.proto) {
-    // 将用户输入的 "ss,vmess" 这种字符串切割成数组，并去除空格转小写
     allowedProtos = args.proto.split(',').map(i => i.trim().toLowerCase());
   }
 
-  // 处理 VMess 传输方式白名单
   let allowedVmessNet = defaultVmessNet;
   if (args && args.network) {
     allowedVmessNet = args.network.split(',').map(i => i.trim().toLowerCase());
@@ -28,21 +30,23 @@ module.exports = (proxies, target, args) => {
 
   // --- 3. 开始过滤 ---
   return proxies.filter(p => {
+    // [关键修复] 检查 p 是否存在以及是否有 type 字段，防止报错
+    if (!p || !p.type) return false;
+
     const type = p.type.toLowerCase();
 
     // 检查协议是否在白名单中
     if (!allowedProtos.includes(type)) {
-      return false; // 协议不支持，剔除
+      return false;
     }
 
     // 特殊处理 VMess 的传输层
     if (type === 'vmess') {
+      // [关键修复] 同样给 network 加默认值防止报错
       const network = (p.network || 'tcp').toLowerCase();
-      // 检查传输方式是否在白名单中
       return allowedVmessNet.includes(network);
     }
 
-    // 其他协议默认放行
     return true;
   });
 };
