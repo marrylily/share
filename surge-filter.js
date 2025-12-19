@@ -1,52 +1,61 @@
-/**
- * Surge 协议清洗 (带参数版)
- * * 默认行为：只保留 Surge 当前版本稳定支持的协议和传输方式。
- * 自定义行为：通过 Sub-Store 界面传入 args 参数覆盖默认设置。
- * * 参数说明 (在 Sub-Store 界面填写):
- * proto: 允许的协议类型，用逗号分隔。例如: ss,vmess,trojan
- * network: (仅针对VMess) 允许的传输方式。例如: ws,tcp
- */
-/**
- * Surge 协议清洗 (防崩溃改良版)
- */
-module.exports = (proxies, target, args) => {
-  // --- 安全检查：如果输入不是数组，直接返回空 ---
-  if (!Array.isArray(proxies)) return [];
+return proxies.filter(p => {
 
-  // --- 1. 定义默认配置 ---
-  const defaultProtos = ['ss', 'ssr', 'vmess', 'trojan', 'http', 'https', 'socks5', 'snell', 'hysteria2', 'tuic', 'wireguard', 'ponie'];
-  const defaultVmessNet = ['tcp', 'ws', 'grpc'];
+  // --- 1. 基础协议白名单 ---
 
-  // --- 2. 解析用户传入的参数 ---
-  let allowedProtos = defaultProtos;
-  if (args && args.proto) {
-    allowedProtos = args.proto.split(',').map(i => i.trim().toLowerCase());
+  const type = p.type.toLowerCase();
+
+  // Surge 支持的基础协议
+
+  const supportedProtocols = ['ss', 'ssr', 'vmess', 'trojan', 'http', 'socks5', 'snell', 'hysteria2', 'tuic', 'wireguard'];
+
+  
+
+  // 如果连基础协议都不支持（比如 vless），直接剔除
+
+  if (!supportedProtocols.includes(type)) {
+
+    return false;
+
   }
 
-  let allowedVmessNet = defaultVmessNet;
-  if (args && args.network) {
-    allowedVmessNet = args.network.split(',').map(i => i.trim().toLowerCase());
+
+
+  // --- 2. 针对 VMess 的深度检查 ---
+
+  if (type === 'vmess') {
+
+    // 获取传输方式，如果没有定义 network 字段，默认为 'tcp'
+
+    // 常见的 network 值: 'ws', 'tcp', 'http', 'h2', 'grpc'
+
+    const network = (p.network || 'tcp').toLowerCase();
+
+
+
+    // 【关键配置】在这里定义你希望 VMess 保留的传输方式
+
+    // 你提到：支持 ws，不支持 http
+
+    // 通常建议保留 tcp 和 ws (以及 grpc，因为 Surge 较新版本也支持 grpc)
+
+    const allowedNetworks = ['ws', 'tcp', 'grpc'];
+
+
+
+    // 检查当前节点的传输方式是否在允许列表中
+
+    // 如果是 'http' 或 'h2'，就会因为不在列表中而被剔除
+
+    return allowedNetworks.includes(network);
+
   }
 
-  // --- 3. 开始过滤 ---
-  return proxies.filter(p => {
-    // [关键修复] 检查 p 是否存在以及是否有 type 字段，防止报错
-    if (!p || !p.type) return false;
 
-    const type = p.type.toLowerCase();
 
-    // 检查协议是否在白名单中
-    if (!allowedProtos.includes(type)) {
-      return false;
-    }
+  // --- 3. 其他协议（如 SS/Trojan）默认放行 ---
 
-    // 特殊处理 VMess 的传输层
-    if (type === 'vmess') {
-      // [关键修复] 同样给 network 加默认值防止报错
-      const network = (p.network || 'tcp').toLowerCase();
-      return allowedVmessNet.includes(network);
-    }
+  // 如果你也想过滤 Trojan 的传输方式（如剔除 Trojan-gRPC），可以在这里加类似的判断
 
-    return true;
-  });
-};
+  return true;
+
+});
