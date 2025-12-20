@@ -1,0 +1,11 @@
+#!name=TikTok 检测面板
+#!desc=基于节点IP地区检测TikTok解锁状态 (点击面板手动运行)
+#!system=ios
+
+[Panel]
+# update-interval=-1 表示仅手动点击刷新
+TikTokCheck = script-name=tiktok-check, title="TikTok 检测", content="请点击刷新...", update-interval=-1
+
+[Script]
+# 请将下方的 URL 替换为你 GitHub 上 JS 文件的真实 Raw 链接
+tiktok-check = type=generic, timeout=5, script-path=https://raw.githubusercontent.com/marrylily/share/main/JavaScript/tiktok_check.js, argument=icon=bolt.horizontal.circle&color=#121212
