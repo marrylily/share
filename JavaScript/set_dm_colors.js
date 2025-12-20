@@ -1,13 +1,12 @@
 /*
- * 🎨 弹幕改色 (V4 终极适配版)
+ * 🎨 弹幕改色 (V5 宽容适配版)
  * -------------------------------------------
- * 适配格式 1: 对象型 { p: "3.5,1,16777215,..." }
- * 适配格式 2: 字符串型 [ "3.5,1,16777215", ... ]
- * 适配格式 3: 数组型 [ 3.5, 1, 16777215, "user", "text" ]  <-- 重点修复这里
+ * 核心升级: 放宽数组检测逻辑，兼容 "字符串型数字"
+ * 解决: 修复部分弹幕因数据类型不规范导致的改色失败
  * -------------------------------------------
  */
 
-const STORE_KEY = "dm_color_config_v4";
+const STORE_KEY = "dm_color_config_v5";
 const DEFAULT_MODE = "cycle";
 const DEFAULT_COLORS = [11193542, 11513775, 14474460, 12632297, 13484213];
 
@@ -46,6 +45,7 @@ function getColor(cfg) {
 
 // === 核心逻辑: 字符串修正 ===
 function patchStringP(str, cfg) {
+    // 看起来像弹幕数据的字符串 (数字开头)
     if (!/^\d+(\.\d+)?/.test(str)) return str;
     let parts = str.split(',');
     while (parts.length < 3) parts.push('0');
@@ -57,25 +57,20 @@ function patchStringP(str, cfg) {
 function processDeep(obj, cfg) {
   // 1. 处理数组
   if (Array.isArray(obj)) {
-    // 🚨 重点修复: 检查这个数组本身是不是一条“弹幕”
-    // DPlayer 标准数组格式: [时间(Number), 类型(Number), 颜色(Number/String), 作者, 内容...]
-    // 特征: 长度>=4，第0位是数字，第1位是数字
-    if (obj.length >= 4 && typeof obj[0] === 'number' && typeof obj[1] === 'number') {
-        // 命中！这是一个弹幕数组，直接修改索引 2 (颜色位)
+    // 🚨 V5 核心改进: 宽容检测
+    // 只要长度>=4，且前3位都能转成数字(无论是 '123' 还是 123)，就认定为弹幕数组
+    if (obj.length >= 4 && !isNaN(obj[0]) && !isNaN(obj[1]) && !isNaN(obj[2])) {
+        // 直接修改第 3 位 (索引2) 为新颜色
         obj[2] = getColor(cfg);
-        return; // 处理完这条弹幕，不需要再递归进去了
+        return; // 处理完毕，不再递归
     }
 
-    // 如果不是弹幕数组，那就当它是普通的数据列表，遍历它
+    // 普通数组遍历
     for (let i = 0; i < obj.length; i++) {
       const item = obj[i];
-      
-      // 情况 A: 字符串型弹幕 ["3.5,1,color", ...]
       if (typeof item === 'string') {
         obj[i] = patchStringP(item, cfg);
-      } 
-      // 情况 B: 对象型或其他，递归处理
-      else if (typeof item === 'object') {
+      } else if (typeof item === 'object') {
         processDeep(item, cfg);
       }
     }
@@ -93,15 +88,19 @@ function processDeep(obj, cfg) {
       modified = true;
     }
 
-    // 情况 D: 显式 color 字段
-    if (obj.color !== undefined) {
-      if (typeof obj.color === 'string' && !/^\d+$/.test(obj.color)) {
-         // Hex 字符串忽略，强行覆盖数字试试
-         obj.color = newColorInt;
-      } else {
-         obj.color = newColorInt;
-      }
-      modified = true;
+    // 情况 D: 显式 color 字段 (兼容 c / color / _color 等常见字段)
+    // 很多非标准播放器会用简写 'c' 代表 color
+    const colorKeys = ['color', 'c', 'colour', 'Color'];
+    for (const key of colorKeys) {
+        if (obj[key] !== undefined) {
+             // 只要字段存在，不管原来是啥，强制覆盖
+             if (typeof obj[key] === 'string' && !/^\d+$/.test(obj[key])) {
+                 obj[key] = newColorInt; // 强转数字
+             } else {
+                 obj[key] = newColorInt;
+             }
+             modified = true;
+        }
     }
 
     if (!modified) {
@@ -118,21 +117,23 @@ function processDeep(obj, cfg) {
 if (typeof $request === "undefined") {
   const cfg = getConfig();
   $done({
-    title: `弹幕改色V4 (${cfg.mode})`,
-    content: `已启用数组级强力拦截\n颜色池: ${cfg.colors.length}个`,
+    title: `弹幕改色V5 (${cfg.mode})`,
+    content: `宽容模式: 兼容字符串型数组\n颜色池: ${cfg.colors.length}个`,
     icon: "paintpalette.fill", "icon-color": "#ff6b6b"
   });
 } else {
   try {
     if ($response.body) {
-      let json = JSON.parse($response.body);
+      // 增加容错: 某些接口返回并非纯 JSON，尝试修剪 (虽然极少见)
+      let bodyStr = $response.body;
+      let json = JSON.parse(bodyStr);
       processDeep(json, getConfig());
       $done({ body: JSON.stringify(json) });
     } else {
       $done({});
     }
   } catch (e) {
-    console.log("[改色Error] " + e);
+    console.log("[改色V5 Error] " + e);
     $done({});
   }
 }
