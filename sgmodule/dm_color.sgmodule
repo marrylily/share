@@ -1,17 +1,21 @@
-#!name=弹幕改色智能增强版 V8.1
-#!desc=Panel 切换配色 + Response 拦截改色（仅命中 comment 弹幕接口）
-#!author=Forward & Gemini
-#!system=ios
+#!name=🎨 弹幕改色（通用版）
+#!desc=拦截 dm.87445211.xyz 弹幕接口，将所有弹幕颜色替换为随机/固定/循环。
+#!author=Yu9191
+#!homepage=https://github.com/Yu9191/Rewrite
+#!category=弹幕改色
+#!arguments=mode:cycle,colors:11193542|11513775|14474460|12632297|13484213
+#!arguments-desc=mode: random=随机 | fixed=固定第一色 | cycle=循环\ncolors: 颜色十进制值，用 | 或 , 分隔 (例: 16711680=红,65280=绿,255=蓝)
 
 [Panel]
-弹幕控制器 = script-name=弹幕控制面板,update-interval=43200
+🎨 弹幕改色 = title="弹幕改色设置", content="点击刷新读取当前模式/色池", style=info, script-name=弹幕改色面板, update-interval=0
 
 [Script]
-# 1) 面板脚本（必须是 generic）
-弹幕控制面板 = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
+# ① 面板脚本
+弹幕改色面板 = type=generic, script-path= https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js, argument=mode={{{mode}}}&colors={{{colors}}}
 
-# 2) 改色脚本（只拦截弹幕 comment 接口，避免误伤 bangumi 等）
-弹幕引擎 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/837324\/api\/v2\/comment(?:\/\d+)?(?:\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
+# ② 拦截改色脚本：将 pattern 里的 yiya.love 替换成了 dm.87445211.xyz
+弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode={{{mode}}}&colors={{{colors}}},tag=弹幕改色
 
 [MITM]
+# 这里也同步修改，只保留新的域名
 hostname = %APPEND% dm.87445211.xyz
