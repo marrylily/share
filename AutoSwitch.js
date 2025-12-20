@@ -5,7 +5,7 @@
 
 // ⚠️ 这里填你 Surge 主界面那个策略组的名字
 // 通常叫 "Proxy" 或者 "Select Group"，请看你主界面第一个大按钮的名字
-const groupName = "Proxy"; 
+const groupName = "EMBY"; 
 
 // 获取参数
 const targetNode = $script.params['node'];
