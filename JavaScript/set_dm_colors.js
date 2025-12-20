@@ -1,10 +1,13 @@
 /*
- * 🎨 弹幕改色 (全形态覆盖版)
- * 适配: 对象型弹幕 {p: "..."} 和 字符串型弹幕 ["...", "..."]
- * 修复: 彻底解决默认白色无法修改的问题
+ * 🎨 弹幕改色 (V4 终极适配版)
+ * -------------------------------------------
+ * 适配格式 1: 对象型 { p: "3.5,1,16777215,..." }
+ * 适配格式 2: 字符串型 [ "3.5,1,16777215", ... ]
+ * 适配格式 3: 数组型 [ 3.5, 1, 16777215, "user", "text" ]  <-- 重点修复这里
+ * -------------------------------------------
  */
 
-const STORE_KEY = "dm_color_config_v3";
+const STORE_KEY = "dm_color_config_v4";
 const DEFAULT_MODE = "cycle";
 const DEFAULT_COLORS = [11193542, 11513775, 14474460, 12632297, 13484213];
 
@@ -41,34 +44,37 @@ function getColor(cfg) {
   return c;
 }
 
-// === 核心逻辑: 字符串处理 ===
-// 输入: "时间,类型,颜色,..." 或 "时间,类型"
-// 输出: "时间,类型,新颜色,..."
+// === 核心逻辑: 字符串修正 ===
 function patchStringP(str, cfg) {
-    // 简单判断是否像弹幕格式 (以数字开头)
     if (!/^\d+(\.\d+)?/.test(str)) return str;
-
     let parts = str.split(',');
-    // 强制补全: 如果长度小于3 (缺颜色)，补齐
     while (parts.length < 3) parts.push('0');
-    
-    // 强制替换: 第3位 (索引2) 改为新颜色
     parts[2] = String(getColor(cfg));
-    
     return parts.join(',');
 }
 
-// === 核心逻辑: 递归遍历 ===
+// === 核心逻辑: 深度递归 ===
 function processDeep(obj, cfg) {
-  // 1. 处理数组 (关键修复：使用索引遍历，以便修改字符串元素)
+  // 1. 处理数组
   if (Array.isArray(obj)) {
+    // 🚨 重点修复: 检查这个数组本身是不是一条“弹幕”
+    // DPlayer 标准数组格式: [时间(Number), 类型(Number), 颜色(Number/String), 作者, 内容...]
+    // 特征: 长度>=4，第0位是数字，第1位是数字
+    if (obj.length >= 4 && typeof obj[0] === 'number' && typeof obj[1] === 'number') {
+        // 命中！这是一个弹幕数组，直接修改索引 2 (颜色位)
+        obj[2] = getColor(cfg);
+        return; // 处理完这条弹幕，不需要再递归进去了
+    }
+
+    // 如果不是弹幕数组，那就当它是普通的数据列表，遍历它
     for (let i = 0; i < obj.length; i++) {
       const item = obj[i];
-      // 情况 A: 数组里直接就是字符串 ["3.5,1,16777215", ...]
+      
+      // 情况 A: 字符串型弹幕 ["3.5,1,color", ...]
       if (typeof item === 'string') {
         obj[i] = patchStringP(item, cfg);
       } 
-      // 情况 B: 数组里是对象，递归进去
+      // 情况 B: 对象型或其他，递归处理
       else if (typeof item === 'object') {
         processDeep(item, cfg);
       }
@@ -81,18 +87,16 @@ function processDeep(obj, cfg) {
     let modified = false;
     const newColorInt = getColor(cfg);
 
-    // 情况 C: 对象有 p 属性 { "p": "3.5,1,16777215" }
+    // 情况 C: 对象型 { p: "..." }
     if (typeof obj.p === 'string') {
       obj.p = patchStringP(obj.p, cfg);
       modified = true;
     }
 
-    // 情况 D: 对象有 color 属性 (数字/字符串)
+    // 情况 D: 显式 color 字段
     if (obj.color !== undefined) {
-      // 暴力覆盖所有 color 字段，转为 Int
-      // 注意：有些播放器只认数字类型的 color
       if (typeof obj.color === 'string' && !/^\d+$/.test(obj.color)) {
-         // 如果原本是Hex字符串，这里也不管了，直接给它数字试试，DPlayer通常兼容
+         // Hex 字符串忽略，强行覆盖数字试试
          obj.color = newColorInt;
       } else {
          obj.color = newColorInt;
@@ -100,7 +104,6 @@ function processDeep(obj, cfg) {
       modified = true;
     }
 
-    // 递归查找子属性 (如 data, comments, list)
     if (!modified) {
       for (const key in obj) {
         if (typeof obj[key] === 'object' || Array.isArray(obj[key])) {
@@ -115,8 +118,8 @@ function processDeep(obj, cfg) {
 if (typeof $request === "undefined") {
   const cfg = getConfig();
   $done({
-    title: `弹幕改色Pro (${cfg.mode})`,
-    content: `全覆盖模式 | 颜色: ${cfg.colors.length}个`,
+    title: `弹幕改色V4 (${cfg.mode})`,
+    content: `已启用数组级强力拦截\n颜色池: ${cfg.colors.length}个`,
     icon: "paintpalette.fill", "icon-color": "#ff6b6b"
   });
 } else {
