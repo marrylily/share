@@ -1,17 +1,19 @@
-#!name=🎨 弹幕改色 (V7 核弹版 - 修正版)
-#!desc=拦截 dm.87445211.xyz 弹幕接口，将所有弹幕颜色替换为随机/固定/循环。默认是五色循环（淡灰蓝|雾霾灰|米白灰|浅卡其|莫兰迪粉）。
-#!author=Yu9191
-#!homepage=https://github.com/Yu9191/Rewrite
-#!category=弹幕改色
-#!arguments=mode:cycle,colors:11193542|11513775|14474460|12632297|13484213
-#!arguments-desc=mode: random=随机 | fixed=固定第一色 | cycle=循环\ncolors: 颜色十进制值，用 | 或 , 分隔 (例: 16711680=红,65280=绿,255=蓝)
+#!name=弹幕改色智能增强版 V8.1
+#!desc=集成 Panel 交互切换配色与 Response 暴力改色。点击首页面板可循环切换预设配色方案。支持腾讯、优酷、爱奇艺、B站等主流平台。
+#!author=Forward & Gemini
+#!system=ios
 
 [Panel]
-🎨 弹幕改色 = script-name=弹幕改色, update-interval=0, title="弹幕改色设置", content="模式/颜色由脚本实时读取", icon="paintpalette.fill", icon-color="#ff6b6b"
+# 挂载首页控制面板
+弹幕控制器 = script-name=弹幕引擎,update-interval=43200
 
 [Script]
-弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode=cycle&colors=11193542|11513775|14474460|12632297|13484213,tag=弹幕改色
+# 逻辑合一：既负责面板显示，又负责拦截改色
+# pattern 请根据您的需求扩充，当前已包含您的 API 域名
+弹幕引擎 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
+
+# 定义面板交互点击事件
+弹幕面板交互 = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=event=tap
 
 [MITM]
-
 hostname = %APPEND% dm.87445211.xyz
