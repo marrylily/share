@@ -1,4 +1,4 @@
-#!name=🎨 弹幕改色（通用版）
+#!name=🎨 弹幕改色 (V7 核弹版 - 修正版)
 #!desc=拦截 dm.87445211.xyz 弹幕接口，将所有弹幕颜色替换为随机/固定/循环。默认是五色循环（淡灰蓝|雾霾灰|米白灰|浅卡其|莫兰迪粉）。
 #!author=Yu9191
 #!homepage=https://github.com/Yu9191/Rewrite
@@ -13,4 +13,5 @@
 弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode=cycle&colors=11193542|11513775|14474460|12632297|13484213,tag=弹幕改色
 
 [MITM]
+
 hostname = %APPEND% dm.87445211.xyz
