@@ -3,7 +3,7 @@
 #!author=Yu9191
 #!homepage=https://github.com/Yu9191/Rewrite
 #!category=弹幕改色
-#!arguments=mode:cycle,colors:11193542|11513775|14474460|12632297|13484213
+#!arguments=mode:cycle,colors:#!arguments=mode:cycle,colors:16739179|6737151|16760576|448160|9338367
 #!arguments-desc=mode: random=随机 | fixed=固定第一色 | cycle=循环\ncolors: 颜色十进制值，用 | 或 , 分隔 (例: 16711680=红,65280=绿,255=蓝)
 
 [Panel]
@@ -11,7 +11,7 @@
 
 [Script]
 # ① 面板脚本
-弹幕改色面板 = type=generic, script-path= https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js, argument=mode={{{mode}}}&colors={{{colors}}}
+弹幕改色面板 = type=generic, script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js, argument=mode={{{mode}}}&colors={{{colors}}}
 
 # ② 拦截改色脚本：将 pattern 里的 yiya.love 替换成了 dm.87445211.xyz
 弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode={{{mode}}}&colors={{{colors}}},tag=弹幕改色
