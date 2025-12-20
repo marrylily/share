@@ -1,19 +1,17 @@
 #!name=弹幕改色智能增强版 V8.1
-#!desc=集成 Panel 交互切换配色与 Response 暴力改色。点击首页面板可循环切换预设配色方案。支持腾讯、优酷、爱奇艺、B站等主流平台。
+#!desc=Panel 切换配色 + Response 拦截改色（仅命中 comment 弹幕接口）
 #!author=Forward & Gemini
 #!system=ios
 
 [Panel]
-# 挂载首页控制面板
-弹幕控制器 = script-name=弹幕引擎,update-interval=43200
+弹幕控制器 = script-name=弹幕控制面板,update-interval=43200
 
 [Script]
-# 逻辑合一：既负责面板显示，又负责拦截改色
-# pattern 请根据您的需求扩充，当前已包含您的 API 域名
-弹幕引擎 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
+# 1) 面板脚本（必须是 generic）
+弹幕控制面板 = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
 
-# 定义面板交互点击事件
-弹幕面板交互 = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=event=tap
+# 2) 改色脚本（只拦截弹幕 comment 接口，避免误伤 bangumi 等）
+弹幕引擎 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/837324\/api\/v2\/comment(?:\/\d+)?(?:\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js
 
 [MITM]
 hostname = %APPEND% dm.87445211.xyz
