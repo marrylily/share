@@ -101,81 +101,67 @@ function patchStringP(str, cfg, forcedColor) {
   return parts.join(",");
 }
 
-// === 核心逻辑 ===
-function processDeep(obj, cfg) {
-  // 1) 数组
-  if (Array.isArray(obj)) {
-    let colorForThisArray = null;
+// === 内存优化：使用栈结构避免递归深度过大 ===
+function processDeepOptimized(obj, cfg) {
+  const stack = [obj];
+  
+  while (stack.length > 0) {
+    const currentObj = stack.pop();
+    
+    // 处理数组
+    if (Array.isArray(currentObj)) {
+      let colorForThisArray = null;
 
-    // 标准弹幕数组：前两位数字 + len>=3 => 索引2是颜色位
-    if (obj.length >= 3 && !isNaN(obj[0]) && !isNaN(obj[1])) {
-      colorForThisArray = getColor(cfg);
-      obj[2] = colorForThisArray;
-    }
-
-    for (let i = 0; i < obj.length; i++) {
-      const item = obj[i];
-
-      // 全球通缉：叶子白色值
-      if (isWhite(item)) {
-        obj[i] = colorForThisArray ?? getColor(cfg);
-        continue;
+      // 如果是弹幕数组，优化颜色处理
+      if (currentObj.length >= 3 && !isNaN(currentObj[0]) && !isNaN(currentObj[1])) {
+        colorForThisArray = getColor(cfg);
+        currentObj[2] = colorForThisArray;
       }
 
-      // 字符串弹幕 "12.5,1,16777215"
-      if (typeof item === "string") {
-        const t = item.trim();
-        if (/^\d+\.?\d*,\d+,/.test(t)) {
-          obj[i] = patchStringP(item, cfg, getColor(cfg));
+      for (let i = 0; i < currentObj.length; i++) {
+        const item = currentObj[i];
+
+        // 处理颜色值
+        if (isWhite(item)) {
+          currentObj[i] = colorForThisArray ?? getColor(cfg);
           continue;
         }
-      }
 
-      if (item && typeof item === "object") {
-        processDeep(item, cfg);
+        // 递归处理子对象或数组
+        if (item && typeof item === "object") {
+          stack.push(item);
+        }
       }
     }
-    return;
-  }
 
-  // 2) 对象
-  if (obj && typeof obj === "object") {
-    const colorForThisObj = getColor(cfg);
+    // 处理对象
+    if (currentObj && typeof currentObj === "object") {
+      const colorForThisObj = getColor(cfg);
+      for (const key in currentObj) {
+        const val = currentObj[key];
 
-    // 标准 p 字段
-    if (typeof obj.p === "string") {
-      obj.p = patchStringP(obj.p, cfg, colorForThisObj);
-    }
+        if (val && typeof val === "object") {
+          stack.push(val); // 加入栈中
+        }
 
-    for (const key in obj) {
-      const val = obj[key];
+        if (isWhite(val)) {
+          currentObj[key] = colorForThisObj;
+          continue;
+        }
 
-      // 先递归（避免把对象/数组误覆盖成数字）
-      if (val && typeof val === "object") {
-        processDeep(val, cfg);
-        continue;
-      }
+        // 颜色修改处理
+        if (typeof val === "string" && /^\d+\.?\d*,\d+,/.test(val.trim())) {
+          currentObj[key] = patchStringP(val, cfg, colorForThisObj);
+        }
 
-      // 叶子节点：白色值通缉
-      if (isWhite(val)) {
-        obj[key] = colorForThisObj;
-        continue;
-      }
-
-      // 叶子节点：看起来是弹幕格式字符串，也顺手改
-      if (typeof val === "string" && /^\d+\.?\d*,\d+,/.test(val.trim())) {
-        obj[key] = patchStringP(val, cfg, colorForThisObj);
-        continue;
-      }
-
-      // 颜色键名处理
-      if (looksLikeColorKey(key)) {
-        if (FORCE_COLOR_KEYS) {
-          // 核弹：只要是颜色键名就改（但仅限叶子节点）
-          obj[key] = colorForThisObj;
-        } else {
-          // 稳一点：只有值看起来像颜色，才改
-          if (looksLikeColorValue(val)) obj[key] = colorForThisObj;
+        if (looksLikeColorKey(key)) {
+          if (FORCE_COLOR_KEYS) {
+            currentObj[key] = colorForThisObj;
+          } else {
+            if (looksLikeColorValue(val)) {
+              currentObj[key] = colorForThisObj;
+            }
+          }
         }
       }
     }
@@ -195,7 +181,7 @@ if (typeof $request === "undefined") {
   try {
     if ($response.body) {
       const json = JSON.parse($response.body);
-      processDeep(json, getConfig());
+      processDeepOptimized(json, getConfig());
       $done({ body: JSON.stringify(json) });
     } else {
       $done({});
