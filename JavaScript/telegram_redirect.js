@@ -1,50 +1,70 @@
 /*
-  Surge 脚本：Telegram 跳转重定向
-  功能：将 t.me 链接重定向到第三方客户端（Swiftgram/Turrit/Nicegram）
+  Surge 脚本：强制重定向 t.me 到 Swiftgram/Turrit
+  原理：伪造 HTML 响应，通过 window.location 唤起 App
 */
 
-// --- 配置区域 ---
-// 你想跳转到的 App URL Scheme
-// Swiftgram 通常支持: swiftgram://
-// Turrit 通常支持: turrit:// 
-// 如果不确定，也可以填 tg:// (前提是你把官方客户端删了，只留了第三方)
+// --- 自定义设置 ---
+// 如果是 Turrit，尝试改成: turrit:// (如果不行则只能用 tg://)
+// 如果是 Swiftgram: swiftgram://
 const targetScheme = "swiftgram://"; 
 // ----------------
 
-let url = $request.url;
-let path = "";
+const url = $request.url;
+let jumpUrl = "";
 
-// 处理 t.me 链接逻辑
-if (url.indexOf("t.me/") !== -1) {
-    // 提取 t.me/ 后面的部分
-    // 比如 https://t.me/google_news -> google_news
-    path = url.split("t.me/")[1];
+// 提取 URL 中的核心部分
+// 例子: https://t.me/zhousanwan_bot?start=123
+// 目标: swiftgram://resolve?domain=zhousanwan_bot&start=123
+
+// 1. 获取路径 (去掉 https://t.me/)
+let path = url.replace(/https?:\/\/(www\.)?t\.me\//, "");
+
+// 2. 处理参数 (?start=xxx)
+let query = "";
+if (path.indexOf("?") !== -1) {
+    let parts = path.split("?");
+    path = parts[0]; // 只要 bot 名字
+    query = "&" + parts[1]; // 把 ?start=123 变成 &start=123 (因为前面我们要拼接 resolve?domain=)
 }
 
-if (path) {
-    // 构造新的跳转链接
-    // 第三方客户端通常兼容官方的参数格式，但也可能有变种
-    // 最通用的方式是将 https://t.me/xxx 转换为 scheme://resolve?domain=xxx
-    
-    let newUrl = "";
-    
-    // 情况 A: 邀请链接 (joinchat 或 +)
-    if (path.startsWith("joinchat/") || path.startsWith("+")) {
-        let inviteCode = path.replace("joinchat/", "").replace("+", "");
-        newUrl = `${targetScheme}join?invite=${inviteCode}`;
-    } 
-    // 情况 B: 普通用户名或频道
-    else {
-        newUrl = `${targetScheme}resolve?domain=${path}`;
-    }
-
-    // 告诉 Surge：不要访问 t.me 了，直接重定向到新 APP
-    $done({
-        response: {
-            status: 307,
-            headers: { Location: newUrl }
-        }
-    });
+// 3. 生成跳转链接
+if (path.startsWith("joinchat/") || path.startsWith("+")) {
+    // 进群链接
+    let code = path.replace("joinchat/", "").replace("+", "");
+    jumpUrl = `${targetScheme}join?invite=${code}`;
 } else {
-    $done({});
+    // 个人、频道、机器人
+    jumpUrl = `${targetScheme}resolve?domain=${path}${query}`;
 }
+
+// 4. 返回 HTML 页面 (暴力跳转)
+const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opening Swiftgram...</title>
+<style>
+body { font-family: -apple-system, sans-serif; text-align: center; padding-top: 50px; background: #f5f5f5; }
+.btn { display: inline-block; padding: 10px 20px; background: #007aff; color: white; text-decoration: none; border-radius: 8px; margin-top: 20px;}
+</style>
+</head>
+<body>
+    <h1>正在跳转 Swiftgram...</h1>
+    <p>如果未自动跳转，请点击下方按钮</p>
+    <a href="${jumpUrl}" class="btn">手动打开</a>
+    <script>
+        // 自动执行跳转
+        window.location.href = "${jumpUrl}";
+    </script>
+</body>
+</html>
+`;
+
+$done({
+    body: htmlBody,
+    headers: {
+        "Content-Type": "text/html;charset=UTF-8"
+    }
+});
