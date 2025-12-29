@@ -1,70 +1,71 @@
-/*
-  Surge 脚本：强制重定向 t.me 到 Swiftgram/Turrit
-  原理：伪造 HTML 响应，通过 window.location 唤起 App
-*/
+/**
+ * Surge Script: Telegram External Link Redirect
+ * 功能：将 t.me 链接重定向至第三方客户端 (Swiftgram, Turrit等)
+ */
 
-// --- 自定义设置 ---
-// 如果是 Turrit，尝试改成: turrit:// (如果不行则只能用 tg://)
-// 如果是 Swiftgram: swiftgram://
-const targetScheme = "swiftgram://"; 
-// ----------------
+//在此处修改目标客户端协议
+// Swiftgram iOS: "swiftgram://"
+// Official/Turrit/Generic: "tg://"
+const TARGET_SCHEME = "swiftgram://"; 
 
-const url = $request.url;
-let jumpUrl = "";
+let url = $request.url;
+const regex = /https?:\/\/(?:www\.)?(?:t|telegram)\.me\/(.+)/;
+const match = url.match(regex);
 
-// 提取 URL 中的核心部分
-// 例子: https://t.me/zhousanwan_bot?start=123
-// 目标: swiftgram://resolve?domain=zhousanwan_bot&start=123
+if (match) {
+    let path = match[1];
+    let newUrl = "";
 
-// 1. 获取路径 (去掉 https://t.me/)
-let path = url.replace(/https?:\/\/(www\.)?t\.me\//, "");
-
-// 2. 处理参数 (?start=xxx)
-let query = "";
-if (path.indexOf("?") !== -1) {
-    let parts = path.split("?");
-    path = parts[0]; // 只要 bot 名字
-    query = "&" + parts[1]; // 把 ?start=123 变成 &start=123 (因为前面我们要拼接 resolve?domain=)
-}
-
-// 3. 生成跳转链接
-if (path.startsWith("joinchat/") || path.startsWith("+")) {
-    // 进群链接
-    let code = path.replace("joinchat/", "").replace("+", "");
-    jumpUrl = `${targetScheme}join?invite=${code}`;
-} else {
-    // 个人、频道、机器人
-    jumpUrl = `${targetScheme}resolve?domain=${path}${query}`;
-}
-
-// 4. 返回 HTML 页面 (暴力跳转)
-const htmlBody = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Opening Swiftgram...</title>
-<style>
-body { font-family: -apple-system, sans-serif; text-align: center; padding-top: 50px; background: #f5f5f5; }
-.btn { display: inline-block; padding: 10px 20px; background: #007aff; color: white; text-decoration: none; border-radius: 8px; margin-top: 20px;}
-</style>
-</head>
-<body>
-    <h1>正在跳转 Swiftgram...</h1>
-    <p>如果未自动跳转，请点击下方按钮</p>
-    <a href="${jumpUrl}" class="btn">手动打开</a>
-    <script>
-        // 自动执行跳转
-        window.location.href = "${jumpUrl}";
-    </script>
-</body>
-</html>
-`;
-
-$done({
-    body: htmlBody,
-    headers: {
-        "Content-Type": "text/html;charset=UTF-8"
+    // 情况1: 私有群邀请链接 (t.me/joinchat/ABCD 或 t.me/+ABCD)
+    if (path.startsWith("joinchat/")) {
+        let code = path.replace("joinchat/", "");
+        newUrl = `${TARGET_SCHEME}join?invite=${code}`;
+    } 
+    else if (path.startsWith("+")) {
+        let code = path.replace("+", "");
+        newUrl = `${TARGET_SCHEME}join?invite=${code}`;
     }
-});
+    // 情况2: 贴纸包 (t.me/addstickers/Name)
+    else if (path.startsWith("addstickers/")) {
+        let name = path.replace("addstickers/", "");
+        newUrl = `${TARGET_SCHEME}addstickers?set=${name}`;
+    }
+    // 情况3: 代理链接 (t.me/proxy?server=...)
+    else if (path.startsWith("proxy")) {
+        // 直接替换协议头即可
+        newUrl = url.replace(/https?:\/\/(?:www\.)?(?:t|telegram)\.me\//, TARGET_SCHEME);
+    }
+    // 情况4: 常规 用户/频道/群组 (t.me/username) 及 消息 (t.me/username/123)
+    else {
+        // 移除可能存在的查询参数 (?Start=xxx)
+        let cleanPath = path.split("?")[0];
+        let parts = cleanPath.split("/");
+        
+        if (parts.length > 1 && /^\d+$/.test(parts[1])) {
+            // 包含消息ID: domain=xx&post=xx
+            newUrl = `${TARGET_SCHEME}resolve?domain=${parts[0]}&post=${parts[1]}`;
+        } else {
+            // 纯用户名/频道名
+            newUrl = `${TARGET_SCHEME}resolve?domain=${parts[0]}`;
+        }
+        
+        // 补回查询参数 (如 ?start=)
+        if (path.includes("?")) {
+            let query = path.split("?")[1];
+            newUrl += `&${query}`;
+        }
+    }
+
+    console.log(`[TgRedirect] Redirecting to: ${newUrl}`);
+    
+    $done({
+        response: {
+            status: 302,
+            headers: {
+                Location: newUrl
+            }
+        }
+    });
+} else {
+    $done({});
+}
