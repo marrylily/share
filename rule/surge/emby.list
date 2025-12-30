@@ -70,5 +70,8 @@ DOMAIN-SUFFIX,cf.imetyou.top
 #105°/音海
 DOMAIN-SUFFIX,ciallo.party
 DOMAIN-SUFFIX,yinhai.aiinyue.com
-#周三晚
+#周三晚/亿殇
 DOMAIN-SUFFIX,zhousanwan.xyz
+IP-CIDR,185.150.18.40/32,no-resolve
+DOMAIN-SUFFIX,emby.noteit.eu.org
+DOMAIN-SUFFIX,dmit.emby.noteit.eu.org
