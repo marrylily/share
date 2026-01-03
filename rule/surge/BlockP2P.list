@@ -2,7 +2,12 @@
 # Surge P2P/PCDN 阻断规则集 (Safe Block List)
 # 建议策略：P2P（select: REJECT / DIRECT）
 # ==========================================
-
+# --- 拦截 TCP P2P 的罪魁祸首 ---
+# 拦截星球联盟 PCDN (网易云/喜马拉雅等 App 内置)
+DOMAIN-SUFFIX,xinqiucc.com
+# 建议一并把下面这些常见 TCP P2P 域名也加上，防止变种：
+DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,xycdn.com
 # > 阿里系 (优酷/夸克/土豆)
 DOMAIN-SUFFIX,kuiniuca.com
 DOMAIN-SUFFIX,cibntv.net
