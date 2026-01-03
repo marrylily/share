@@ -1,0 +1,48 @@
+# ==========================================
+# Surge P2P/PCDN 阻断规则集 (Safe Block List)
+# 建议策略：P2P（select: REJECT / DIRECT）
+# ==========================================
+
+# > 阿里系 (优酷/夸克/土豆)
+DOMAIN-SUFFIX,kuiniuca.com
+DOMAIN-SUFFIX,cibntv.net
+DOMAIN-SUFFIX,ykimg.com
+DOMAIN-SUFFIX,mmstat.com
+DOMAIN-SUFFIX,ibone.api.taobao.com
+
+# > 腾讯系 (腾讯视频/微信)
+DOMAIN-SUFFIX,p2p.video.qq.com
+DOMAIN-SUFFIX,cdn.dnsv1.com
+DOMAIN-SUFFIX,dkey.dnsv1.com
+# DOMAIN-KEYWORD,stun  # ⚠️ 已注释：避免误伤语音通话/游戏
+
+# > 爱奇艺（精准拦截 P2P 域名）
+# DOMAIN-SUFFIX,qy.net  # ⚠️ 已注释：误伤范围太大，影响视频播放
+DOMAIN-SUFFIX,cache.video.iqiyi.com
+DOMAIN-SUFFIX,ag.iqiyi.com
+DOMAIN-KEYWORD,qyp2p
+
+# > Bilibili (MCDN)
+DOMAIN-SUFFIX,mcdn.bilivideo.cn
+DOMAIN-SUFFIX,szbdyd.com
+DOMAIN-SUFFIX,p2p.bilivideo.com
+
+# > 音乐类 (网易云)
+DOMAIN-SUFFIX,p2p.music.126.net
+DOMAIN-SUFFIX,hijack.music.126.net
+# DOMAIN-SUFFIX,music.126.net  # ⚠️ 已注释：包含歌词/封面图，全挡会烂封面
+
+# > 迅雷/网心云/下载类 (PCDN 毒瘤，建议全杀)
+DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,xycdn.com
+DOMAIN-SUFFIX,sandai.net
+DOMAIN-SUFFIX,n0808.com
+
+# > 直播类 (斗鱼/虎牙)
+DOMAIN-SUFFIX,p2p.huya.com
+DOMAIN-SUFFIX,hcdn.huya.com
+DOMAIN-SUFFIX,douyucdn.cn
+
+# > 暴力关键字拦截（兜底用）
+DOMAIN-KEYWORD,p2p
+DOMAIN-KEYWORD,pcdn
