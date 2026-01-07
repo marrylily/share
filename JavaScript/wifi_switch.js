@@ -1,43 +1,42 @@
 /*
- * Surge 出站模式自动切换 (GitHub 通用版)
- * * 核心逻辑：
- * 1. 从外部 Argument 获取目标 Wi-Fi 列表 (逗号分隔)
- * 2. 匹配当前 SSID，命中则切直连，否则切规则
- *
- * 托管方式：建议上传至 Gist 或 GitHub Repo
+ * Surge 自动直连 (增强容错版)
  */
 
-// ✅ 读取外部传入的参数 (在 Surge 配置文件中填写)
-let targetSSIDs = [];
+// 1. 读取参数
+let targetArgs = [];
 if (typeof $argument !== "undefined") {
-    // 处理参数，支持中文逗号和英文逗号，去除空格
-    targetSSIDs = $argument.split(/,|，/).map(s => s.trim());
+    // 按照逗号分割，并强制去除每个名字前后的空格
+    targetArgs = $argument.split(/,|，/).map(s => s.trim().replace(/^"|"$/g, '')); 
 } else {
-    // 如果没传参数，给个默认值防止报错
-    targetSSIDs = ["MyHomeWiFi"]; 
+    targetArgs = ["5G"]; // 默认值
 }
 
 const currentSSID = $network.wifi.ssid;
 const currentMode = $surge.outboundMode;
 
-// 只有连接了 Wi-Fi 且能读到 SSID 时才运行逻辑
+// 打印日志：这步最关键，如果有问题，去日志里能看到系统到底读到了什么
+console.log(`[自动切换] 目标列表: ${JSON.stringify(targetArgs)} | 当前Wi-Fi: ${currentSSID}`);
+
 if (currentSSID) {
-    if (targetSSIDs.includes(currentSSID)) {
-        // 🎯 命中：切换至直连
+    // 🔥 核心修改：使用 .some() 进行匹配
+    // 只要当前 Wi-Fi 名字（如 5G）等于列表里的名字，或者被包含在列表里
+    const isMatch = targetArgs.some(target => currentSSID === target || currentSSID.includes(target));
+
+    if (isMatch) {
+        // 🎯 命中目标 -> 切直连
         if (currentMode !== "direct") {
             $surge.setOutboundMode("direct");
-            $notification.post("出站模式切换", `已连接: ${currentSSID}`, "根据配置自动切换为【直连模式】");
+            $notification.post("Surge 模式切换", `连接到: ${currentSSID}`, "✅ 已切换为【直连模式】");
         }
     } else {
-        // 🎯 未命中：切换回规则
-        // 如果你平时用全局代理，请将 "rule" 改为 "global-proxy"
+        // 🎯 未命中 -> 切规则
         if (currentMode !== "rule") {
             $surge.setOutboundMode("rule");
-            $notification.post("出站模式切换", "环境变化", "已自动切换为【规则模式】");
+            $notification.post("Surge 模式切换", `连接到: ${currentSSID}`, "🔄 已切换为【规则模式】");
         }
     }
 } else {
-    // 🎯 非 Wi-Fi 环境 (如 5G)：切换回规则
+    // 非 Wi-Fi 环境
     if (currentMode !== "rule") {
         $surge.setOutboundMode("rule");
     }
