@@ -52,11 +52,10 @@ DOMAIN-SUFFIX,douyucdn.cn
 DOMAIN-KEYWORD,p2p
 DOMAIN-KEYWORD,pcdn
 # 简单粗暴的单条规则
-DOMAIN, ulogs.umeng.com, REJECT
-
+DOMAIN, ulogs.umeng.com
 # 或者更通用的通配符规则（杀伤力更大，拦截所有友盟服务）
-DOMAIN-SUFFIX, umeng.com, REJECT
+DOMAIN-SUFFIX, umeng.com
 # 拦截 Google Firebase 统计服务
-DOMAIN, app-analytics-services.com, REJECT
+DOMAIN, app-analytics-services.com
 
 
