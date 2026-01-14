@@ -51,3 +51,9 @@ DOMAIN-SUFFIX,douyucdn.cn
 # > 暴力关键字拦截（兜底用）
 DOMAIN-KEYWORD,p2p
 DOMAIN-KEYWORD,pcdn
+# 简单粗暴的单条规则
+DOMAIN, ulogs.umeng.com, REJECT
+
+# 或者更通用的通配符规则（杀伤力更大，拦截所有友盟服务）
+DOMAIN-SUFFIX, umeng.com, REJECT
+
