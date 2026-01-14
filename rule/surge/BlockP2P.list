@@ -33,6 +33,7 @@ DOMAIN-SUFFIX,szbdyd.com
 DOMAIN-SUFFIX,p2p.bilivideo.com
 
 # > 音乐类 (网易云)
+DOMAIN-SUFFIX,tianwenca.com
 DOMAIN-SUFFIX,p2p.music.126.net
 DOMAIN-SUFFIX,hijack.music.126.net
 # DOMAIN-SUFFIX,music.126.net  # ⚠️ 已注释：包含歌词/封面图，全挡会烂封面
