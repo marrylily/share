@@ -65,6 +65,7 @@ DOMAIN-KEYWORD,pcdn
 DOMAIN-KEYWORD,p2p-pc
 URL-REGEX,psdk
 URL-REGEX,mcdn
+URL-REGEX,.*live.*p2p.*
 # 如果需要封锁端口，也可以写在这里
 DEST-PORT,3478
  
