@@ -1,0 +1,36 @@
+# 抖音/TikTok 域名集
+DOMAIN-SUFFIX,amemv.com
+DOMAIN-SUFFIX,douyin.com
+DOMAIN-SUFFIX,douyinvod.com
+DOMAIN-SUFFIX,douyinstatic.com
+DOMAIN-SUFFIX,byteoversea.com
+
+# 之前的 PCDN 域名（建议一并加入）
+DOMAIN-SUFFIX,xinqiucc.com
+DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,xycdn.com
+DOMAIN-SUFFIX,kuiniuca.com
+DOMAIN-SUFFIX,cibntv.net
+DOMAIN-SUFFIX,ykimg.com
+DOMAIN-SUFFIX,mcdn.bilivideo.cn
+# 核心 API 与内容分发
+DOMAIN-SUFFIX,snssdk.com
+DOMAIN-SUFFIX,pstatp.com
+DOMAIN-SUFFIX,byteimg.com
+DOMAIN-SUFFIX,zijieapi.com
+DOMAIN-SUFFIX,iesdouyin.com
+
+# 字节跳动基础设施 (火山引擎等)
+DOMAIN-SUFFIX,volcvideo.com
+DOMAIN-SUFFIX,volces.com
+DOMAIN-SUFFIX,volcengine.com
+DOMAIN-SUFFIX,bytegecko.com
+DOMAIN-SUFFIX,bdurl.net
+
+# 姊妹产品 (通常共享 CDN 资源)
+DOMAIN-SUFFIX,toutiao.com
+DOMAIN-SUFFIX,ixigua.com
+# 关键字拦截 (杀伤力极大)
+DOMAIN-KEYWORD,-v-tos
+DOMAIN-KEYWORD,volc-video
+DOMAIN-KEYWORD,p2p-mcdn
