@@ -58,5 +58,14 @@ DOMAIN, ulogs.umeng.com
 DOMAIN-SUFFIX, umeng.com
 # 拦截 Google Firebase 统计服务
 DOMAIN, app-analytics-services.com
+# --- 自定义 P2P 拦截列表 ---
+DOMAIN-KEYWORD,p2p
+DOMAIN-KEYWORD,mcdn
+DOMAIN-KEYWORD,pcdn
+DOMAIN-KEYWORD,p2p-pc
+URL-REGEX,psdk
+URL-REGEX,mcdn
+# 如果需要封锁端口，也可以写在这里
+DEST-PORT,3478
 
 
