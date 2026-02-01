@@ -1,0 +1,10 @@
+#!name=CamScanner Unlock
+#!desc=全能扫描王解锁 SVIP
+#!system=ios
+
+[Script]
+CamScanner_Unlock = type=http-response, pattern=^https:\/\/(api|api-cs)-cn\.intsig\.net\/purchase\/cs\/query_property\?, requires-body=1, max-size=0, script-path=https://raw.githubusercontent.com/你的仓库地址/CamScanner.js
+# 如果你没有把 JS 放网上，这里 script-path 请填写本地路径 (e.g. CamScanner.js) 并把脚本放入 Surge/Scripts 目录
+
+[MITM]
+hostname = %APPEND% api-cs-cn.intsig.net, api.intsig.net
