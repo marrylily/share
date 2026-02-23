@@ -27,10 +27,13 @@ DOMAIN-SUFFIX,cache.video.iqiyi.com
 DOMAIN-SUFFIX,ag.iqiyi.com
 DOMAIN-KEYWORD,qyp2p
 
-# > Bilibili (MCDN)
-DOMAIN-SUFFIX,mcdn.bilivideo.cn
-DOMAIN-SUFFIX,szbdyd.com
-DOMAIN-SUFFIX,p2p.bilivideo.com
+# --- Bilibili PCDN & MCDN 拦截 ---
+DOMAIN,pcdn.biliapi.net,REJECT
+DOMAIN-SUFFIX,mcdn.bilivideo.cn,REJECT
+DOMAIN-SUFFIX,szbdyd.com,REJECT
+DOMAIN-SUFFIX,p2p.bilivideo.com,REJECT
+DOMAIN-KEYWORD,bilivideo,REJECT
+
 
 # > 音乐类 (网易云)
 DOMAIN-SUFFIX,tianwenca.com
