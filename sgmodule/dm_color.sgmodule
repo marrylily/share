@@ -14,7 +14,7 @@
 弹幕改色面板 = type=generic, script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js, argument=mode={{{mode}}}&colors={{{colors}}}
 
 # ② 拦截改色脚本
-弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode={{{mode}}}&colors={{{colors}}},tag=弹幕改色
+弹幕改色 = type=http-response,pattern=^https:\/\/dm\.87445211\.xyz\/\d+\/api\/v2\/comment\/\d+(\?.*)?$,requires-body=1,max-size=5242880,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/set_dm_colors.js,argument=mode={{{mode}}}&colors={{{colors}}},tag=弹幕改色
 
 [MITM]
 hostname = %APPEND% dm.87445211.xyz
