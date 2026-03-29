@@ -28,11 +28,11 @@ DOMAIN-SUFFIX,ag.iqiyi.com
 DOMAIN-KEYWORD,qyp2p
 
 # --- Bilibili PCDN & MCDN 拦截 ---
-DOMAIN,pcdn.biliapi.net,REJECT
-DOMAIN-SUFFIX,mcdn.bilivideo.cn,REJECT
-DOMAIN-SUFFIX,szbdyd.com,REJECT
-DOMAIN-SUFFIX,p2p.bilivideo.com,REJECT
-DOMAIN-KEYWORD,bilivideo,REJECT
+DOMAIN,pcdn.biliapi.net
+DOMAIN-SUFFIX,mcdn.bilivideo.cn
+DOMAIN-SUFFIX,szbdyd.com
+DOMAIN-SUFFIX,p2p.bilivideo.com
+DOMAIN-KEYWORD,bilivideo
 
 
 # > 音乐类 (网易云)
@@ -71,5 +71,16 @@ URL-REGEX,mcdn
 URL-REGEX,.*live.*p2p.*
 # 如果需要封锁端口，也可以写在这里
 DEST-PORT,3478
- 
+## --- 字节跳动 (抖音/头条) PCDN ---
+DOMAIN-KEYWORD,-v-tos
+DOMAIN-KEYWORD,volc-video
+DOMAIN-KEYWORD,p2p-mcdn
+DOMAIN-SUFFIX,xinqiucc.com
+DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,xycdn.com
+DOMAIN-SUFFIX,kuiniuca.com
+DOMAIN-SUFFIX,cibntv.net
+DOMAIN-SUFFIX,ykimg.com
+DOMAIN-SUFFIX,mcdn.bilivideo.cn
+
 
