@@ -1,0 +1,12 @@
+#!name=Universal P2P Killer
+#!desc=封杀主流 App P2P 调度，强制走 CDN 节省上传带宽。
+#!category=Optimization
+
+[Script]
+# 核心脚本：拦截请求并 Mock 返回 {"enable": false}
+# 注意：script-path 必须指向你存放 js 文件的位置（本地或远程 URL）
+Universal_P2P_Killer = type=http-request,pattern=^https?:\/\/.*(p2p-sdk|p2p-config|tianwenca\.com\/o_live_p2p|bytep2p|mcdn\.bilivideo|p2p\.biliapi),requires-body=false,script-path=https://your-domain.com/p2p_killer.js
+
+[MITM]
+# 只有在这里解密的域名，脚本才能看到具体的 URL 路径
+hostname = %APPEND% sdkgen.data.tianwenca.com, *.bytep2p.com, *.volces.com, p2p.biliapi.com, mcdn.bilivideo.com
