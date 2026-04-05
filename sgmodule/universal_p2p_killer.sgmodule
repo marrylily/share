@@ -1,12 +1,13 @@
 #!name=Universal P2P Killer
-#!desc=封杀主流 App P2P 调度，强制走 CDN 节省上传带宽。
+#!desc=封杀主流 App P2P 调度，强制走 CDN 节省上传带宽。通过脚本 Mock 禁用指令，实现从根源关闭 P2P 引擎。
 #!category=Optimization
 
 [Script]
-# 核心脚本：拦截请求并 Mock 返回 {"enable": false}
-# 注意：script-path 必须指向你存放 js 文件的位置（本地或远程 URL）
-Universal_P2P_Killer = type=http-request,pattern=^https?:\/\/.*(p2p-sdk|p2p-config|tianwenca\.com\/o_live_p2p|bytep2p|mcdn\.bilivideo|p2p\.biliapi),requires-body=false,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/universal_p2p_killer.js
+# 核心逻辑：精准匹配 P2P 调度关键词。删除了风险过大的 "sdk"，保留了 "p2p-sdk"
+# 这样既能抓到 P2P，又不会导致其他 App 登录/功能异常
+Universal_P2P_Killer = type=http-request,pattern=^https?:\/\/.*(p2p|mcdn|p2p-sdk|p2p-config|o_live_p2p|bytep2p|volces\.com\/.*p2p|tp2p|cyu-p2p|biliapi.*p2p),requires-body=false,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/universal_p2p_killer.js
 
 [MITM]
-# 只有在这里解密的域名，脚本才能看到具体的 URL 路径
-hostname = %APPEND% sdkgen.data.tianwenca.com, *.bytep2p.com, *.volces.com, p2p.biliapi.com, mcdn.bilivideo.com
+# 这里是“指挥部”，只有在这里列出的域名，Surge 才会拆开看里面的路径
+# 涵盖了网易(tianwenca)、字节(bytep2p/volces)、B站(biliapi/mcdn)、腾讯(tp2p/qpic)、优酷(cyu-p2p)
+hostname = %APPEND% sdkgen.data.tianwenca.com, *.bytep2p.com, *.volces.com, *.p2p-sdk.com, p2p.biliapi.com, mcdn.bilivideo.com, *.tp2p.qq.com, p2p.video.qq.com, *.cyu-p2p.com, p2p.youku.com, *.mcdn.com, *.qpic.cn
