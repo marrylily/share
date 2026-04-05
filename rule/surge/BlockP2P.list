@@ -39,6 +39,9 @@ DOMAIN-KEYWORD,bilivideo
 DOMAIN-SUFFIX,tianwenca.com
 DOMAIN-SUFFIX,p2p.music.126.net
 DOMAIN-SUFFIX,hijack.music.126.net
+DOMAIN-SUFFIX,m-p2p.com
+DOMAIN,p2p.music.163.com
+DOMAIN,p2p-music.163.com
 # DOMAIN-SUFFIX,music.126.net  # ⚠️ 已注释：包含歌词/封面图，全挡会烂封面
 
 # > 迅雷/网心云/下载类 (PCDN 毒瘤，建议全杀)
