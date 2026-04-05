@@ -5,7 +5,7 @@
 [Script]
 # 核心逻辑：精准匹配 P2P 调度关键词。删除了风险过大的 "sdk"，保留了 "p2p-sdk"
 # 这样既能抓到 P2P，又不会导致其他 App 登录/功能异常
-Universal_P2P_Killer = type=http-request,pattern=^https?:\/\/.*(p2p|mcdn|p2p-sdk|p2p-config|o_live_p2p|bytep2p|volces\.com\/.*p2p|tp2p|cyu-p2p|biliapi.*p2p),requires-body=false,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/universal_p2p_killer.js
+Universal_P2P_Killer = type=http-request,pattern=^https?:\/\/.*(p2p|mcdn|psdk|p2p-sdk|p2p-config|o_live_p2p|bytep2p|volces\.com\/.*p2p|tp2p|cyu-p2p|biliapi.*p2p),requires-body=false,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/universal_p2p_killer.js
 
 [MITM]
 # 这里是“指挥部”，只有在这里列出的域名，Surge 才会拆开看里面的路径
