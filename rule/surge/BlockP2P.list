@@ -14,6 +14,17 @@ DOMAIN-SUFFIX,cibntv.net
 DOMAIN-SUFFIX,ykimg.com
 DOMAIN-SUFFIX,mmstat.com
 DOMAIN-SUFFIX,ibone.api.taobao.com
+# > 暴力关键字拦截（兜底用）
+DOMAIN-KEYWORD,p2p
+# --- 自定义 P2P 拦截列表 ---
+DOMAIN-KEYWORD,mcdn
+DOMAIN-KEYWORD,pcdn
+DOMAIN-KEYWORD,p2p-pc
+URL-REGEX,psdk
+URL-REGEX,mcdn
+URL-REGEX,.*live.*p2p.*
+# 如果需要封锁端口，也可以写在这里
+DEST-PORT,3478
 
 # > 腾讯系 (腾讯视频/微信)
 DOMAIN-SUFFIX,p2p.video.qq.com
@@ -55,25 +66,12 @@ DOMAIN-SUFFIX,p2p.huya.com
 DOMAIN-SUFFIX,hcdn.huya.com
 DOMAIN-SUFFIX,douyucdn.cn
 
-# > 暴力关键字拦截（兜底用）
-DOMAIN-KEYWORD,p2p
-DOMAIN-KEYWORD,pcdn
 # 简单粗暴的单条规则
 DOMAIN, ulogs.umeng.com
 # 或者更通用的通配符规则（杀伤力更大，拦截所有友盟服务）
 DOMAIN-SUFFIX, umeng.com
 # 拦截 Google Firebase 统计服务
 DOMAIN, app-analytics-services.com
-# --- 自定义 P2P 拦截列表 ---
-DOMAIN-KEYWORD,p2p
-DOMAIN-KEYWORD,mcdn
-DOMAIN-KEYWORD,pcdn
-DOMAIN-KEYWORD,p2p-pc
-URL-REGEX,psdk
-URL-REGEX,mcdn
-URL-REGEX,.*live.*p2p.*
-# 如果需要封锁端口，也可以写在这里
-DEST-PORT,3478
 ## --- 字节跳动 (抖音/头条) PCDN ---
 DOMAIN-KEYWORD,-v-tos
 DOMAIN-KEYWORD,volc-video
