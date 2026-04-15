@@ -28,4 +28,9 @@ DOMAIN-SUFFIX,analytics.icloud.com,REJECT
 DOMAIN-SUFFIX,analytics.apple.com,REJECT
 DOMAIN-SUFFIX,configuration.apple.com,REJECT
 DOMAIN-SUFFIX,gsp-ssl.ls.apple.com,REJECT
-DOMAIN-SUFFIX,umeng.com,REJECT
+# 腾讯视频去开屏广告
+DOMAIN,ad.tencentvideo.com,REJECT
+DOMAIN,adstats.tencentvideo.com,REJECT
+DOMAIN,info6.video.qq.com,REJECT
+DOMAIN-SUFFIX,gdtimg.com,REJECT
+DOMAIN-SUFFIX,ugdtimg.com,REJECT
