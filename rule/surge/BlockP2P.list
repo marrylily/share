@@ -53,12 +53,12 @@ DOMAIN-KEYWORD,qyp2p
 
 # --- [Bilibili (哔哩哔哩)] ---
 # 替换原有的 DOMAIN-WILDCARD 报错规则，改为 Surge 兼容的穷举写法
-#DOMAIN,stun.chat.bilibili.com
-#DOMAIN,stun1.chat.bilibili.com
-#DOMAIN,stun2.chat.bilibili.com
-#DOMAIN,stun3.chat.bilibili.com
-#DOMAIN,stun4.chat.bilibili.com
-#DOMAIN,stun5.chat.bilibili.com
+DOMAIN,stun.chat.bilibili.com
+DOMAIN,stun1.chat.bilibili.com
+DOMAIN,stun2.chat.bilibili.com
+DOMAIN,stun3.chat.bilibili.com
+DOMAIN,stun4.chat.bilibili.com
+DOMAIN,stun5.chat.bilibili.com
 DOMAIN,pcdn.biliapi.net
 DOMAIN-SUFFIX,mcdn.bilivideo.cn
 DOMAIN-SUFFIX,mcdn.bilivideo.com
