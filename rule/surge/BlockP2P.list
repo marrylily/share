@@ -88,6 +88,12 @@ DOMAIN,p2p-music.163.com
 DOMAIN-SUFFIX,p2p.huya.com
 DOMAIN-SUFFIX,hcdn.huya.com
 DOMAIN-SUFFIX,douyucdn.cn
+DOMAIN-SUFFIX,metric.huya.com
+DOMAIN-SUFFIX,ylog.huya.com
+DOMAIN-SUFFIX,e-ad-monitor.huya.com
+DOMAIN-SUFFIX,p2p.huya.com
+DOMAIN-SUFFIX,statwup.huya.com
+DOMAIN-SUFFIX,e-stat.huya.com
 
 # --- [PCDN 厂商/下载类 (网心云/迅雷/星球联盟等)] ---
 DOMAIN-SUFFIX,xinqiucc.com
