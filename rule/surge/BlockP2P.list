@@ -142,3 +142,16 @@ DEST-PORT,3478
 DEST-PORT,5349
 DEST-PORT,10000
 DEST-PORT,5350
+# --- [PT/BT 下载与 Tracker 通用特征] ---
+DOMAIN-KEYWORD,torrent
+DOMAIN-KEYWORD,tracker
+DOMAIN-KEYWORD,peer
+DEST-PORT,6881-6889
+DEST-PORT,51413
+DEST-PORT,22471
+
+# --- [小米应用商店 (含 P2P 下载行为)] ---
+DOMAIN-KEYWORD,mimarket
+DOMAIN-SUFFIX,market.xiaomi.com
+DOMAIN,api.market.xiaomi.com
+
