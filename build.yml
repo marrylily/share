@@ -1,0 +1,41 @@
+name: Auto Build SRS Rules
+
+on:
+  schedule:
+    # 每天北京时间 00:00 执行一次 (UTC时间 16:00)
+    - cron: '0 16 * * *'
+  workflow_dispatch: # 允许手动点击运行
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出当前仓库代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 运行转换脚本 (生成 rule/emby.json)
+        run: python convert.py
+
+      - name: 安装 sing-box 内核
+        run: |
+          curl -fsSL https://sing-box.app/get.sh -o get.sh
+          sudo bash get.sh
+
+      - name: 编译为 SRS 二进制文件
+        run: sing-box rule-set compile rule/emby.json
+
+      - name: 提交并推送生成的 srs 文件
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add rule/emby.srs
+          git commit -m "🚀 Auto build emby.srs in rule folder" || exit 0
+          git push
