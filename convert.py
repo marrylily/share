@@ -1,52 +1,74 @@
 import json
-import os
+from pathlib import Path
 
-# --- 1. 定义源文件路径 ---
-file_path = 'rule/surge/emby.list'
 
-# --- 2. 检查源文件 ---
-if not os.path.exists(file_path):
-    print(f"【严重错误】找不到文件: {file_path}")
-    exit(1)
+SOURCE_PATH = Path("rule/surge/emby.list")
+OUTPUT_PATH = Path("rule/emby.json")
 
-print(f"【成功】已找到源文件: {file_path}")
-
-# --- 3. 读取和解析 ---
-with open(file_path, 'r', encoding='utf-8') as f:
-    lines = f.read().splitlines()
-
-rules = {
-    "domain_suffix": [],
-    "domain": [],
-    "domain_keyword": [],
-    "ip_cidr": []
+RULE_TYPE_MAP = {
+    "DOMAIN": "domain",
+    "DOMAIN-SUFFIX": "domain_suffix",
+    "DOMAIN-KEYWORD": "domain_keyword",
+    "IP-CIDR": "ip_cidr",
+    "IP-CIDR6": "ip_cidr",
 }
 
-for line in lines:
-    line = line.strip()
-    if not line or line.startswith('#') or line.startswith('//'):
-        continue
-    
-    parts = line.split(',')
-    if len(parts) >= 2:
-        rule_type = parts[0].strip().upper()
-        value = parts[1].strip()
-        if rule_type == 'DOMAIN-SUFFIX': rules['domain_suffix'].append(value)
-        elif rule_type == 'DOMAIN': rules['domain'].append(value)
-        elif rule_type == 'DOMAIN-KEYWORD': rules['domain_keyword'].append(value)
-        elif rule_type == 'IP-CIDR': rules['ip_cidr'].append(value.split(',')[0])
 
-# --- 4. 组装 payload (关键修复点) ---
-# 这里一定要确保 payload 被定义，哪怕规则为空
-final_rules = {k: v for k, v in rules.items() if v}
-payload = {
-    "version": 1,
-    "rules": [final_rules]
-}
+def parse_surge_rules(source_path: Path) -> dict[str, list[str]]:
+    rules: dict[str, list[str]] = {
+        "domain": [],
+        "domain_suffix": [],
+        "domain_keyword": [],
+        "ip_cidr": [],
+    }
 
-# --- 5. 确保输出目录存在并保存 ---
-os.makedirs('rule', exist_ok=True)
-with open('rule/emby.json', 'w', encoding='utf-8') as f:
-    json.dump(payload, f, indent=2, ensure_ascii=False)
+    for line_number, raw_line in enumerate(
+        source_path.read_text(encoding="utf-8").splitlines(),
+        start=1,
+    ):
+        line = raw_line.strip()
+        if not line or line.startswith(("#", "//")):
+            continue
 
-print("【成功】转换完成，已生成 rule/emby.json")
+        rule_type, separator, rest = line.partition(",")
+        if not separator:
+            print(f"Skip line {line_number}: missing comma")
+            continue
+
+        key = RULE_TYPE_MAP.get(rule_type.strip().upper())
+        if key is None:
+            print(f"Skip line {line_number}: unsupported rule type {rule_type}")
+            continue
+
+        value = rest.split(",", 1)[0].strip()
+        if value and value not in rules[key]:
+            rules[key].append(value)
+
+    return {key: values for key, values in rules.items() if values}
+
+
+def main() -> None:
+    if not SOURCE_PATH.exists():
+        raise FileNotFoundError(f"Source rule file not found: {SOURCE_PATH}")
+
+    rule = parse_surge_rules(SOURCE_PATH)
+    if not rule:
+        raise ValueError(f"No supported rules found in {SOURCE_PATH}")
+
+    payload = {
+        "version": 1,
+        "rules": [rule],
+    }
+
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    total = sum(len(values) for values in rule.values())
+    print(f"Generated {OUTPUT_PATH} from {SOURCE_PATH} ({total} rules)")
+
+
+if __name__ == "__main__":
+    main()
