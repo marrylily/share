@@ -40,13 +40,15 @@ jobs:
 
       - name: Compile emby SRS
         run: |
-          sing-box rule-set compile rule/emby.json --output rule/emby.srs
-          test -s rule/emby.srs
+          mkdir -p rule/Cash/Egern
+          rm -f rule/emby.srs
+          sing-box rule-set compile rule/emby.json --output rule/Cash/Egern/emby.srs
+          test -s rule/Cash/Egern/emby.srs
 
       - name: Commit generated SRS
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add rule/emby.srs
+          git add -A rule
           git diff --cached --quiet || git commit -m "Build emby.srs"
           git push origin HEAD:${{ github.ref_name }}
