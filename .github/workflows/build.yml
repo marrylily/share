@@ -34,11 +34,15 @@ jobs:
 
       - name: Install sing-box
         run: |
-          curl -fsSL https://sing-box.app/get.sh -o get.sh
-          sudo bash get.sh
+          curl -fsSL -o sing-box.tar.gz https://github.com/SagerNet/sing-box/releases/download/v1.13.13/sing-box-1.13.13-linux-amd64.tar.gz
+          tar -xzf sing-box.tar.gz
+          chmod +x sing-box
+          sudo mv sing-box /usr/local/bin/sing-box
 
       - name: Compile emby SRS
-        run: sing-box rule-set compile rule/emby.json --output rule/emby.srs
+        run: |
+          sing-box rule-set compile rule/emby.json --output rule/emby.srs
+          test -s rule/emby.srs
 
       - name: Commit generated SRS
         run: |
