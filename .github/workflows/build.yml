@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,4 +46,4 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add rule/emby.srs
           git diff --cached --quiet || git commit -m "Build emby.srs"
-          git push
+          git push origin HEAD:${{ github.ref_name }}
