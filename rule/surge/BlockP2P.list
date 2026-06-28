@@ -69,11 +69,12 @@ DOMAIN-KEYWORD,bilivideo
 DOMAIN-SUFFIX,nexusedgeio.com
 DOMAIN-SUFFIX,ahdohpiechei.com
 DOMAIN-SUFFIX,qrstuvwxyzab.com
-
+DOMAIN-KEYWORD,upos
+DOMAIN,upos-sz-302ppio.bilivideo.com
+DOMAIN,upos-sz-302kodo.bilivideo.com
 # --- [百度系 (百度网盘/贴吧)] ---
 DOMAIN-SUFFIX,pcdn.baidu.com
 DOMAIN-SUFFIX,p2p.baidu.com
-
 # --- [芒果 TV] ---
 DOMAIN-SUFFIX,p2p.mgtv.com
 DOMAIN-SUFFIX,mcdn.mgtv.com
