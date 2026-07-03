@@ -25,7 +25,10 @@ DOMAIN-KEYWORD,volc-video
 DOMAIN-KEYWORD,p2p-mcdn
 DOMAIN-KEYWORD,pcdn-volc
 DOMAIN-KEYWORD,mcdn-volc
-
+# 拦截字节跳动/抖音的 HTTPDNS 服务，强制其降级回系统 DNS
+DOMAIN-KEYWORD,httpdns,REJECT
+DOMAIN,dig.bdurl.net,REJECT
+DOMAIN,dig.snssdk.com,REJECT
 # --- [快手 (Kuaishou)] ---
 DOMAIN-SUFFIX,p2p.kuaishou.com
 DOMAIN-SUFFIX,mcdn.kuaishou.com
