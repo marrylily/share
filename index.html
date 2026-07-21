@@ -3,350 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>69码联动云端管理工具</title>
+    <title>69码联动云端管理工具 v2.0</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for Excel Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0b1120; color: #94a3b8; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 40px 20px; }
-        .main-container { max-width: 1100px; margin: 0 auto; background: #111827; border-radius: 8px; border: 1px solid #1f2937; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
-        .header-area { padding: 25px 30px; background: linear-gradient(to right, #1e293b, #0f172a); border-bottom: 1px solid #1e3a8a; }
-        .nav-tabs { display: flex; padding: 0 15px; background-color: #111827; border-bottom: 1px solid #1f2937; }
-        .nav-tab { padding: 16px 20px; cursor: pointer; color: #64748b; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; border-bottom: 2px solid transparent; }
-        .nav-tab:hover { color: #cbd5e1; }
-        .nav-tab.active { color: #38bdf8; border-bottom-color: #38bdf8; }
-        .content-area { padding: 30px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 25px 15px; text-align: center; }
-        .stat-value { font-size: 32px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; }
-        .stat-label { font-size: 13px; color: #94a3b8; }
-        .stat-card:nth-child(4) .stat-value, .stat-card:nth-child(5) .stat-value { color: #f97316; }
-        .alert-section { background-color: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
-        .alert-title { color: #fbbf24; font-size: 15px; font-weight: bold; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .alert-item { background-color: #0f172a; border-radius: 4px; padding: 16px; margin-bottom: 12px; border: 1px solid #1e293b; }
-        .alert-item-title { color: #f59e0b; font-size: 14px; font-weight: bold; margin-bottom: 12px; }
-        .code-tag { background-color: #334155; color: #e2e8f0; padding: 5px 12px; border-radius: 4px; font-size: 13px; margin-right: 10px; display: inline-block; }
-        .upload-btn { background-color: #0ea5e9; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;}
-        .upload-btn:hover { background-color: #0284c7; }
-        .btn-green { background-color: #10b981; } .btn-green:hover { background-color: #059669; }
-        .btn-purple { background-color: #8b5cf6; } .btn-purple:hover { background-color: #7c3aed; }
-        
-        /* Gist 配置区样式 */
-        .config-panel { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 8px; border: 1px solid #334155; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; }
-        .input-group input { width: 100%; padding: 10px; border-radius: 4px; background: #0f172a; border: 1px solid #475569; color: #fff; outline: none; }
-        .input-group input:focus { border-color: #38bdf8; }
-        .toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: #10b981; color: white; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateX(150%); transition: 0.3s; z-index: 999; font-weight: bold; }
-        .toast.show { transform: translateX(0); }
-        .toast.error { background: #ef4444; }
+        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .glass-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #1e293b; }
     </style>
 </head>
-<body>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- 页头 Header -->
+        <header class="glass-card p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-barcode text-indigo-400"></i>
+                    69码高级云端管理中心 <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-normal border border-indigo-500/30">v2.0 增强版</span>
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">支持多端 Gist 云同步 · 数据手动增删改 · 重码/一品多码深度排查</p>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition shadow-lg shadow-indigo-600/30 w-full md:w-auto">
+                    <i class="fa-solid fa-file-import"></i> 导入 Excel
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+                <button onclick="openModal('addModal')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition shadow-lg shadow-emerald-600/30 whitespace-nowrap">
+                    <i class="fa-solid fa-plus"></i> 手动新增数据
+                </button>
+            </div>
+        </header>
 
-<div class="toast" id="toastMsg">操作成功！</div>
+        <!-- 导航与状态选项卡 -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-3">
+            <div class="flex gap-2">
+                <button id="tabBtnData" onclick="switchTab('data')" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-table-list"></i> 数据管理列表 (<span id="totalCountBadge">0</span>)
+                </button>
+                <button id="tabBtnCloud" onclick="switchTab('cloud')" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 云端同步 (Gist)
+                </button>
+            </div>
 
-<div class="main-container">
-    <div class="header-area flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold text-white mb-2">
-                <i class="fas fa-database text-purple-400 mr-2"></i> 69码联动管理中心
-            </h1>
-            <div class="text-xs text-slate-400">本地 Excel 解析 · 云端 Gist 托管 · 多端同步更新</div>
+            <!-- 数据统计概览 -->
+            <div class="flex flex-wrap items-center gap-4 text-xs text-slate-300">
+                <div class="bg-slate-800 px-3 py-1.5 rounded-md border border-slate-700">
+                    总计记录: <span id="statTotal" class="font-bold text-white text-sm">0</span> 条
+                </div>
+                <div class="bg-slate-800 px-3 py-1.5 rounded-md border border-slate-700">
+                    独立69码: <span id="statUniqueCodes" class="font-bold text-indigo-400 text-sm">0</span> 个
+                </div>
+                <div class="bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-md text-amber-300">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>重码(一码多品): <span id="statDupCodes" class="font-bold text-amber-400 text-sm">0</span>
+                </div>
+                <div class="bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-md text-rose-300">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i>多码产品(一品多码): <span id="statMultiCodes" class="font-bold text-rose-400 text-sm">0</span>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-3">
-            <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" />
-            <button onclick="document.getElementById('excelFile').click()" class="upload-btn">
-                <i class="fas fa-file-excel"></i> 导入本地表格
-            </button>
+
+        <!-- 页面 1：数据管理列表 -->
+        <main id="pageData" class="space-y-4">
+            <!-- 搜索与筛选工具栏 -->
+            <div class="glass-card p-4 flex flex-col md:flex-row gap-3 justify-between items-center">
+                <div class="relative w-full md:w-96">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="搜索 69码、产品名称、规格/备注..." 
+                           class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                    <span class="text-xs text-slate-400 whitespace-nowrap">筛选视图:</span>
+                    <button onclick="setFilter('all')" id="filterAll" class="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-700 text-white">全部数据</button>
+                    <button onclick="setFilter('dupCode')" id="filterDupCode" class="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30">仅看重复69码</button>
+                    <button onclick="setFilter('multiCode')" id="filterMultiCode" class="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30">仅看一品多码</button>
+                    <button onclick="exportExcel()" class="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 flex items-center gap-1">
+                        <i class="fa-solid fa-file-excel"></i> 导出数据
+                    </button>
+                    <button onclick="clearAllData()" class="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-red-400 hover:bg-red-500/20 border border-red-500/30">清空全部</button>
+                </div>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto custom-scroll max-h-[600px]">
+                    <table class="w-full text-sm text-left text-slate-300">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 sticky top-0 border-b border-slate-700 z-10">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">序号</th>
+                                <th scope="col" class="px-4 py-3">69条形码</th>
+                                <th scope="col" class="px-4 py-3">产品名称</th>
+                                <th scope="col" class="px-4 py-3">规格 / 备注</th>
+                                <th scope="col" class="px-4 py-3">状态标记</th>
+                                <th scope="col" class="px-4 py-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- JS 动态渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页面 2：云端同步设置 -->
+        <section id="pageCloud" class="hidden space-y-6">
+            <div class="glass-card p-6 max-w-2xl mx-auto space-y-5">
+                <div class="flex items-center gap-3 border-b border-slate-700 pb-4">
+                    <i class="fa-brands fa-github text-3xl text-white"></i>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">GitHub Gist 云端持久化存储</h2>
+                        <p class="text-xs text-slate-400">在电脑导入数据，在手机或异地设备随时读取与同步</p>
+                    </div>
+                </div>
+
+                <!-- 诊断提示框 -->
+                <div id="syncStatusAlert" class="hidden p-4 rounded-lg text-sm border flex items-start gap-3">
+                    <i id="syncStatusIcon" class="fa-solid text-base mt-0.5"></i>
+                    <div id="syncStatusText" class="space-y-1"></div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">
+                            GitHub Personal Access Token (需勾选 <code class="bg-slate-800 text-indigo-300 px-1 py-0.5 rounded">gist</code> 权限)
+                        </label>
+                        <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" 
+                               class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-lg p-2.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">
+                            Gist ID (Gist 网址最后一串字符乱码)
+                        </label>
+                        <input type="text" id="gistIdInput" placeholder="例如: 9f6b574db00a9585809a54c038726386" 
+                               class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-lg p-2.5 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div class="pt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="saveConfig()" class="bg-slate-700 hover:bg-slate-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> 仅保存配置
+                        </button>
+                        <button onclick="pullFromCloud()" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> 从云端覆盖本地
+                        </button>
+                        <button onclick="pushToCloud()" class="bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> 将本地推送云端
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 p-4 rounded-lg text-xs text-slate-400 space-y-2 border border-slate-800">
+                    <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-indigo-400"></i> 同步失败常见原因排查：
+                    </div>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>本地无数据推送：</strong> 如果本地列表为空，点击“推送云端”会被拦截。请先导入 Excel 或手动新增一条数据。</li>
+                        <li><strong>Token 权限受限：</strong> 生成 Token 时必须勾选 <code class="text-amber-300">gist</code> 复选框，否则 GitHub API 返回 401/403 错误。</li>
+                        <li><strong>网络连接限制：</strong> 请求 <code class="text-indigo-300">api.github.com</code> 接口需确保网络连接通畅（如有代理工具请检查规则）。</li>
+                        <li><strong>格式解析错误：</strong> 如果 Gist 是新建的空文档，请先在本地导入或新增数据后点击“将本地推送云端”建立初始结构。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 模态弹窗：增改数据 Modal -->
+    <div id="addModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card p-6 w-full max-w-md space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 id="modalTitle" class="text-lg font-bold text-white">新增 69 码物料</h3>
+                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="editIndex" value="-1">
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">69 条形码 <span class="text-rose-400">*</span></label>
+                    <input type="text" id="modalCode" placeholder="例如：6970123456789" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">产品名称 <span class="text-rose-400">*</span></label>
+                    <input type="text" id="modalName" placeholder="例如：保湿舒缓精华水" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">规格 / 备注信息</label>
+                    <input type="text" id="modalSpec" placeholder="例如：120ml / 50g 瓶装" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-700">
+                <button onclick="closeModal('addModal')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm">取消</button>
+                <button onclick="saveItem()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium">保存提交</button>
+            </div>
         </div>
     </div>
-    
-    <div class="nav-tabs">
-        <div class="nav-tab active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> 统计面板</div>
-        <div class="nav-tab" onclick="switchTab('cloud')"><i class="fas fa-cloud-sync"></i> 云端同步 (Gist)</div>
-    </div>
-    
-    <div class="content-area">
-        <!-- 面板区域 -->
-        <div id="tab-dashboard">
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-value" id="val-total">0</div><div class="stat-label">69码表总记录数</div></div>
-                <div class="stat-card"><div class="stat-value" id="val-unique-69">0</div><div class="stat-label">不重复69码数</div></div>
-                <div class="stat-card"><div class="stat-value" id="val-total-prod">0</div><div class="stat-label">关联产品总记录数</div></div>
-                <div class="stat-card"><div class="stat-value" id="val-spdc">0</div><div class="stat-label">同产品不同码</div></div>
-                <div class="stat-card"><div class="stat-value" id="val-scdp">0</div><div class="stat-label">同码不同产品</div></div>
-            </div>
-            
-            <div id="empty-state" class="text-center py-16 text-slate-500">
-                <i class="fas fa-cloud-download-alt text-5xl mb-4 opacity-50"></i>
-                <p class="text-lg">请先导入本地 Excel，或前往「云端同步」拉取已有数据</p>
-            </div>
 
-            <div class="alert-section" id="alert-spdc-container" style="display: none;">
-                <div class="alert-title"><i class="fas fa-exclamation-triangle"></i> 同产品名对应不同69码 (<span id="spdc-count">0</span>组)</div>
-                <div id="spdc-list"></div>
-            </div>
+    <!-- JavaScript 逻辑处理 -->
+    <script>
+        // 核心数据结构: [{ code: '69...', name: '...', spec: '...' }]
+        let items = [];
+        let currentFilter = 'all';
 
-            <div class="alert-section" id="alert-scdp-container" style="display: none;">
-                <div class="alert-title"><i class="fas fa-exclamation-triangle"></i> 同一个69码对应不同产品 (<span id="scdp-count">0</span>组)</div>
-                <div id="scdp-list"></div>
-            </div>
-        </div>
+        // 初始化加载
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStoredConfig();
+            loadLocalData();
+            renderTable();
+        });
 
-        <!-- 云端配置区域 -->
-        <div id="tab-cloud" style="display: none;">
-            <div class="config-panel">
-                <h2 class="text-xl text-white mb-6 border-b border-slate-600 pb-3">
-                    <i class="fab fa-github"></i> GitHub Gist 数据连接
-                </h2>
-                <div class="input-group">
-                    <label>Personal Access Token (需勾选 gist 权限)</label>
-                    <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                </div>
-                <div class="input-group">
-                    <label>Gist ID (Gist 链接最后的一串字符)</label>
-                    <input type="text" id="gistId" placeholder="e.g. 8f5b4a9c3d...">
-                </div>
-                
-                <div class="flex gap-4 mt-8">
-                    <button onclick="saveConfig()" class="upload-btn flex-1 justify-center">
-                        <i class="fas fa-save"></i> 仅保存配置
-                    </button>
-                    <button onclick="pullFromGist()" class="upload-btn btn-purple flex-1 justify-center">
-                        <i class="fas fa-cloud-download-alt"></i> 从云端覆盖本地
-                    </button>
-                    <button onclick="pushToGist()" class="upload-btn btn-green flex-1 justify-center">
-                        <i class="fas fa-cloud-upload-alt"></i> 将本地推送云端
-                    </button>
-                </div>
-                <p class="text-xs text-slate-500 mt-6 text-center">
-                    注：凭证仅加密存储在当前浏览器本地，不会上传至任何第三方服务器。请确保网络环境可正常访问 api.github.com。
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // 全局数据存储
-    let globalDataList = [];
-    const FILENAME = '69_data.json';
-
-    // 页面加载时自动读取本地保存的配置
-    window.onload = function() {
-        if(localStorage.getItem('gist_token')) {
-            document.getElementById('gistToken').value = localStorage.getItem('gist_token');
-        }
-        if(localStorage.getItem('gist_id')) {
-            document.getElementById('gistId').value = localStorage.getItem('gist_id');
-        }
-    }
-
-    // 切换 Tab 栏
-    function switchTab(tab) {
-        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-        if(tab === 'dashboard') {
-            document.querySelectorAll('.nav-tab')[0].classList.add('active');
-            document.getElementById('tab-dashboard').style.display = 'block';
-            document.getElementById('tab-cloud').style.display = 'none';
-        } else {
-            document.querySelectorAll('.nav-tab')[1].classList.add('active');
-            document.getElementById('tab-dashboard').style.display = 'none';
-            document.getElementById('tab-cloud').style.display = 'block';
-        }
-    }
-
-    // 显示提示信息
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = msg;
-        if(isError) toast.classList.add('error');
-        else toast.classList.remove('error');
-        
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // ---------------- 云端 Gist 交互核心逻辑 ----------------
-
-    function saveConfig() {
-        const token = document.getElementById('gistToken').value.trim();
-        const gistId = document.getElementById('gistId').value.trim();
-        if(!token || !gistId) {
-            showToast("Token 和 Gist ID 不能为空", true);
-            return;
-        }
-        localStorage.setItem('gist_token', token);
-        localStorage.setItem('gist_id', gistId);
-        showToast("配置已保存在本地浏览器！");
-    }
-
-    // 从云端拉取数据
-    async function pullFromGist() {
-        const token = document.getElementById('gistToken').value.trim();
-        const gistId = document.getElementById('gistId').value.trim();
-        if(!token || !gistId) return showToast("请先填写 Token 和 Gist ID", true);
-        
-        saveConfig();
-        showToast("正在拉取数据，请稍候...");
-        
-        try {
-            const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                headers: { 'Authorization': `token ${token}` }
-            });
-            if (!response.ok) throw new Error("网络或权限错误，请检查网络规则或 Token");
-            
-            const gist = await response.json();
-            if(!gist.files[FILENAME]) throw new Error(`在 Gist 中未找到 ${FILENAME} 文件`);
-            
-            const dataStr = gist.files[FILENAME].content;
-            globalDataList = JSON.parse(dataStr);
-            
-            updateDashboard(globalDataList);
-            showToast(`拉取成功！共加载 ${globalDataList.length} 条记录`);
-            switchTab('dashboard'); // 自动切回数据看板
-        } catch (error) {
-            showToast("拉取失败：" + error.message, true);
-        }
-    }
-
-    // 将本地数据推送到云端
-    async function pushToGist() {
-        const token = document.getElementById('gistToken').value.trim();
-        const gistId = document.getElementById('gistId').value.trim();
-        
-        if(!token || !gistId) return showToast("请先填写 Token 和 Gist ID", true);
-        if(globalDataList.length === 0) return showToast("本地面板暂无数据，请先导入 Excel", true);
-
-        saveConfig();
-        showToast("正在推送数据至 GitHub，请稍候...");
-        
-        const payload = {
-            files: {
-                [FILENAME]: { content: JSON.stringify(globalDataList, null, 2) }
+        // 本地存储管理
+        function loadLocalData() {
+            const saved = localStorage.getItem('69_data_items');
+            if (saved) {
+                try { items = JSON.parse(saved); } catch(e) { items = []; }
             }
-        };
-
-        try {
-            const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) throw new Error("同步失败，请检查网络环境或 Token 权限");
-            showToast(`上传成功！已将 ${globalDataList.length} 条数据同步至云端`);
-        } catch (error) {
-            showToast("推送失败：" + error.message, true);
         }
-    }
 
-    // ---------------- Excel 解析逻辑 ----------------
+        function saveLocalData() {
+            localStorage.setItem('69_data_items', JSON.stringify(items));
+            renderTable();
+        }
 
-    document.getElementById('excelFile').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data = new Uint8Array(e.target.result);
-            var workbook = XLSX.read(data, {type: 'array'});
-            processData(workbook);
-        };
-        reader.readAsArrayBuffer(file);
-    });
+        function loadStoredConfig() {
+            document.getElementById('tokenInput').value = localStorage.getItem('69_gist_token') || '';
+            document.getElementById('gistIdInput').value = localStorage.getItem('69_gist_id') || '';
+        }
 
-    function processData(workbook) {
-        let dataList = [];
-        workbook.SheetNames.forEach(sheetName => {
-            let worksheet = workbook.Sheets[sheetName];
-            let rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-            rows.forEach(row => {
-                let codeIndices = [];
-                row.forEach((cell, idx) => {
-                    if (cell !== undefined && cell !== null) {
-                        let strCell = String(cell).trim();
-                        if (/^69\d{11}$/.test(strCell)) {
-                            codeIndices.push({ idx: idx, code: strCell });
+        function saveConfig() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const gistId = document.getElementById('gistIdInput').value.trim();
+            localStorage.setItem('69_gist_token', token);
+            localStorage.setItem('69_gist_id', gistId);
+            showAlert('syncStatusAlert', 'success', '配置参数已本地保存成功！');
+        }
+
+        // 视图切换
+        function switchTab(tab) {
+            document.getElementById('pageData').classList.toggle('hidden', tab !== 'data');
+            document.getElementById('pageCloud').classList.toggle('hidden', tab !== 'cloud');
+            document.getElementById('tabBtnData').className = tab === 'data' 
+                ? 'px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2'
+                : 'px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2';
+            document.getElementById('tabBtnCloud').className = tab === 'cloud' 
+                ? 'px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white flex items-center gap-2'
+                : 'px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2';
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            ['filterAll', 'filterDupCode', 'filterMultiCode'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-slate-400";
+            });
+            if (filter === 'all') document.getElementById('filterAll').className = "px-3 py-1.5 rounded-md text-xs font-medium bg-indigo-600 text-white";
+            if (filter === 'dupCode') document.getElementById('filterDupCode').className = "px-3 py-1.5 rounded-md text-xs font-medium bg-amber-500 text-black font-bold";
+            if (filter === 'multiCode') document.getElementById('filterMultiCode').className = "px-3 py-1.5 rounded-md text-xs font-medium bg-rose-500 text-white font-bold";
+            renderTable();
+        }
+
+        // 校验与分析重码/多码逻辑
+        function analyzeData() {
+            const codeMap = {}; // 69code -> Set of names
+            const nameMap = {}; // name -> Set of 69codes
+
+            items.forEach(item => {
+                const code = (item.code || '').trim();
+                const name = (item.name || '').trim();
+                if (code) {
+                    if (!codeMap[code]) codeMap[code] = new Set();
+                    if (name) codeMap[code].add(name);
+                }
+                if (name) {
+                    if (!nameMap[name]) nameMap[name] = new Set();
+                    if (code) nameMap[name].add(code);
+                }
+            });
+
+            // 异常码计算
+            let dupCodesCount = 0; // 同一69码对应多个不同产品名
+            let uniqueCodesCount = Object.keys(codeMap).length;
+            for (let c in codeMap) {
+                if (codeMap[c].size > 1) dupCodesCount++;
+            }
+
+            let multiCodesCount = 0; // 同一产品名对应多个不同69码
+            for (let n in nameMap) {
+                if (nameMap[n].size > 1) multiCodesCount++;
+            }
+
+            return { codeMap, nameMap, uniqueCodesCount, dupCodesCount, multiCodesCount };
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const { codeMap, nameMap, uniqueCodesCount, dupCodesCount, multiCodesCount } = analyzeData();
+
+            // 更新顶部计数器
+            document.getElementById('totalCountBadge').innerText = items.length;
+            document.getElementById('statTotal').innerText = items.length;
+            document.getElementById('statUniqueCodes').innerText = uniqueCodesCount;
+            document.getElementById('statDupCodes').innerText = dupCodesCount;
+            document.getElementById('statMultiCodes').innerText = multiCodesCount;
+
+            const searchKey = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = items.filter((item, index) => {
+                const code = (item.code || '').trim();
+                const name = (item.name || '').trim();
+                const spec = (item.spec || '').trim();
+
+                const isDupCode = codeMap[code] && codeMap[code].size > 1;
+                const isMultiCode = nameMap[name] && nameMap[name].size > 1;
+
+                if (currentFilter === 'dupCode' && !isDupCode) return false;
+                if (currentFilter === 'multiCode' && !isMultiCode) return false;
+
+                if (searchKey) {
+                    return code.toLowerCase().includes(searchKey) || 
+                           name.toLowerCase().includes(searchKey) || 
+                           spec.toLowerCase().includes(searchKey);
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500">暂无符合条件的数据，请导入 Excel 或点击右上角手动新增</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((item, idx) => {
+                const originalIndex = items.indexOf(item);
+                const code = (item.code || '').trim();
+                const name = (item.name || '').trim();
+
+                const isDupCode = codeMap[code] && codeMap[code].size > 1;
+                const isMultiCode = nameMap[name] && nameMap[name].size > 1;
+
+                let tagHtml = '<span class="px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400">正常</span>';
+                if (isDupCode && isMultiCode) {
+                    tagHtml = '<span class="px-2 py-0.5 rounded text-xs bg-red-500/20 text-red-300 border border-red-500/30">重码 + 多码异常</span>';
+                } else if (isDupCode) {
+                    tagHtml = '<span class="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30">重码(一码多品)</span>';
+                } else if (isMultiCode) {
+                    tagHtml = '<span class="px-2 py-0.5 rounded text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30">一品多码</span>';
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800 hover:bg-slate-800/50 transition";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-slate-500 text-xs">${idx + 1}</td>
+                    <td class="px-4 py-3 font-mono font-bold ${isDupCode ? 'text-amber-400' : 'text-indigo-300'}">${escapeHtml(code)}</td>
+                    <td class="px-4 py-3 font-medium text-white">${escapeHtml(name)}</td>
+                    <td class="px-4 py-3 text-slate-400 text-xs">${escapeHtml(item.spec || '-')}</td>
+                    <td class="px-4 py-3">${tagHtml}</td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        <button onclick="editItem(${originalIndex})" class="text-indigo-400 hover:text-indigo-300 text-xs font-medium"><i class="fa-solid fa-pen-to-square"></i> 编辑</button>
+                        <button onclick="deleteItem(${originalIndex})" class="text-rose-400 hover:text-rose-300 text-xs font-medium"><i class="fa-solid fa-trash"></i> 删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Excel 导入解析
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    if (jsonData.length < 2) {
+                        alert("Excel 文件格式不符合要求或无有效数据！");
+                        return;
+                    }
+
+                    // 自动匹配列名
+                    const headers = jsonData[0].map(h => String(h || '').trim());
+                    let codeIdx = headers.findIndex(h => h.includes('69') || h.includes('条码') || h.includes('编码'));
+                    let nameIdx = headers.findIndex(h => h.includes('名称') || h.includes('品名') || h.includes('产品'));
+                    let specIdx = headers.findIndex(h => h.includes('规格') || h.includes('备注') || h.includes('型号'));
+
+                    if (codeIdx === -1) codeIdx = 0;
+                    if (nameIdx === -1) nameIdx = 1;
+
+                    const imported = [];
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        const code = String(row[codeIdx] || '').trim();
+                        const name = String(row[nameIdx] || '').trim();
+                        const spec = specIdx !== -1 ? String(row[specIdx] || '').trim() : '';
+
+                        if (code || name) {
+                            imported.push({ code, name, spec });
                         }
                     }
-                });
-                codeIndices.forEach(item => {
-                    let product = "未知产品名称";
-                    for (let i = item.idx - 1; i >= 0; i--) {
-                        let val = row[i];
-                        if (val !== undefined && val !== null) {
-                            let strVal = String(val).trim();
-                            if (strVal !== "" && strVal !== "商品69码条码" && strVal !== "无编码" && !/^\d{8,}$/.test(strVal)) {
-                                product = strVal;
-                                break;
+
+                    if (imported.length > 0) {
+                        items = imported;
+                        saveLocalData();
+                        alert(`成功导入 ${imported.length} 条数据！`);
+                    } else {
+                        alert("未能从中解析出有效的数据条目！");
+                    }
+                } catch (err) {
+                    alert("解析 Excel 失败，请确保格式正确：" + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = '';
+        }
+
+        // 手动增改数据
+        function openModal(id) {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('modalTitle').innerText = "新增 69 码物料";
+            document.getElementById('modalCode').value = "";
+            document.getElementById('modalName').value = "";
+            document.getElementById('modalSpec').value = "";
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            if (!item) return;
+            document.getElementById('editIndex').value = index;
+            document.getElementById('modalTitle').innerText = "编辑 69 码物料";
+            document.getElementById('modalCode').value = item.code || '';
+            document.getElementById('modalName').value = item.name || '';
+            document.getElementById('modalSpec').value = item.spec || '';
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function saveItem() {
+            const code = document.getElementById('modalCode').value.trim();
+            const name = document.getElementById('modalName').value.trim();
+            const spec = document.getElementById('modalSpec').value.trim();
+            const editIdx = parseInt(document.getElementById('editIndex').value);
+
+            if (!code || !name) {
+                alert("69 条形码和产品名称为必填项！");
+                return;
+            }
+
+            if (editIdx >= 0) {
+                items[editIdx] = { code, name, spec };
+            } else {
+                items.unshift({ code, name, spec });
+            }
+
+            saveLocalData();
+            closeModal('addModal');
+        }
+
+        function deleteItem(index) {
+            if (confirm("确定要删除这条记录吗？")) {
+                items.splice(index, 1);
+                saveLocalData();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("危险操作：确定要清空本地所有 69 码数据吗？")) {
+                items = [];
+                saveLocalData();
+            }
+        }
+
+        // 导出 Excel
+        function exportExcel() {
+            if (items.length === 0) { alert("暂无数据可导出"); return; }
+            const wsData = [["69条形码", "产品名称", "规格/备注"]];
+            items.forEach(i => wsData.push([i.code, i.name, i.spec]));
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "69码数据");
+            XLSX.writeFile(wb, `69码数据_导出_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // GitHub Gist 云端 API 同步逻辑
+        async function pushToCloud() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const gistId = document.getElementById('gistIdInput').value.trim();
+
+            if (!token || !gistId) {
+                showAlert('syncStatusAlert', 'error', '推送失败：请输入 GitHub Personal Access Token 和 Gist ID！');
+                return;
+            }
+
+            if (items.length === 0) {
+                showAlert('syncStatusAlert', 'error', '推送中断：当前本地无任何数据，请先导入 Excel 或添加数据后再推送！');
+                return;
+            }
+
+            saveConfig();
+            showAlert('syncStatusAlert', 'info', '正在推送到 GitHub Gist 云端...');
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: "69码管理工具云端数据备份",
+                        files: {
+                            "69data.json": {
+                                content: JSON.stringify(items, null, 2)
                             }
                         }
-                    }
-                    dataList.push({ product: product, code: item.code });
+                    })
                 });
-            });
-        });
-        
-        globalDataList = dataList; // 更新到全局变量
-        updateDashboard(globalDataList);
-        showToast("本地解析成功！请前往云端同步面板点击 [将本地推送云端]");
-        switchTab('dashboard'); // 自动切回看版
-    }
 
-    function updateDashboard(data) {
-        if(data.length === 0) return;
-        document.getElementById('empty-state').style.display = 'none';
+                if (response.ok) {
+                    showAlert('syncStatusAlert', 'success', `成功同步 ${items.length} 条数据到云端 Gist！异地设备随时可覆盖拉取。`);
+                } else if (response.status === 401 || response.status === 403) {
+                    showAlert('syncStatusAlert', 'error', '推送失败 (401/403)：Token 验证失败。请检查 Token 是否有效，并确认已勾选 gist 权限。');
+                } else if (response.status === 404) {
+                    showAlert('syncStatusAlert', 'error', '推送失败 (404)：未找到该 Gist ID。请检查 ID 是否准确无误。');
+                } else {
+                    const errData = await response.json();
+                    showAlert('syncStatusAlert', 'error', `推送失败 (${response.status})：${errData.message || '未知错误'}`);
+                }
+            } catch (err) {
+                showAlert('syncStatusAlert', 'error', `网络连接失败：无法访问 api.github.com。请检查网络代理（如 Surge 规则）或网络状况。详细原因：${err.message}`);
+            }
+        }
 
-        let total = data.length;
-        let unique69 = new Set(data.map(d => d.code)).size;
-        let uniqueProd = new Set(data.map(d => d.product)).size;
-        
-        let productMap = {};
-        let codeMap = {};
-        data.forEach(d => {
-            if(!productMap[d.product]) productMap[d.product] = new Set();
-            productMap[d.product].add(d.code);
-            if(!codeMap[d.code]) codeMap[d.code] = new Set();
-            codeMap[d.code].add(d.product);
-        });
-        
-        let spdc = Object.entries(productMap).filter(x => x[1].size > 1);
-        let scdp = Object.entries(codeMap).filter(x => x[1].size > 1);
+        async function pullFromCloud() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const gistId = document.getElementById('gistIdInput').value.trim();
 
-        document.getElementById('val-total').innerText = total;
-        document.getElementById('val-unique-69').innerText = unique69;
-        document.getElementById('val-total-prod').innerText = uniqueProd;
-        document.getElementById('val-spdc').innerText = spdc.length;
-        document.getElementById('val-scdp').innerText = scdp.length;
+            if (!gistId) {
+                showAlert('syncStatusAlert', 'error', '读取失败：请填写 Gist ID！');
+                return;
+            }
 
-        let spdcContainer = document.getElementById('alert-spdc-container');
-        let spdcList = document.getElementById('spdc-list');
-        document.getElementById('spdc-count').innerText = spdc.length;
-        spdcList.innerHTML = '';
-        if(spdc.length > 0) {
-            spdcContainer.style.display = 'block';
-            spdc.forEach(item => {
-                let codeTags = Array.from(item[1]).map(c => `<span class="code-tag">${c}</span>`).join('');
-                spdcList.innerHTML += `<div class="alert-item"><div class="alert-item-title">${item[0]}</div><div>${codeTags}</div></div>`;
-            });
-        } else spdcContainer.style.display = 'none';
+            saveConfig();
+            showAlert('syncStatusAlert', 'info', '正在从 GitHub Gist 云端拉取数据...');
 
-        let scdpContainer = document.getElementById('alert-scdp-container');
-        let scdpList = document.getElementById('scdp-list');
-        document.getElementById('scdp-count').innerText = scdp.length;
-        scdpList.innerHTML = '';
-        if(scdp.length > 0) {
-            scdpContainer.style.display = 'block';
-            scdp.forEach(item => {
-                let prodTags = Array.from(item[1]).map(p => `<span class="code-tag">${p}</span>`).join('');
-                scdpList.innerHTML += `<div class="alert-item"><div class="alert-item-title">${item[0]}</div><div>${prodTags}</div></div>`;
-            });
-        } else scdpContainer.style.display = 'none';
-    }
-</script>
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `token ${token}`;
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
+
+                if (response.ok) {
+                    const gistData = await response.json();
+                    const targetFile = gistData.files["69data.json"] || Object.values(gistData.files)[0];
+
+                    if (!targetFile || !targetFile.content) {
+                        showAlert('syncStatusAlert', 'error', '读取失败：云端 Gist 文件内容为空！请先从有数据的电脑推送数据。');
+                        return;
+                    }
+
+                    const remoteItems = JSON.parse(targetFile.content);
+                    if (Array.isArray(remoteItems)) {
+                        items = remoteItems;
+                        saveLocalData();
+                        showAlert('syncStatusAlert', 'success', `云端数据覆盖成功！共载入 ${items.length} 条记录。`);
+                        setTimeout(() => switchTab('data'), 1500);
+                    } else {
+                        showAlert('syncStatusAlert', 'error', '解析失败：云端存储的数据格式不合规！');
+                    }
+                } else if (response.status === 404) {
+                    showAlert('syncStatusAlert', 'error', '读取失败 (404)：未找到该 Gist ID，请核对。');
+                } else {
+                    showAlert('syncStatusAlert', 'error', `读取失败 (${response.status})：请检查 Token 或 Gist ID 配置。`);
+                }
+            } catch (err) {
+                showAlert('syncStatusAlert', 'error', `网络连接失败：无法访问 api.github.com。请检查网络代理。详细原因：${err.message}`);
+            }
+        }
+
+        // 辅助函数
+        function showAlert(containerId, type, text) {
+            const box = document.getElementById(containerId);
+            const icon = document.getElementById('syncStatusIcon');
+            const textDiv = document.getElementById('syncStatusText');
+            box.classList.remove('hidden', 'bg-rose-500/10', 'border-rose-500/30', 'text-rose-300', 
+                                  'bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-300',
+                                  'bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-300');
+
+            if (type === 'error') {
+                box.classList.add('bg-rose-500/10', 'border-rose-500/30', 'text-rose-300');
+                icon.className = 'fa-solid fa-circle-xmark text-rose-400 text-base mt-0.5';
+            } else if (type === 'success') {
+                box.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-300');
+                icon.className = 'fa-solid fa-circle-check text-emerald-400 text-base mt-0.5';
+            } else {
+                box.classList.add('bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-300');
+                icon.className = 'fa-solid fa-spinner fa-spin text-indigo-400 text-base mt-0.5';
+            }
+            textDiv.innerText = text;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+    </script>
 </body>
 </html>
