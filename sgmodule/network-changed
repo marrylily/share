@@ -1,4 +1,0 @@
-#!name=自动直连脚本
-#!desc=自动切换出站模式
-[Script]
-Auto_Switch=type=event,event-name=network-changed,script-path=https://raw.githubusercontent.com/marrylily/share/refs/heads/main/JavaScript/wifi_switch.js,argument=5Gmin,timeout=5
