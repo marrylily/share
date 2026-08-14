@@ -1,5 +1,5 @@
 /*
- * Surge & Egern 出站模式自动切换（多端侦测版）
+ * Surge & Egern 出站模式自动切换（多端侦测修复版）
  */
 
 const isEgern = typeof $egern !== "undefined" || (typeof $environment !== "undefined" && $environment["surge-version"] === undefined);
@@ -18,7 +18,6 @@ const Tool = {
   notify(title, subtitle, body) {
     if (typeof $notification !== "undefined") $notification.post(title, subtitle, body);
   },
-  // 核心修改：增加返回状态，判断是否真的执行成功了
   setMode(mode) {
     let executed = false;
     if (isSurge && typeof $surge.setOutboundMode === "function") {
@@ -35,9 +34,7 @@ const Tool = {
   }
 };
 
-const DEBUG = false;
-const DELAY_MS = 1500;
-const DEBOUNCE_MS = 3000;
+const DEBUG = false; // 改为 true 可开启弹窗排错
 const MODE_HIT = "direct";
 const MODE_MISS = "rule";
 const MODE_NO_WIFI = "rule";
@@ -47,90 +44,74 @@ function cleanStr(s) {
   return String(s).replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/[\r\n\t]/g, "").replace(/^["'`]+|["'`]+$/g, "").trim();
 }
 
+// 1. 获取目标 SSID
 let targetSSIDs = [];
 const rawArg = (typeof $argument !== "undefined") ? $argument : "";
 const cleanedArg = cleanStr(rawArg);
 if (cleanedArg) {
   targetSSIDs = cleanedArg.split(/,|，/).map(cleanStr).filter(Boolean);
 } else {
-  targetSSIDs = ["5Gmin"];
+  targetSSIDs = ["5Gmin"]; // 默认 WiFi 名称
 }
 
-const key = "ssid_switch_last_run";
-const now = Date.now();
-const lastRun = Tool.read(key);
-if (lastRun && now - parseInt(lastRun, 10) < DEBOUNCE_MS) {
-  $done();
+// 2. 同步获取当前网络状态
+let currentSSID = "";
+if (typeof $network !== "undefined" && $network.wifi && $network.wifi.ssid) {
+  currentSSID = cleanStr($network.wifi.ssid);
+}
+
+// 3. 读取上次保存的 SSID 并更新记录
+const lastSSIDKey = "ssid_last_connected_wifi";
+const lastSSID = Tool.read(lastSSIDKey) || "";
+Tool.write(currentSSID, lastSSIDKey);
+
+// 4. 判断是否命中目标 WiFi
+const isCurrentTarget = currentSSID ? targetSSIDs.map(x => x.toLowerCase()).includes(currentSSID.toLowerCase()) : false;
+const wasLastTarget = lastSSID ? targetSSIDs.map(x => x.toLowerCase()).includes(lastSSID.toLowerCase()) : false;
+
+let targetMode = null;
+
+if (isCurrentTarget) {
+  targetMode = MODE_HIT;
+} else if (wasLastTarget && !isCurrentTarget) {
+  targetMode = currentSSID ? MODE_MISS : MODE_NO_WIFI;
 } else {
-  Tool.write(String(now), key);
+  if (DEBUG) Tool.notify("脚本调试", "网络变动被忽略", `当前连接: ${currentSSID || "蜂窝数据"}`);
+  $done();
+}
 
-  // 将核心逻辑封装，方便区分 Surge 和 Egern 的执行方式
-  const mainLogic = () => {
-    let currentSSID = "";
-    if (typeof $network !== "undefined" && $network.wifi && $network.wifi.ssid) {
-      currentSSID = cleanStr($network.wifi.ssid);
-    }
+// 仅当计算出需要切换模式时，才继续执行
+if (targetMode) {
+  // 5. 判断当前软件实际的出站模式（避免重复切换和弹窗）
+  let currentAppMode = null;
+  if (isSurge && $surge.outboundMode) currentAppMode = $surge.outboundMode;
+  if (isEgern && typeof $egern !== "undefined" && $egern.outboundMode) currentAppMode = $egern.outboundMode;
+  
+  const lastTargetKey = "ssid_last_target_mode";
+  const lastTargetMode = Tool.read(lastTargetKey);
 
-    const lastSSIDKey = "ssid_last_connected_wifi";
-    const lastSSID = Tool.read(lastSSIDKey) || "";
-    Tool.write(currentSSID, lastSSIDKey);
-
-    const isCurrentTarget = currentSSID ? targetSSIDs.map(x => x.toLowerCase()).includes(currentSSID.toLowerCase()) : false;
-    const wasLastTarget = lastSSID ? targetSSIDs.map(x => x.toLowerCase()).includes(lastSSID.toLowerCase()) : false;
-
-    let targetMode = null;
-
-    if (isCurrentTarget) {
-      targetMode = MODE_HIT;
-    } else if (wasLastTarget && !isCurrentTarget) {
-      targetMode = currentSSID ? MODE_MISS : MODE_NO_WIFI;
-    } else {
-      if (DEBUG) Tool.notify("脚本调试", "网络变动被忽略", `当前连接: ${currentSSID || "蜂窝数据"}`);
-      $done();
-      return;
-    }
-
-    // 执行切换
+  // 如果软件当前已经是目标模式，或者软件 API 获取不到但上次已成功切换过，则直接结束
+  if ((currentAppMode && currentAppMode === targetMode) || (!currentAppMode && lastTargetMode === targetMode)) {
+    if (DEBUG) Tool.notify("脚本调试", "模式无需改变", `已经是: ${targetMode}`);
+    $done();
+  } else {
+    // 6. 执行切换
     const apiSuccess = Tool.setMode(targetMode);
 
-    // 如果 API 执行失败（说明 Egern 不支持此功能）
     if (!apiSuccess) {
       Tool.notify(
-        "⚠️ Egern 兼容性限制",
-        "切换失败：Egern 暂未开放相关 API",
-        `虽然已识别到 ${currentSSID || "网络"}，但当前软件版本不支持通过脚本修改“全局出站模式”。`
+        "⚠️ 兼容性限制",
+        "切换失败：当前软件暂未开放相关 API",
+        `已识别到 ${currentSSID || "网络"}，但不支持通过脚本修改出站模式。`
       );
-      $done();
-      return;
+    } else {
+      Tool.write(targetMode, lastTargetKey);
+      Tool.notify(
+        "出站模式自动切换",
+        `${isCurrentTarget ? "🏠 已连接目标 WiFi" : "🚶 已断开目标 WiFi"} (${currentSSID || "蜂窝数据"})`,
+        `✅ 已切换为【${targetMode === "direct" ? "直连模式" : targetMode === "rule" ? "规则模式" : targetMode}】`
+      );
     }
-
-    // 防止重复弹窗的逻辑
-    let currentMode = null;
-    if (isSurge && $surge.outboundMode) currentMode = $surge.outboundMode;
-    if (isEgern && typeof $egern !== "undefined" && $egern.outboundMode) currentMode = $egern.outboundMode;
-    
-    const lastTargetKey = "ssid_last_target_mode";
-    const lastTargetMode = Tool.read(lastTargetKey);
-
-    if (!currentMode && lastTargetMode === targetMode) {
-      $done();
-      return;
-    }
-
-    Tool.write(targetMode, lastTargetKey);
-    Tool.notify(
-      "出站模式自动切换",
-      `${isCurrentTarget ? "🏠 已连接 5Gmin" : "🚶 已断开 5Gmin"} (${currentSSID || "蜂窝数据"})`,
-      `✅ 已切换为【${targetMode === "direct" ? "直连模式" : targetMode === "rule" ? "规则模式" : targetMode}】`
-    );
-
     $done();
-  };
-
-  // 针对环境分流：Egern 立即执行防止失效，Surge 延迟 1.5 秒等待网络稳定
-  if (isEgern) {
-    mainLogic();
-  } else {
-    setTimeout(mainLogic, DELAY_MS);
   }
 }
