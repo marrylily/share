@@ -6,8 +6,27 @@
     <title>电商新品生命周期推进矩阵</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* 强制覆盖滚动条样式，确保可见且易滑动 */
+        .force-scroll-y {
+            overflow-y: scroll !important;
+            scrollbar-width: thin;
+            scrollbar-color: #94a3b8 #f1f5f9;
+        }
+        .force-scroll-y::-webkit-scrollbar {
+            width: 8px !important;
+            display: block !important;
+        }
+        .force-scroll-y::-webkit-scrollbar-track {
+            background: #f1f5f9 !important;
+            border-radius: 4px;
+        }
+        .force-scroll-y::-webkit-scrollbar-thumb {
+            background-color: #94a3b8 !important;
+            border-radius: 4px;
+        }
+        .force-scroll-y::-webkit-scrollbar-thumb:hover {
+            background-color: #64748b !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen">
@@ -73,7 +92,7 @@
 
         <!-- 主表格 -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto custom-scroll">
+            <div class="overflow-x-auto force-scroll-y">
                 <table class="w-full text-left text-xs text-gray-700">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
@@ -144,10 +163,11 @@
         </div>
     </div>
 
-    <!-- 追溯记录弹窗 (已修复关闭交互与滚动) -->
+    <!-- 追溯记录弹窗 (彻底重构滚动容器与交互) -->
     <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden backdrop-blur-sm z-50 p-4" onclick="if(event.target===this) closeLogsModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3 flex-shrink-0">
+        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="max-height: 85vh;">
+            <!-- 头部 -->
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200 flex-shrink-0">
                 <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
                     <span>📜 全生命周期变更与节点追溯</span>
                     <span id="logs-title" class="text-blue-600 font-semibold"></span>
@@ -155,11 +175,12 @@
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
             
-            <!-- 滚动记录列表 -->
-            <div class="overflow-y-auto custom-scroll space-y-2.5 pr-2 flex-1 my-2" id="logs-container">
+            <!-- 强制高度并支持自由滚动的列表容器 -->
+            <div class="force-scroll-y my-3 pr-2 space-y-2.5" id="logs-container" style="height: 420px; max-height: 55vh;">
             </div>
 
-            <div class="flex justify-end pt-3 border-t border-gray-100 flex-shrink-0 mt-2">
+            <!-- 底部按钮 -->
+            <div class="flex justify-end pt-3 border-t border-gray-100 flex-shrink-0">
                 <button onclick="closeLogsModal()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
             </div>
         </div>
@@ -216,7 +237,6 @@
                 fetchFromCloud();
             }
 
-            // 监听 Esc 键快速关闭弹窗
             document.addEventListener('keydown', function(event) {
                 if (event.key === "Escape") {
                     closeLogsModal();
@@ -476,7 +496,7 @@
             syncToCloud();
         }
 
-        // 打开追溯弹窗
+        // 打开追溯弹窗并初始化内容
         function openLogsModal(prodId) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -486,7 +506,7 @@
 
             const logs = p.historyLogs || [];
             if (logs.length === 0) {
-                container.innerHTML = `<div class="text-gray-400 text-center py-8">暂无历史追溯记录</div>`;
+                container.innerHTML = `<div class="text-gray-400 text-center py-12">暂无历史追溯记录</div>`;
             } else {
                 logs.forEach(log => {
                     let badgeClass = "bg-gray-100 text-gray-700 border-gray-300";
@@ -498,7 +518,7 @@
                     else if (log.type === "NODE_CANCEL") { badgeClass = "bg-red-50 text-red-700 border-red-200"; label = "节点回退"; }
 
                     const item = document.createElement("div");
-                    item.className = "bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-start space-x-3 shadow-xs";
+                    item.className = "bg-gray-50 p-3.5 rounded-xl border border-gray-200 flex items-start space-x-3";
                     item.innerHTML = `
                         <span class="border px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 ${badgeClass}">${label}</span>
                         <div class="flex-1 min-w-0">
@@ -510,9 +530,10 @@
                 });
             }
             document.getElementById("logs-modal").classList.remove("hidden");
+            // 弹窗打开后自动滚到顶部
+            container.scrollTop = 0;
         }
 
-        // 关闭追溯弹窗并返回主页面
         function closeLogsModal() {
             document.getElementById("logs-modal").classList.add("hidden");
         }
@@ -602,7 +623,6 @@
             }
         }
 
-        // 渲染主表格
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             tbody.innerHTML = "";
