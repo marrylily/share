@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkBuddy - 自动化项目任务管理</title>
+    <title>WorkBuddy - 电商新品项目智能管理</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen">
 
     <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- 顶部导航与自动化状态 -->
-        <header class="flex justify-between items-center mb-8 bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg">
+        <!-- 顶部状态栏 -->
+        <header class="flex justify-between items-center mb-6 bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg">
             <div>
-                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">🤖 WorkBuddy 自动化任务流</h1>
-                <p class="text-xs text-gray-400 mt-1">Status: 云端自动同步中 | 内存零占用架构</p>
+                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">🤖 WorkBuddy 新品智能推进中枢</h1>
+                <p class="text-xs text-gray-400 mt-1">云端数据引擎: GitHub 私有库实时自动同步</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-900 text-red-200 px-3 py-1 rounded-full">未绑定云端</span>
@@ -21,46 +21,56 @@
             </div>
         </header>
 
-        <!-- 自动化控制台/快捷操作栏 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col justify-between">
-                <span class="text-gray-400 text-xs">自动同步引擎</span>
-                <span id="sync-status" class="font-bold text-yellow-500 text-sm mt-1">等待配置</span>
-            </div>
-            <div class="md:col-span-3 bg-gray-800 p-4 rounded-xl border border-gray-700 flex items-center justify-between">
-                <div class="flex space-x-2 w-full max-w-xl">
-                    <input type="text" id="task-title" placeholder="输入任务名称，支持自动拆解子任务..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                    <select id="task-priority" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300">
-                        <option value="normal">普通优先级</option>
-                        <option value="urgent">🔥 紧急任务</option>
-                    </select>
+        <!-- 新品 SOP 智能创建面板 -->
+        <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md mb-6">
+            <h2 class="text-sm font-semibold text-blue-400 mb-3 flex items-center">
+                <span>✨ 一键生成新品 SOP 推进流</span>
+                <span class="text-[11px] text-gray-400 font-normal ml-2">(自动按上市日期倒排策划、BOM、ERP编码及铺货计划)</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <input type="text" id="product-name" placeholder="新品型号/名称 (如: Q60S / 智能晾衣机)" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 md:col-span-2">
+                <div class="flex items-center bg-gray-900 border border-gray-700 rounded-lg px-2">
+                    <span class="text-xs text-gray-400 whitespace-nowrap mr-1">预计到货:</span>
+                    <input type="date" id="target-date" class="bg-transparent text-sm text-gray-200 focus:outline-none w-full">
                 </div>
-                <button onclick="addSmartTask()" class="ml-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-medium flex-shrink-0">⚡ 智能下发</button>
+                <button onclick="generateProductSOP()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium">⚡ 智能拆解并下发</button>
+            </div>
+        </div>
+
+        <!-- 状态栏与单项快速录入 -->
+        <div class="flex justify-between items-center bg-gray-800/80 px-4 py-3 rounded-xl border border-gray-700/60 mb-6">
+            <div class="flex items-center space-x-2 text-xs">
+                <span class="text-gray-400">同步状态:</span>
+                <span id="sync-status" class="font-bold text-yellow-500">检测中...</span>
+            </div>
+            <div class="flex space-x-2">
+                <input type="text" id="quick-task-title" placeholder="添加零碎协同待办..." class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1 text-xs text-gray-200 focus:outline-none w-64">
+                <button onclick="addQuickTask()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-3 py-1 rounded-lg">添加</button>
             </div>
         </div>
 
         <!-- 看板网格 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- 待办 -->
-            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60 backdrop-blur">
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
                 <h3 class="font-bold text-gray-300 mb-3 flex justify-between items-center text-sm">
-                    <span>📌 待办队列 (To Do)</span>
+                    <span>📌 待对接 / 准备期 (To Do)</span>
                     <span id="count-todo" class="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">0</span>
                 </h3>
                 <div id="list-todo" class="space-y-3 min-h-[300px]"></div>
             </div>
             <!-- 进行中 -->
-            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60 backdrop-blur">
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
                 <h3 class="font-bold text-blue-400 mb-3 flex justify-between items-center text-sm">
-                    <span>⚡ 自动化执行中 (Doing)</span>
+                    <span>⚡ 推进中 / 资料核对中 (Doing)</span>
                     <span id="count-doing" class="bg-blue-900/50 text-blue-300 text-xs px-2 py-0.5 rounded-full">0</span>
                 </h3>
                 <div id="list-doing" class="space-y-3 min-h-[300px]"></div>
             </div>
             <!-- 已完成 -->
-            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60 backdrop-blur">
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
                 <h3 class="font-bold text-green-400 mb-3 flex justify-between items-center text-sm">
-                    <span>✅ 已归档 (Done)</span>
+                    <span>✅ 已就绪 / 现货上架 (Done)</span>
                     <span id="count-done" class="bg-green-900/50 text-green-300 text-xs px-2 py-0.5 rounded-full">0</span>
                 </h3>
                 <div id="list-done" class="space-y-3 min-h-[300px]"></div>
@@ -75,11 +85,11 @@
             <div class="space-y-3 text-sm">
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">GitHub 用户名</label>
-                    <input type="text" id="cfg-owner" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="例如：your-name">
+                    <input type="text" id="cfg-owner" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="marrylily">
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">私有仓库名称</label>
-                    <input type="text" id="cfg-repo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="例如：workbuddy-db">
+                    <input type="text" id="cfg-repo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="my-tasks">
                 </div>
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">数据文件路径</label>
@@ -92,7 +102,7 @@
             </div>
             <div class="flex justify-end space-x-3 mt-6">
                 <button onclick="toggleConfigModal()" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm">取消</button>
-                <button onclick="saveConfigAndSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm">连接并初始化</button>
+                <button onclick="saveConfigAndSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm">保存并同步</button>
             </div>
         </div>
     </div>
@@ -101,7 +111,12 @@
         let tasks = [];
         let fileSha = "";
 
+        // 默认将到货日期设为 30 天后
         window.onload = function() {
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 30);
+            document.getElementById("target-date").value = defaultDate.toISOString().split('T')[0];
+
             if (localStorage.getItem("wb_token")) {
                 document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "";
                 document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "";
@@ -135,15 +150,61 @@
             fetchFromCloud();
         }
 
-        function updateAuthStatus(isLoggedIn, ownerName = "") {
-            const tag = document.getElementById("auth-tag");
-            if (isLoggedIn) {
-                tag.innerText = `已连接: ${ownerName}`;
-                tag.className = "text-xs bg-green-900 text-green-200 px-3 py-1 rounded-full";
-            } else {
-                tag.innerText = "未绑定云端";
-                tag.className = "text-xs bg-red-900 text-red-200 px-3 py-1 rounded-full";
+        // 智能 SOP 任务生成引擎
+        function generateProductSOP() {
+            const prodName = document.getElementById("product-name").value.trim();
+            const targetDateStr = document.getElementById("target-date").value;
+            const token = localStorage.getItem("wb_token");
+
+            if (!token) {
+                alert("请先绑定 GitHub 数据库！");
+                toggleConfigModal();
+                return;
             }
+            if (!prodName) return alert("请输入新品型号或名称！");
+
+            const targetDate = new Date(targetDateStr);
+            
+            // 节点自动倒排模版 (天数偏移)
+            const template = [
+                { offset: -25, title: `【${prodName}】产品中心物料对接: 包装外箱尺寸/BOM/参数表确认`, stage: "物料对接" },
+                { offset: -20, title: `【${prodName}】策划资料协同: 卖点提炼、主图及详情页视觉验收`, stage: "策划对接" },
+                { offset: -15, title: `【${prodName}】系统主数据录入: SAP/ERP商品编码申请与价格体系设定`, stage: "系统建档" },
+                { offset: -7,  title: `【${prodName}】首批铺货测算: 跨店铺配额规划与预售链接搭建`, stage: "铺货预测" },
+                { offset: 0,   title: `【${prodName}】现货入库上架: 仓库实物验收入库及全渠道正式开售`, stage: "现货开售" }
+            ];
+
+            template.forEach(item => {
+                const dueDate = new Date(targetDate);
+                dueDate.setDate(dueDate.getDate() + item.offset);
+                tasks.unshift({
+                    title: item.title,
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    product: prodName,
+                    stage: item.stage,
+                    status: 'todo',
+                    createdAt: new Date().toISOString()
+                });
+            });
+
+            document.getElementById("product-name").value = '';
+            renderTasks();
+            syncToCloud();
+        }
+
+        function addQuickTask() {
+            const titleInput = document.getElementById("quick-task-title");
+            if (!titleInput.value.trim()) return;
+            tasks.unshift({
+                title: titleInput.value.trim(),
+                dueDate: "",
+                stage: "临时协同",
+                status: 'todo',
+                createdAt: new Date().toISOString()
+            });
+            titleInput.value = '';
+            renderTasks();
+            syncToCloud();
         }
 
         function renderTasks() {
@@ -152,21 +213,43 @@
                 document.getElementById(`count-${status}`).innerText = '0';
             });
 
+            const today = new Date().toISOString().split('T')[0];
+
             tasks.forEach((task, index) => {
-                const isUrgent = task.priority === 'urgent';
+                let dueBadge = '';
+                let isUrgent = false;
+
+                if (task.dueDate) {
+                    const daysLeft = Math.ceil((new Date(task.dueDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+                    if (task.status !== 'done') {
+                        if (daysLeft < 0) {
+                            dueBadge = `<span class="text-[10px] bg-red-900 text-red-200 px-1.5 py-0.5 rounded font-bold">已逾期 ${Math.abs(daysLeft)} 天</span>`;
+                            isUrgent = true;
+                        } else if (daysLeft <= 3) {
+                            dueBadge = `<span class="text-[10px] bg-yellow-900 text-yellow-200 px-1.5 py-0.5 rounded font-bold">剩余 ${daysLeft} 天</span>`;
+                        } else {
+                            dueBadge = `<span class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">倒计时 ${daysLeft} 天 (${task.dueDate})</span>`;
+                        }
+                    } else {
+                        dueBadge = `<span class="text-[10px] text-gray-500">${task.dueDate}</span>`;
+                    }
+                }
+
                 const card = document.createElement('div');
-                card.className = `bg-gray-900 p-3.5 rounded-xl border ${isUrgent ? 'border-red-500/50 shadow-red-900/20' : 'border-gray-700'} shadow-sm flex justify-between items-start`;
+                card.className = `bg-gray-900 p-3 rounded-xl border ${isUrgent ? 'border-red-500/70 shadow-red-900/20' : 'border-gray-700/80'} shadow flex justify-between items-start`;
                 card.innerHTML = `
-                    <div class="pr-2">
-                        ${isUrgent ? '<span class="text-[10px] bg-red-900 text-red-300 px-1.5 py-0.5 rounded mr-1">紧急</span>' : ''}
-                        <span class="text-sm text-gray-200 break-all">${escapeHtml(task.title)}</span>
-                        <div class="text-[10px] text-gray-500 mt-1">${new Date(task.createdAt).toLocaleString()}</div>
+                    <div class="pr-2 space-y-1">
+                        <div class="flex items-center space-x-1.5 flex-wrap">
+                            ${task.stage ? `<span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded">${task.stage}</span>` : ''}
+                            ${dueBadge}
+                        </div>
+                        <div class="text-xs text-gray-200 break-all leading-relaxed">${escapeHtml(task.title)}</div>
                     </div>
-                    <div class="flex space-x-1 flex-shrink-0">
+                    <div class="flex space-x-1 flex-shrink-0 ml-1">
                         ${task.status !== 'todo' ? `<button onclick="moveTask(${index}, 'todo')" class="text-[10px] bg-gray-800 hover:bg-gray-700 px-1.5 py-1 rounded text-gray-300">待办</button>` : ''}
-                        ${task.status !== 'doing' ? `<button onclick="moveTask(${index}, 'doing')" class="text-[10px] bg-blue-900/60 hover:bg-blue-800 px-1.5 py-1 rounded text-blue-300">执行</button>` : ''}
+                        ${task.status !== 'doing' ? `<button onclick="moveTask(${index}, 'doing')" class="text-[10px] bg-blue-900/60 hover:bg-blue-800 px-1.5 py-1 rounded text-blue-300">推进</button>` : ''}
                         ${task.status !== 'done' ? `<button onclick="moveTask(${index}, 'done')" class="text-[10px] bg-green-900/60 hover:bg-green-800 px-1.5 py-1 rounded text-green-300">完成</button>` : ''}
-                        <button onclick="removeTask(${index})" class="text-[10px] bg-red-900/40 hover:bg-red-800 px-1.5 py-1 rounded text-red-300">删</button>
+                        <button onclick="removeTask(${index})" class="text-[10px] bg-red-900/30 hover:bg-red-800 px-1.5 py-1 rounded text-red-300">删</button>
                     </div>
                 `;
                 document.getElementById(`list-${task.status}`).appendChild(card);
@@ -176,29 +259,6 @@
                 const count = tasks.filter(t => t.status === status).length;
                 document.getElementById(`count-${status}`).innerText = count;
             });
-        }
-
-        function addSmartTask() {
-            const titleInput = document.getElementById("task-title");
-            const priorityInput = document.getElementById("task-priority");
-            const token = localStorage.getItem("wb_token");
-
-            if (!token) {
-                alert("请先点击右上角“账号配置”绑定 GitHub 数据库！");
-                toggleConfigModal();
-                return;
-            }
-            if (!titleInput.value.trim()) return alert("请输入任务标题！");
-
-            tasks.unshift({
-                title: titleInput.value.trim(),
-                priority: priorityInput.value,
-                status: 'todo',
-                createdAt: new Date().toISOString()
-            });
-            titleInput.value = '';
-            renderTasks();
-            syncToCloud();
         }
 
         function moveTask(index, newStatus) {
@@ -221,7 +281,7 @@
 
             if (!token || !owner) return;
 
-            document.getElementById("sync-status").innerText = "正在向云端拉取...";
+            document.getElementById("sync-status").innerText = "正在拉取...";
             try {
                 const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
                     headers: { "Authorization": `token ${token}` }
@@ -230,8 +290,9 @@
                 if (res.status === 404) {
                     tasks = [];
                     fileSha = "";
-                    document.getElementById("sync-status").innerText = "已连接 (将自动创建)";
-                    updateAuthStatus(true, owner);
+                    document.getElementById("sync-status").innerText = "已就绪 (首次自动建表)";
+                    document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
+                    document.getElementById("auth-tag").className = "text-xs bg-green-900 text-green-200 px-3 py-1 rounded-full";
                     renderTasks();
                     return;
                 }
@@ -241,13 +302,13 @@
                 const data = await res.json();
                 fileSha = data.sha;
                 tasks = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                document.getElementById("sync-status").innerText = "实时同步正常";
-                updateAuthStatus(true, owner);
+                document.getElementById("sync-status").innerText = "实时数据已同步";
+                document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
+                document.getElementById("auth-tag").className = "text-xs bg-green-900 text-green-200 px-3 py-1 rounded-full";
                 renderTasks();
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "同步异常 (检查配置)";
-                updateAuthStatus(false);
+                document.getElementById("sync-status").innerText = "连接异常";
             }
         }
 
@@ -259,11 +320,11 @@
 
             if (!token) return;
 
-            document.getElementById("sync-status").innerText = "正在自动提交...";
+            document.getElementById("sync-status").innerText = "正在写入云端...";
             try {
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(tasks, null, 2))));
                 const body = {
-                    message: "WorkBuddy automated sync",
+                    message: "WorkBuddy SOP automatic sync",
                     content: encoded
                 };
                 if (fileSha) body.sha = fileSha;
@@ -280,10 +341,10 @@
                 if (!res.ok) throw new Error("保存失败");
                 const result = await res.json();
                 fileSha = result.content.sha;
-                document.getElementById("sync-status").innerText = "云端已最新";
+                document.getElementById("sync-status").innerText = "云端已保存";
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "同步保存失败";
+                document.getElementById("sync-status").innerText = "云端保存失败";
             }
         }
 
