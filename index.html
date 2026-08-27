@@ -3,124 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorkBuddy - 电商新品项目智能管理</title>
+    <title>WorkBuddy - 新品生命周期推进与变更追溯矩阵</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
+<body class="bg-gray-950 text-gray-100 min-h-screen">
 
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- 顶部状态栏 -->
-        <header class="flex justify-between items-center mb-6 bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- 头部导航与状态 -->
+        <header class="flex justify-between items-center mb-6 bg-gray-900 p-4 rounded-xl border border-gray-800 shadow">
             <div>
-                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">🤖 WorkBuddy 新品智能推进中枢</h1>
-                <p class="text-xs text-gray-400 mt-1">云端数据引擎: GitHub 私有库实时自动同步</p>
+                <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">📊 新品推进与审计追溯中枢</h1>
+                <p class="text-xs text-gray-400 mt-0.5">支持主品聚合 · 子 SKU 细分 · 变更版本留痕 · 归档时间追溯</p>
             </div>
             <div class="flex items-center space-x-3">
-                <span id="auth-tag" class="text-xs bg-red-900 text-red-200 px-3 py-1 rounded-full">未绑定云端</span>
-                <button onclick="toggleConfigModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium">⚙️ 账号配置</button>
+                <span id="auth-tag" class="text-xs bg-red-950 text-red-300 border border-red-800 px-3 py-1 rounded-full">未连接云端</span>
+                <button onclick="toggleConfigModal()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg text-xs border border-gray-700">⚙️ 配置</button>
             </div>
         </header>
 
-        <!-- 新品 SOP 智能创建面板 -->
-        <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md mb-6">
-            <h2 class="text-sm font-semibold text-blue-400 mb-3 flex items-center">
-                <span>✨ 一键生成新品 SOP 推进流</span>
-                <span class="text-[11px] text-gray-400 font-normal ml-2">(自动按上市日期倒排策划、BOM、ERP编码及铺货计划)</span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input type="text" id="product-name" placeholder="新品型号/名称 (如: Q60S / 智能晾衣机)" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 md:col-span-2">
-                <div class="flex items-center bg-gray-900 border border-gray-700 rounded-lg px-2">
-                    <span class="text-xs text-gray-400 whitespace-nowrap mr-1">预计到货:</span>
-                    <input type="date" id="target-date" class="bg-transparent text-sm text-gray-200 focus:outline-none w-full">
+        <!-- 快速新建产品录入栏 -->
+        <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3 text-xs">
+                <div class="md:col-span-2">
+                    <label class="block text-gray-400 mb-1">主产品型号 / 系列</label>
+                    <input type="text" id="p-name" placeholder="如: HD-LD22-H 系列" class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
-                <button onclick="generateProductSOP()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium">⚡ 智能拆解并下发</button>
+                <div>
+                    <label class="block text-gray-400 mb-1">品类/渠道</label>
+                    <input type="text" id="p-category" placeholder="如: 落地晾衣架" class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">电商需求截点</label>
+                    <input type="date" id="p-req-date" class="w-full bg-gray-950 border border-gray-800 rounded px-2 py-2 text-gray-200 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">量产大货截点</label>
+                    <input type="date" id="p-prod-date" class="w-full bg-gray-950 border border-gray-800 rounded px-2 py-2 text-gray-200 focus:outline-none">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="addProduct()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-medium">➕ 新建产品</button>
+                </div>
             </div>
         </div>
 
-        <!-- 状态栏与单项快速录入 -->
-        <div class="flex justify-between items-center bg-gray-800/80 px-4 py-3 rounded-xl border border-gray-700/60 mb-6">
-            <div class="flex items-center space-x-2 text-xs">
-                <span class="text-gray-400">同步状态:</span>
-                <span id="sync-status" class="font-bold text-yellow-500">检测中...</span>
+        <!-- 筛选与统计条 -->
+        <div class="flex justify-between items-center mb-4 text-xs text-gray-400 px-1">
+            <div class="flex items-center space-x-4">
+                <span>总系列: <strong id="stat-total" class="text-gray-200">0</strong></span>
+                <span>🚨 延期预警: <strong id="stat-delay" class="text-red-400">0</strong></span>
+                <span>⚡ 推进中: <strong id="stat-running" class="text-blue-400">0</strong></span>
+                <span>✅ 已归档: <strong id="stat-archived" class="text-green-400">0</strong></span>
             </div>
-            <div class="flex space-x-2">
-                <input type="text" id="quick-task-title" placeholder="添加零碎协同待办..." class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1 text-xs text-gray-200 focus:outline-none w-64">
-                <button onclick="addQuickTask()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-3 py-1 rounded-lg">添加</button>
-            </div>
+            <div id="sync-status" class="text-yellow-500 font-mono">同步检测中...</div>
         </div>
 
-        <!-- 看板网格 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- 待办 -->
-            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
-                <h3 class="font-bold text-gray-300 mb-3 flex justify-between items-center text-sm">
-                    <span>📌 待对接 / 准备期 (To Do)</span>
-                    <span id="count-todo" class="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded-full">0</span>
-                </h3>
-                <div id="list-todo" class="space-y-3 min-h-[300px]"></div>
+        <!-- 产品矩阵表格容器 -->
+        <div class="bg-gray-900 rounded-xl border border-gray-800 shadow overflow-hidden">
+            <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left text-xs text-gray-300">
+                    <thead class="bg-gray-950/80 text-gray-400 uppercase border-b border-gray-800">
+                        <tr>
+                            <th class="p-3.5 w-12 text-center">展开</th>
+                            <th class="p-3.5 min-w-[200px]">产品型号 / 系列</th>
+                            <th class="p-3.5 min-w-[100px]">品类</th>
+                            <th class="p-3.5 min-w-[110px]">电商需求时间</th>
+                            <th class="p-3.5 min-w-[110px]">量产大货时间</th>
+                            <th class="p-3.5 min-w-[120px]">健康度 / 归档时间</th>
+                            <th class="p-3.5 min-w-[90px]">状态</th>
+                            <th class="p-3.5 text-right min-w-[170px]">操作与审计</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body" class="divide-y divide-gray-800/60 font-normal">
+                    </tbody>
+                </table>
             </div>
-            <!-- 进行中 -->
-            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
-                <h3 class="font-bold text-blue-400 mb-3 flex justify-between items-center text-sm">
-                    <span>⚡ 推进中 / 资料核对中 (Doing)</span>
-                    <span id="count-doing" class="bg-blue-900/50 text-blue-300 text-xs px-2 py-0.5 rounded-full">0</span>
-                </h3>
-                <div id="list-doing" class="space-y-3 min-h-[300px]"></div>
+        </div>
+    </div>
+
+    <!-- 修改产品信息弹窗 -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden backdrop-blur-sm z-40">
+        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-100 text-xs">
+            <h2 class="text-sm font-bold mb-4 flex items-center justify-between">
+                <span>✏️ 修改产品及节点 (将自动保存原记录)</span>
+                <span id="edit-prod-id" class="text-[10px] text-gray-500 font-mono"></span>
+            </h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-gray-400 mb-1">产品型号 / 系列</label>
+                    <input type="text" id="edit-name" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">品类</label>
+                    <input type="text" id="edit-category" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">电商需求截点</label>
+                    <input type="date" id="edit-req-date" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">量产大货截点</label>
+                    <input type="date" id="edit-prod-date" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">本次变动原因 / 备注说明</label>
+                    <input type="text" id="edit-reason" placeholder="如: 策划主图延期2天、工厂排期调整..." class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
+                </div>
             </div>
-            <!-- 已完成 -->
-            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/60">
-                <h3 class="font-bold text-green-400 mb-3 flex justify-between items-center text-sm">
-                    <span>✅ 已就绪 / 现货上架 (Done)</span>
-                    <span id="count-done" class="bg-green-900/50 text-green-300 text-xs px-2 py-0.5 rounded-full">0</span>
-                </h3>
-                <div id="list-done" class="space-y-3 min-h-[300px]"></div>
+            <div class="flex justify-end space-x-2 mt-5">
+                <button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded">取消</button>
+                <button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 text-white rounded">确认修改并留痕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 追溯记录与历史变更弹窗 -->
+    <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden backdrop-blur-sm z-50">
+        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl w-full max-w-2xl shadow-2xl text-gray-100 text-xs">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold flex items-center space-x-2">
+                    <span>📜 全生命周期变更与归档追溯</span>
+                    <span id="logs-title" class="text-blue-400 font-normal"></span>
+                </h2>
+                <button onclick="closeLogsModal()" class="text-gray-400 hover:text-white text-base">✕</button>
+            </div>
+            <div class="max-h-[380px] overflow-y-auto custom-scroll space-y-2.5 pr-2" id="logs-container">
+                <!-- 动态填充时间轴 -->
+            </div>
+            <div class="flex justify-end mt-4">
+                <button onclick="closeLogsModal()" class="px-4 py-1.5 bg-gray-800 text-gray-300 rounded text-xs">关闭</button>
             </div>
         </div>
     </div>
 
     <!-- 配置弹窗 -->
-    <div id="config-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden backdrop-blur-sm">
-        <div class="bg-gray-800 border border-gray-700 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-100">
-            <h2 class="text-lg font-bold mb-4">⚙️ 关联 GitHub 自动化数据库</h2>
-            <div class="space-y-3 text-sm">
+    <div id="config-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden backdrop-blur-sm z-50">
+        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-100 text-xs">
+            <h2 class="text-sm font-bold mb-4">⚙️ GitHub 云端同步配置</h2>
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">GitHub 用户名</label>
-                    <input type="text" id="cfg-owner" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="marrylily">
+                    <label class="block text-gray-400 mb-1">GitHub 用户名</label>
+                    <input type="text" id="cfg-owner" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">私有仓库名称</label>
-                    <input type="text" id="cfg-repo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="my-tasks">
+                    <label class="block text-gray-400 mb-1">私有仓库名称</label>
+                    <input type="text" id="cfg-repo" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">数据文件路径</label>
-                    <input type="text" id="cfg-path" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" value="tasks.json">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Personal Access Token</label>
-                    <input type="password" id="cfg-token" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-blue-500" placeholder="ghp_xxxxxxxxxxxx">
+                    <label class="block text-gray-400 mb-1">Personal Access Token</label>
+                    <input type="password" id="cfg-token" class="w-full bg-gray-950 border border-gray-800 rounded p-2 text-gray-200">
                 </div>
             </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button onclick="toggleConfigModal()" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm">取消</button>
-                <button onclick="saveConfigAndSync()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm">保存并同步</button>
+            <div class="flex justify-end space-x-2 mt-5">
+                <button onclick="toggleConfigModal()" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded">取消</button>
+                <button onclick="saveConfigAndSync()" class="px-3 py-1.5 bg-blue-600 text-white rounded">保存</button>
             </div>
         </div>
     </div>
 
     <script>
-        let tasks = [];
+        let products = [];
         let fileSha = "";
+        let expandedRows = {};
+        let currentEditingIndex = -1;
 
-        // 默认将到货日期设为 30 天后
         window.onload = function() {
-            const defaultDate = new Date();
-            defaultDate.setDate(defaultDate.getDate() + 30);
-            document.getElementById("target-date").value = defaultDate.toISOString().split('T')[0];
+            const d1 = new Date();
+            d1.setDate(d1.getDate() + 15);
+            document.getElementById("p-req-date").value = d1.toISOString().split('T')[0];
+            const d2 = new Date();
+            d2.setDate(d2.getDate() + 35);
+            document.getElementById("p-prod-date").value = d2.toISOString().split('T')[0];
 
             if (localStorage.getItem("wb_token")) {
                 document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "";
                 document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "";
-                document.getElementById("cfg-path").value = localStorage.getItem("wb_path") || "tasks.json";
                 document.getElementById("cfg-token").value = localStorage.getItem("wb_token") || "";
                 fetchFromCloud();
             }
@@ -131,205 +191,430 @@
         }
 
         function saveConfigAndSync() {
-            const owner = document.getElementById("cfg-owner").value.trim();
-            const repo = document.getElementById("cfg-repo").value.trim();
-            const path = document.getElementById("cfg-path").value.trim() || "tasks.json";
-            const token = document.getElementById("cfg-token").value.trim();
-
-            if (!owner || !repo || !token) {
-                alert("请完整填写配置项！");
-                return;
-            }
-
-            localStorage.setItem("wb_owner", owner);
-            localStorage.setItem("wb_repo", repo);
-            localStorage.setItem("wb_path", path);
-            localStorage.setItem("wb_token", token);
-
+            localStorage.setItem("wb_owner", document.getElementById("cfg-owner").value.trim());
+            localStorage.setItem("wb_repo", document.getElementById("cfg-repo").value.trim());
+            localStorage.setItem("wb_token", document.getElementById("cfg-token").value.trim());
             toggleConfigModal();
             fetchFromCloud();
         }
 
-        // 智能 SOP 任务生成引擎
-        function generateProductSOP() {
-            const prodName = document.getElementById("product-name").value.trim();
-            const targetDateStr = document.getElementById("target-date").value;
-            const token = localStorage.getItem("wb_token");
+        function getNowString() {
+            const now = new Date();
+            return now.getFullYear() + "-" + 
+                   String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+                   String(now.getDate()).padStart(2, '0') + " " + 
+                   String(now.getHours()).padStart(2, '0') + ":" + 
+                   String(now.getMinutes()).padStart(2, '0');
+        }
 
-            if (!token) {
-                alert("请先绑定 GitHub 数据库！");
-                toggleConfigModal();
-                return;
-            }
-            if (!prodName) return alert("请输入新品型号或名称！");
+        // 新建产品
+        function addProduct() {
+            const name = document.getElementById("p-name").value.trim();
+            if (!name) return alert("请输入产品型号或系列名称！");
 
-            const targetDate = new Date(targetDateStr);
-            
-            // 节点自动倒排模版 (天数偏移)
-            const template = [
-                { offset: -25, title: `【${prodName}】产品中心物料对接: 包装外箱尺寸/BOM/参数表确认`, stage: "物料对接" },
-                { offset: -20, title: `【${prodName}】策划资料协同: 卖点提炼、主图及详情页视觉验收`, stage: "策划对接" },
-                { offset: -15, title: `【${prodName}】系统主数据录入: SAP/ERP商品编码申请与价格体系设定`, stage: "系统建档" },
-                { offset: -7,  title: `【${prodName}】首批铺货测算: 跨店铺配额规划与预售链接搭建`, stage: "铺货预测" },
-                { offset: 0,   title: `【${prodName}】现货入库上架: 仓库实物验收入库及全渠道正式开售`, stage: "现货开售" }
-            ];
+            const nowTime = getNowString();
+            const newProd = {
+                id: "P_" + Date.now(),
+                name: name,
+                category: document.getElementById("p-category").value.trim() || "未分类",
+                reqDate: document.getElementById("p-req-date").value,
+                prodDate: document.getElementById("p-prod-date").value,
+                status: "进行中",
+                archivedAt: null,
+                createdAt: nowTime,
+                historyLogs: [
+                    { time: nowTime, type: "CREATE", desc: `初始化创建产品系列【${name}】` }
+                ],
+                skus: [
+                    { id: "S_" + Date.now(), name: name + " (基础标配)", bomOk: false, detailOk: false, sapOk: false }
+                ]
+            };
 
-            template.forEach(item => {
-                const dueDate = new Date(targetDate);
-                dueDate.setDate(dueDate.getDate() + item.offset);
-                tasks.unshift({
-                    title: item.title,
-                    dueDate: dueDate.toISOString().split('T')[0],
-                    product: prodName,
-                    stage: item.stage,
-                    status: 'todo',
-                    createdAt: new Date().toISOString()
+            products.unshift(newProd);
+            document.getElementById("p-name").value = "";
+            renderTable();
+            syncToCloud();
+        }
+
+        // 打开编辑弹窗
+        function openEditModal(index) {
+            currentEditingIndex = index;
+            const p = products[index];
+            document.getElementById("edit-prod-id").innerText = p.id;
+            document.getElementById("edit-name").value = p.name;
+            document.getElementById("edit-category").value = p.category;
+            document.getElementById("edit-req-date").value = p.reqDate || "";
+            document.getElementById("edit-prod-date").value = p.prodDate || "";
+            document.getElementById("edit-reason").value = "";
+            document.getElementById("edit-modal").classList.remove("hidden");
+        }
+
+        function closeEditModal() {
+            document.getElementById("edit-modal").classList.add("hidden");
+            currentEditingIndex = -1;
+        }
+
+        // 确认修改并生成变更留痕
+        function saveEditChanges() {
+            if (currentEditingIndex === -1) return;
+            const p = products[currentEditingIndex];
+            const newName = document.getElementById("edit-name").value.trim();
+            const newCategory = document.getElementById("edit-category").value.trim();
+            const newReqDate = document.getElementById("edit-req-date").value;
+            const newProdDate = document.getElementById("edit-prod-date").value;
+            const reason = document.getElementById("edit-reason").value.trim();
+
+            if (!newName) return alert("产品名称不能为空！");
+
+            let changes = [];
+            if (p.name !== newName) changes.push(`型号由【${p.name}】更改为【${newName}】`);
+            if (p.category !== newCategory) changes.push(`品类由【${p.category}】更改为【${newCategory}】`);
+            if (p.reqDate !== newReqDate) changes.push(`电商需求时间由【${p.reqDate || '未设'}】更改为【${newReqDate || '未设'}】`);
+            if (p.prodDate !== newProdDate) changes.push(`量产大货时间由【${p.prodDate || '未设'}】更改为【${newProdDate || '未设'}】`);
+
+            if (changes.length > 0) {
+                const nowTime = getNowString();
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({
+                    time: nowTime,
+                    type: "UPDATE",
+                    desc: changes.join("； ") + (reason ? ` (原因: ${reason})` : "")
                 });
-            });
 
-            document.getElementById("product-name").value = '';
-            renderTasks();
+                p.name = newName;
+                p.category = newCategory;
+                p.reqDate = newReqDate;
+                p.prodDate = newProdDate;
+
+                closeEditModal();
+                renderTable();
+                syncToCloud();
+            } else {
+                closeEditModal();
+            }
+        }
+
+        // 状态流转与归档时间记录
+        function changeProdStatus(pIdx, val) {
+            const p = products[pIdx];
+            const oldStatus = p.status;
+            if (oldStatus === val) return;
+
+            const nowTime = getNowString();
+            p.status = val;
+            if (!p.historyLogs) p.historyLogs = [];
+
+            if (val === "已归档") {
+                p.archivedAt = nowTime;
+                p.historyLogs.unshift({
+                    time: nowTime,
+                    type: "ARCHIVE",
+                    desc: `项目流转完成，执行正式归档`
+                });
+            } else {
+                p.archivedAt = null;
+                p.historyLogs.unshift({
+                    time: nowTime,
+                    type: "STATUS_CHANGE",
+                    desc: `项目状态由【${oldStatus}】回退/恢复至【${val}】`
+                });
+            }
+
+            renderTable();
             syncToCloud();
         }
 
-        function addQuickTask() {
-            const titleInput = document.getElementById("quick-task-title");
-            if (!titleInput.value.trim()) return;
-            tasks.unshift({
-                title: titleInput.value.trim(),
-                dueDate: "",
-                stage: "临时协同",
-                status: 'todo',
-                createdAt: new Date().toISOString()
+        // 打开追溯日志弹窗
+        function openLogsModal(index) {
+            const p = products[index];
+            document.getElementById("logs-title").innerText = `【${p.name}】`;
+            const container = document.getElementById("logs-container");
+            container.innerHTML = "";
+
+            const logs = p.historyLogs || [];
+            if (logs.length === 0) {
+                container.innerHTML = `<div class="text-gray-500 text-center py-6">暂无历史追溯记录</div>`;
+            } else {
+                logs.forEach(log => {
+                    let typeBadge = "";
+                    if (log.type === "CREATE") typeBadge = `<span class="bg-blue-950 text-blue-300 border border-blue-800 px-1.5 py-0.5 rounded text-[10px]">创建</span>`;
+                    else if (log.type === "ARCHIVE") typeBadge = `<span class="bg-green-950 text-green-300 border border-green-800 px-1.5 py-0.5 rounded text-[10px]">归档</span>`;
+                    else if (log.type === "UPDATE") typeBadge = `<span class="bg-yellow-950 text-yellow-300 border border-yellow-800 px-1.5 py-0.5 rounded text-[10px]">变更</span>`;
+                    else typeBadge = `<span class="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[10px]">流转</span>`;
+
+                    const item = document.createElement("div");
+                    item.className = "bg-gray-950 p-3 rounded-lg border border-gray-800/80 flex items-start space-x-3";
+                    item.innerHTML = `
+                        <div class="flex-shrink-0 mt-0.5">${typeBadge}</div>
+                        <div class="flex-1">
+                            <div class="text-gray-300 leading-relaxed text-xs">${escapeHtml(log.desc)}</div>
+                            <div class="text-[10px] text-gray-500 font-mono mt-1">记录时间: ${log.time}</div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            document.getElementById("logs-modal").classList.remove("hidden");
+        }
+
+        function closeLogsModal() {
+            document.getElementById("logs-modal").classList.add("hidden");
+        }
+
+        // 子 SKU 增删改
+        function addSku(prodIndex) {
+            const skuName = prompt("请输入子 SKU / 变体规格名称 (如: 枪灰1.5m / 奶白1.3m):");
+            if (!skuName) return;
+            const nowTime = getNowString();
+            const p = products[prodIndex];
+            p.skus.push({
+                id: "S_" + Date.now(),
+                name: skuName.trim(),
+                bomOk: false,
+                detailOk: false,
+                sapOk: false
             });
-            titleInput.value = '';
-            renderTasks();
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: "UPDATE",
+                desc: `新增变体规格【${skuName.trim()}】`
+            });
+            expandedRows[p.id] = true;
+            renderTable();
             syncToCloud();
         }
 
-        function renderTasks() {
-            ['todo', 'doing', 'done'].forEach(status => {
-                document.getElementById(`list-${status}`).innerHTML = '';
-                document.getElementById(`count-${status}`).innerText = '0';
+        function editSkuName(prodIndex, skuIndex) {
+            const sku = products[prodIndex].skus[skuIndex];
+            const newName = prompt("修改规格名称:", sku.name);
+            if (newName && newName.trim() !== sku.name) {
+                const oldName = sku.name;
+                sku.name = newName.trim();
+                const nowTime = getNowString();
+                if (!products[prodIndex].historyLogs) products[prodIndex].historyLogs = [];
+                products[prodIndex].historyLogs.unshift({
+                    time: nowTime,
+                    type: "UPDATE",
+                    desc: `规格名称由【${oldName}】变更为【${sku.name}】`
+                });
+                renderTable();
+                syncToCloud();
+            }
+        }
+
+        function removeSku(prodIndex, skuIndex) {
+            const skuName = products[prodIndex].skus[skuIndex].name;
+            if (confirm(`确定删除子规格【${skuName}】吗？`)) {
+                products[prodIndex].skus.splice(skuIndex, 1);
+                const nowTime = getNowString();
+                if (!products[prodIndex].historyLogs) products[prodIndex].historyLogs = [];
+                products[prodIndex].historyLogs.unshift({
+                    time: nowTime,
+                    type: "UPDATE",
+                    desc: `删除了子规格【${skuName}】`
+                });
+                renderTable();
+                syncToCloud();
+            }
+        }
+
+        function toggleSkuCheck(prodIndex, skuIndex, key, label) {
+            const sku = products[prodIndex].skus[skuIndex];
+            sku[key] = !sku[key];
+            const nowTime = getNowString();
+            if (!products[prodIndex].historyLogs) products[prodIndex].historyLogs = [];
+            products[prodIndex].historyLogs.unshift({
+                time: nowTime,
+                type: "UPDATE",
+                desc: `【${sku.name}】的【${label}】标记为 ${sku[key] ? '已完成 ✅' : '未完成 ❌'}`
             });
+            renderTable();
+            syncToCloud();
+        }
+
+        function toggleExpand(id) {
+            expandedRows[id] = !expandedRows[id];
+            renderTable();
+        }
+
+        function removeProduct(index) {
+            if (confirm(`确定删除该产品系列【${products[index].name}】吗？删除后将彻底移除。`)) {
+                delete expandedRows[products[index].id];
+                products.splice(index, 1);
+                renderTable();
+                syncToCloud();
+            }
+        }
+
+        // 渲染主表格
+        function renderTable() {
+            const tbody = document.getElementById("product-table-body");
+            tbody.innerHTML = "";
 
             const today = new Date().toISOString().split('T')[0];
+            let delayCount = 0;
+            let runningCount = 0;
+            let archivedCount = 0;
 
-            tasks.forEach((task, index) => {
-                let dueBadge = '';
-                let isUrgent = false;
+            products.forEach((prod, pIdx) => {
+                if (prod.status === "进行中") runningCount++;
+                if (prod.status === "已归档") archivedCount++;
 
-                if (task.dueDate) {
-                    const daysLeft = Math.ceil((new Date(task.dueDate) - new Date(today)) / (1000 * 60 * 60 * 24));
-                    if (task.status !== 'done') {
-                        if (daysLeft < 0) {
-                            dueBadge = `<span class="text-[10px] bg-red-900 text-red-200 px-1.5 py-0.5 rounded font-bold">已逾期 ${Math.abs(daysLeft)} 天</span>`;
-                            isUrgent = true;
-                        } else if (daysLeft <= 3) {
-                            dueBadge = `<span class="text-[10px] bg-yellow-900 text-yellow-200 px-1.5 py-0.5 rounded font-bold">剩余 ${daysLeft} 天</span>`;
-                        } else {
-                            dueBadge = `<span class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">倒计时 ${daysLeft} 天 (${task.dueDate})</span>`;
-                        }
+                let isDelayed = false;
+                let statusBadge = "";
+
+                if (prod.status === "已归档") {
+                    statusBadge = `<span class="text-[11px] text-green-400 font-mono">✅ 归档于: ${prod.archivedAt ? prod.archivedAt.split(' ')[0] : '已完成'}</span>`;
+                } else if (prod.prodDate) {
+                    const diffDays = Math.ceil((new Date(prod.prodDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) {
+                        isDelayed = true;
+                        delayCount++;
+                        statusBadge = `<span class="bg-red-950 text-red-300 border border-red-800 px-2 py-0.5 rounded text-[11px] font-medium">🚨 延期 ${Math.abs(diffDays)} 天</span>`;
+                    } else if (diffDays <= 7) {
+                        statusBadge = `<span class="bg-yellow-950 text-yellow-300 border border-yellow-800 px-2 py-0.5 rounded text-[11px]">⚠️ 剩 ${diffDays} 天</span>`;
                     } else {
-                        dueBadge = `<span class="text-[10px] text-gray-500">${task.dueDate}</span>`;
+                        statusBadge = `<span class="text-gray-400 text-[11px]">倒计时 ${diffDays} 天</span>`;
                     }
                 }
 
-                const card = document.createElement('div');
-                card.className = `bg-gray-900 p-3 rounded-xl border ${isUrgent ? 'border-red-500/70 shadow-red-900/20' : 'border-gray-700/80'} shadow flex justify-between items-start`;
-                card.innerHTML = `
-                    <div class="pr-2 space-y-1">
-                        <div class="flex items-center space-x-1.5 flex-wrap">
-                            ${task.stage ? `<span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded">${task.stage}</span>` : ''}
-                            ${dueBadge}
-                        </div>
-                        <div class="text-xs text-gray-200 break-all leading-relaxed">${escapeHtml(task.title)}</div>
-                    </div>
-                    <div class="flex space-x-1 flex-shrink-0 ml-1">
-                        ${task.status !== 'todo' ? `<button onclick="moveTask(${index}, 'todo')" class="text-[10px] bg-gray-800 hover:bg-gray-700 px-1.5 py-1 rounded text-gray-300">待办</button>` : ''}
-                        ${task.status !== 'doing' ? `<button onclick="moveTask(${index}, 'doing')" class="text-[10px] bg-blue-900/60 hover:bg-blue-800 px-1.5 py-1 rounded text-blue-300">推进</button>` : ''}
-                        ${task.status !== 'done' ? `<button onclick="moveTask(${index}, 'done')" class="text-[10px] bg-green-900/60 hover:bg-green-800 px-1.5 py-1 rounded text-green-300">完成</button>` : ''}
-                        <button onclick="removeTask(${index})" class="text-[10px] bg-red-900/30 hover:bg-red-800 px-1.5 py-1 rounded text-red-300">删</button>
-                    </div>
+                const isExpanded = !!expandedRows[prod.id];
+                const skuCount = prod.skus ? prod.skus.length : 0;
+                const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
+
+                const tr = document.createElement("tr");
+                tr.className = `hover:bg-gray-800/40 transition-colors ${isDelayed ? 'bg-red-950/10' : ''} ${prod.status === '已归档' ? 'opacity-70' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <button onclick="toggleExpand('${prod.id}')" class="text-gray-400 hover:text-white text-xs font-mono">
+                            ${isExpanded ? '▼' : '▶'}
+                        </button>
+                    </td>
+                    <td class="p-3 font-medium text-white flex items-center space-x-2">
+                        <span>${escapeHtml(prod.name)}</span>
+                        <span class="bg-gray-800 text-gray-400 text-[10px] px-1.5 py-0.2 rounded border border-gray-700">${skuCount} SKU</span>
+                    </td>
+                    <td class="p-3 text-gray-400">${escapeHtml(prod.category)}</td>
+                    <td class="p-3 text-gray-300 font-mono">${prod.reqDate || '-'}</td>
+                    <td class="p-3 font-mono ${isDelayed ? 'text-red-400 font-bold' : 'text-gray-300'}">${prod.prodDate || '-'}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3">
+                        <select onchange="changeProdStatus(${pIdx}, this.value)" class="bg-gray-950 border border-gray-800 rounded px-1.5 py-1 text-[11px] text-gray-200">
+                            <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
+                            <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
+                        </select>
+                    </td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="openEditModal(${pIdx})" class="text-yellow-400 hover:underline text-[11px]">修改</button>
+                        <button onclick="openLogsModal(${pIdx})" class="text-indigo-400 hover:underline text-[11px]">追溯(${logCount})</button>
+                        <button onclick="addSku(${pIdx})" class="text-blue-400 hover:underline text-[11px]">+规格</button>
+                        <button onclick="removeProduct(${pIdx})" class="text-red-400 hover:underline text-[11px]">删除</button>
+                    </td>
                 `;
-                document.getElementById(`list-${task.status}`).appendChild(card);
+                tbody.appendChild(tr);
+
+                // 子 SKU 抽屉
+                if (isExpanded) {
+                    const subTr = document.createElement("tr");
+                    subTr.className = "bg-gray-950/70";
+                    let subHtml = `
+                        <td colspan="8" class="p-3 pl-12">
+                            <div class="bg-gray-900/90 rounded-lg p-3 border border-gray-800">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[11px] font-semibold text-gray-400">📋 规格变体对接清单：</span>
+                                    <button onclick="addSku(${pIdx})" class="text-blue-400 hover:underline text-xs">+ 添加新规格</button>
+                                </div>
+                                <div class="space-y-2">
+                    `;
+                    prod.skus.forEach((sku, sIdx) => {
+                        subHtml += `
+                            <div class="flex items-center justify-between bg-gray-950 p-2.5 rounded border border-gray-800/80 text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-gray-200 font-medium">${escapeHtml(sku.name)}</span>
+                                    <button onclick="editSkuName(${pIdx}, ${sIdx})" class="text-gray-500 hover:text-gray-300 text-[10px]">✏️</button>
+                                    <button onclick="removeSku(${pIdx}, ${sIdx})" class="text-red-500/70 hover:text-red-400 text-[10px]">🗑️</button>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <label class="flex items-center space-x-1 cursor-pointer">
+                                        <input type="checkbox" onchange="toggleSkuCheck(${pIdx}, ${sIdx}, 'bomOk', '包材/BOM确认')" ${sku.bomOk ? 'checked' : ''} class="rounded bg-gray-900 border-gray-700 text-blue-500 focus:ring-0">
+                                        <span class="${sku.bomOk ? 'text-green-400 font-medium' : 'text-gray-400'}">包材/BOM确认</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1 cursor-pointer">
+                                        <input type="checkbox" onchange="toggleSkuCheck(${pIdx}, ${sIdx}, 'detailOk', '策划/详情页验收')" ${sku.detailOk ? 'checked' : ''} class="rounded bg-gray-900 border-gray-700 text-blue-500 focus:ring-0">
+                                        <span class="${sku.detailOk ? 'text-green-400 font-medium' : 'text-gray-400'}">策划/详情页验收</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1 cursor-pointer">
+                                        <input type="checkbox" onchange="toggleSkuCheck(${pIdx}, ${sIdx}, 'sapOk', 'SAP/ERP编码录入')" ${sku.sapOk ? 'checked' : ''} class="rounded bg-gray-900 border-gray-700 text-blue-500 focus:ring-0">
+                                        <span class="${sku.sapOk ? 'text-green-400 font-medium' : 'text-gray-400'}">SAP/ERP编码录入</span>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    subHtml += `</div></div></td>`;
+                    subTr.innerHTML = subHtml;
+                    tbody.appendChild(subTr);
+                }
             });
 
-            ['todo', 'doing', 'done'].forEach(status => {
-                const count = tasks.filter(t => t.status === status).length;
-                document.getElementById(`count-${status}`).innerText = count;
-            });
-        }
-
-        function moveTask(index, newStatus) {
-            tasks[index].status = newStatus;
-            renderTasks();
-            syncToCloud();
-        }
-
-        function removeTask(index) {
-            tasks.splice(index, 1);
-            renderTasks();
-            syncToCloud();
+            document.getElementById("stat-total").innerText = products.length;
+            document.getElementById("stat-delay").innerText = delayCount;
+            document.getElementById("stat-running").innerText = runningCount;
+            document.getElementById("stat-archived").innerText = archivedCount;
         }
 
         async function fetchFromCloud() {
             const owner = localStorage.getItem("wb_owner");
             const repo = localStorage.getItem("wb_repo");
-            const path = localStorage.getItem("wb_path") || "tasks.json";
             const token = localStorage.getItem("wb_token");
-
             if (!token || !owner) return;
 
-            document.getElementById("sync-status").innerText = "正在拉取...";
+            document.getElementById("sync-status").innerText = "拉取最新矩阵中...";
             try {
-                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
                 });
 
                 if (res.status === 404) {
-                    tasks = [];
+                    products = [];
                     fileSha = "";
-                    document.getElementById("sync-status").innerText = "已就绪 (首次自动建表)";
+                    document.getElementById("sync-status").innerText = "已就绪 (新矩阵文件)";
                     document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
-                    document.getElementById("auth-tag").className = "text-xs bg-green-900 text-green-200 px-3 py-1 rounded-full";
-                    renderTasks();
+                    document.getElementById("auth-tag").className = "text-xs bg-green-950 text-green-300 border border-green-800 px-3 py-1 rounded-full";
+                    renderTable();
                     return;
                 }
 
-                if (!res.ok) throw new Error("API 请求失败");
-
                 const data = await res.json();
                 fileSha = data.sha;
-                tasks = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                document.getElementById("sync-status").innerText = "实时数据已同步";
+                products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                document.getElementById("sync-status").innerText = "已与云端同步";
                 document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
-                document.getElementById("auth-tag").className = "text-xs bg-green-900 text-green-200 px-3 py-1 rounded-full";
-                renderTasks();
+                document.getElementById("auth-tag").className = "text-xs bg-green-950 text-green-300 border border-green-800 px-3 py-1 rounded-full";
+                renderTable();
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "连接异常";
+                document.getElementById("sync-status").innerText = "同步异常";
             }
         }
 
         async function syncToCloud() {
             const owner = localStorage.getItem("wb_owner");
             const repo = localStorage.getItem("wb_repo");
-            const path = localStorage.getItem("wb_path") || "tasks.json";
             const token = localStorage.getItem("wb_token");
-
             if (!token) return;
 
-            document.getElementById("sync-status").innerText = "正在写入云端...";
+            document.getElementById("sync-status").innerText = "正在同步写入...";
             try {
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(tasks, null, 2))));
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(products, null, 2))));
                 const body = {
-                    message: "WorkBuddy SOP automatic sync",
+                    message: "Update products matrix & audit logs",
                     content: encoded
                 };
                 if (fileSha) body.sha = fileSha;
 
-                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     method: "PUT",
                     headers: {
                         "Authorization": `token ${token}`,
@@ -338,13 +623,13 @@
                     body: JSON.stringify(body)
                 });
 
-                if (!res.ok) throw new Error("保存失败");
+                if (!res.ok) throw new Error("写入失败");
                 const result = await res.json();
                 fileSha = result.content.sha;
                 document.getElementById("sync-status").innerText = "云端已保存";
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "云端保存失败";
+                document.getElementById("sync-status").innerText = "保存失败";
             }
         }
 
