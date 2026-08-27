@@ -28,7 +28,7 @@
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-lg sm:text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 节点留痕备注 · 归档时间追溯</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 节点留痕备注 · 支持勾选导出 Excel</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -66,17 +66,20 @@
             </div>
         </div>
 
-        <!-- 统计与检索条 -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 text-xs text-gray-600 px-1">
-            <div class="flex items-center space-x-4">
+        <!-- 统计与检索/导出操作条 -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3 text-xs text-gray-600 px-1">
+            <div class="flex items-center space-x-4 flex-wrap">
                 <span>总系列: <strong id="stat-total" class="text-gray-900">0</strong></span>
-                <span>🚨 延期预警: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
+                <span>🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
                 <span>⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
                 <span>✅ 已归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
             </div>
             
-            <div class="flex items-center space-x-3 w-full sm:w-auto">
-                <div class="relative flex-1 sm:w-64">
+            <div class="flex items-center space-x-2.5 w-full md:w-auto flex-wrap">
+                <button onclick="exportSelectedToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 shadow-sm">
+                    <span>📥 导出选中系列至 Excel</span>
+                </button>
+                <div class="relative flex-1 md:w-60">
                     <input type="text" id="search-input" oninput="renderTable()" placeholder="🔍 搜索系列、品类或SKU..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                 </div>
                 <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap">状态检测中...</div>
@@ -86,9 +89,12 @@
         <!-- 主表格容器 -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-10 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
-                <table class="w-full text-left text-xs text-gray-700 min-w-[700px]">
+                <table class="w-full text-left text-xs text-gray-700 min-w-[750px]">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
+                            <th class="p-3 w-8 text-center">
+                                <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer" title="全选/取消全选">
+                            </th>
                             <th class="p-3 w-10 text-center">展开</th>
                             <th class="p-3 min-w-[180px]">产品型号 / 系列</th>
                             <th class="p-3 min-w-[90px]">品类</th>
@@ -105,7 +111,7 @@
         </div>
     </div>
 
-    <!-- 修改产品信息弹窗 (严格视口居中) -->
+    <!-- 修改产品信息弹窗 -->
     <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeEditModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
@@ -137,7 +143,7 @@
         </div>
     </div>
 
-    <!-- 节点勾选留痕弹窗 (严格视口居中) -->
+    <!-- 节点勾选留痕弹窗 -->
     <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
@@ -156,10 +162,9 @@
         </div>
     </div>
 
-    <!-- 追溯记录弹窗 (严格固定 80vh 居中视窗 + 强制内滚 + 永久可见操作栏) -->
+    <!-- 追溯记录弹窗 (严格视口居中与独立滚动) -->
     <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 80vh; max-height: 600px;">
-            <!-- 头部固定在顶部 -->
             <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
                 <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
                     <span>📜 全生命周期变更与节点追溯</span>
@@ -168,20 +173,18 @@
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
             
-            <!-- 内容滚动区 (占满中间，强制独立滚动) -->
             <div class="log-scroll flex-1 p-6 space-y-2.5 bg-gray-50/50" id="logs-container">
             </div>
 
-            <!-- 底部返回按钮固定在底部 -->
             <div class="flex justify-end px-6 py-3.5 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl">
                 <button onclick="closeLogsModal()" class="px-6 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
             </div>
         </div>
     </div>
 
-    <!-- 配置弹窗 (严格视口居中) -->
+    <!-- 配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) toggleConfigModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4">⚙️ GitHub 云端同步配置</h2>
             <div class="space-y-3">
                 <div>
@@ -208,6 +211,7 @@
         let products = [];
         let fileSha = "";
         let expandedRows = {};
+        let selectedProductIds = new Set();
         let currentEditingId = null;
 
         let pendingCheck = {
@@ -499,7 +503,6 @@
             syncToCloud();
         }
 
-        // 打开追溯弹窗 (绝对居中视窗 + 强制内滚)
         function openLogsModal(prodId) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -540,6 +543,130 @@
         function closeLogsModal() {
             document.getElementById("logs-modal").classList.add("hidden");
             lockBodyScroll(false);
+        }
+
+        // 多选操作管理
+        function toggleProductSelect(prodId, checked) {
+            if (checked) {
+                selectedProductIds.add(prodId);
+            } else {
+                selectedProductIds.delete(prodId);
+            }
+            updateSelectAllCheckboxState();
+        }
+
+        function toggleSelectAll(checked) {
+            products.forEach(p => {
+                if (checked) {
+                    selectedProductIds.add(p.id);
+                } else {
+                    selectedProductIds.delete(p.id);
+                }
+            });
+            renderTable();
+        }
+
+        function updateSelectAllCheckboxState() {
+            const selectAllEl = document.getElementById("select-all-checkbox");
+            if (!selectAllEl) return;
+            if (products.length === 0) {
+                selectAllEl.checked = false;
+                selectAllEl.indeterminate = false;
+            } else if (selectedProductIds.size === products.length) {
+                selectAllEl.checked = true;
+                selectAllEl.indeterminate = false;
+            } else if (selectedProductIds.size > 0) {
+                selectAllEl.checked = false;
+                selectAllEl.indeterminate = true;
+            } else {
+                selectAllEl.checked = false;
+                selectAllEl.indeterminate = false;
+            }
+        }
+
+        // 导出 Excel (CSV 格式，带 UTF-8 BOM，原生兼容 Excel/WPS)
+        function exportSelectedToExcel() {
+            let targetProducts = [];
+            if (selectedProductIds.size > 0) {
+                targetProducts = products.filter(p => selectedProductIds.has(p.id));
+            } else {
+                // 如果未勾选任何项，提示是否导出全部
+                if (confirm("当前未勾选特定系列，是否默认导出【全部产品系列】？")) {
+                    targetProducts = products;
+                } else {
+                    return;
+                }
+            }
+
+            if (targetProducts.length === 0) {
+                return alert("没有可导出的数据！");
+            }
+
+            // 构造 CSV 表头
+            const headers = [
+                "产品系列/主型号",
+                "子变体SKU",
+                "品类/渠道",
+                "量产大货截点",
+                "项目状态",
+                "财务BOM/价审",
+                "财务BOM确认时间/备注",
+                "策划/详情页验收",
+                "详情页确认时间/备注",
+                "SKU编码/69编码",
+                "69编码确认时间/备注",
+                "当前延期/变动备注",
+                "历史追溯明细"
+            ];
+
+            let csvRows = [];
+            csvRows.push(headers.join(","));
+
+            const cleanCell = (str) => {
+                if (!str) return '""';
+                let s = String(str).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ');
+                return `"${s}"`;
+            };
+
+            targetProducts.forEach(prod => {
+                const logsSummary = (prod.historyLogs || []).map(l => `[${l.time}] ${l.desc}`).join(" | ");
+                
+                (prod.skus || []).forEach(sku => {
+                    const rec = sku.nodeRecords || {};
+                    
+                    const bomTimeStr = rec.bomOk ? `${rec.bomOk.time || ''} ${rec.bomOk.remark || ''}` : '';
+                    const detailTimeStr = rec.detailOk ? `${rec.detailOk.time || ''} ${rec.detailOk.remark || ''}` : '';
+                    const sapTimeStr = rec.sapOk ? `${rec.sapOk.time || ''} ${rec.sapOk.remark || ''}` : '';
+
+                    const row = [
+                        cleanCell(prod.name),
+                        cleanCell(sku.name),
+                        cleanCell(prod.category),
+                        cleanCell(prod.prodDate || '-'),
+                        cleanCell(prod.status),
+                        cleanCell(sku.bomOk ? '已完成' : '未完成'),
+                        cleanCell(bomTimeStr),
+                        cleanCell(sku.detailOk ? '已完成' : '未完成'),
+                        cleanCell(detailTimeStr),
+                        cleanCell(sku.sapOk ? '已完成' : '未完成'),
+                        cleanCell(sapTimeStr),
+                        cleanCell(prod.remark || ''),
+                        cleanCell(logsSummary)
+                    ];
+                    csvRows.push(row.join(","));
+                });
+            });
+
+            const csvString = "\uFEFF" + csvRows.join("\n"); // \uFEFF 添加 UTF-8 BOM，防止中文乱码
+            const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement("a");
+            downloadLink.href = url;
+            downloadLink.download = `新品推进矩阵导出_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
         }
 
         function addSku(prodId) {
@@ -621,6 +748,7 @@
 
             if (confirm(`确定删除该产品系列【${products[pIdx].name}】吗？删除后将彻底移除。`)) {
                 delete expandedRows[prodId];
+                selectedProductIds.delete(prodId);
                 products.splice(pIdx, 1);
                 renderTable();
                 syncToCloud();
@@ -676,12 +804,16 @@
                 let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
 
                 const isExpanded = !!expandedRows[prod.id];
+                const isSelected = selectedProductIds.has(prod.id);
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
 
                 const tr = document.createElement("tr");
                 tr.className = `hover:bg-blue-50/40 transition-colors ${isDelayed ? 'bg-red-50/30' : ''} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
                 tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
+                    </td>
                     <td class="p-3 text-center">
                         <button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 text-xs font-mono font-bold">
                             ${isExpanded ? '▼' : '▶'}
@@ -716,7 +848,7 @@
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/80";
                     let subHtml = `
-                        <td colspan="7" class="p-3.5 pl-10">
+                        <td colspan="8" class="p-3.5 pl-12">
                             <div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm">
                                 <div class="flex justify-between items-center mb-2.5">
                                     <span class="text-xs font-bold text-gray-700">📋 【${escapeHtml(prod.name)}】变体规格对接列表：</span>
@@ -767,6 +899,7 @@
             document.getElementById("stat-delay").innerText = delayCount;
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
+            updateSelectAllCheckboxState();
         }
 
         async function fetchFromCloud() {
