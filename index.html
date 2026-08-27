@@ -16,7 +16,7 @@
         <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 变更留痕 · 归档时间追溯</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 节点留痕备注 · 归档时间追溯</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -78,10 +78,10 @@
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
                             <th class="p-3.5 w-12 text-center">展开</th>
-                            <th class="p-3.5 min-w-[220px]">产品型号 / 系列</th>
-                            <th class="p-3.5 min-w-[120px]">品类</th>
-                            <th class="p-3.5 min-w-[140px]">量产大货时间</th>
-                            <th class="p-3.5 min-w-[160px]">健康度 / 归档时间</th>
+                            <th class="p-3.5 min-w-[200px]">产品型号 / 系列</th>
+                            <th class="p-3.5 min-w-[100px]">品类</th>
+                            <th class="p-3.5 min-w-[120px]">量产大货时间</th>
+                            <th class="p-3.5 min-w-[200px]">健康度 / 延期说明 / 归档</th>
                             <th class="p-3.5 min-w-[100px]">状态</th>
                             <th class="p-3.5 text-right min-w-[200px]">操作与审计</th>
                         </tr>
@@ -93,7 +93,7 @@
         </div>
     </div>
 
-    <!-- 修改弹窗 -->
+    <!-- 修改产品信息弹窗 -->
     <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-40">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
@@ -114,8 +114,8 @@
                     <input type="date" id="edit-prod-date" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 备注说明</label>
-                    <input type="text" id="edit-reason" placeholder="如: 工厂延期、包装改版、排产调整..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 延期备注说明 <span class="text-blue-500">(将直接展示在表格)</span></label>
+                    <input type="text" id="edit-reason" placeholder="如: 模具延误整改、包装改版、工厂排产调整..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-5">
@@ -125,12 +125,31 @@
         </div>
     </div>
 
+    <!-- 节点勾选留痕弹窗 -->
+    <div id="check-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50">
+        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
+                <span id="check-action-icon">📝</span>
+                <span id="check-modal-title">节点变动记录</span>
+            </h2>
+            <p class="text-gray-500 mb-3 text-[11px]" id="check-modal-subtitle"></p>
+            <div class="mb-4">
+                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 (选填)</label>
+                <input type="text" id="check-remark-input" placeholder="如: 财务已核价/已过审、第2版详情页确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeCheckModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
+                <button onclick="confirmNodeCheckChange()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认记录</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 追溯记录弹窗 -->
     <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs">
             <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
                 <h2 class="text-sm font-bold flex items-center space-x-2">
-                    <span>📜 全生命周期变更与归档追溯</span>
+                    <span>📜 全生命周期变更与节点追溯</span>
                     <span id="logs-title" class="text-blue-600 font-normal"></span>
                 </h2>
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-600 text-base font-bold">✕</button>
@@ -173,6 +192,15 @@
         let expandedRows = {};
         let currentEditingId = null;
 
+        // 待确认的节点临时变量
+        let pendingCheck = {
+            prodId: null,
+            skuId: null,
+            key: null,
+            label: null,
+            targetVal: false
+        };
+
         window.onload = function() {
             const d = new Date();
             d.setDate(d.getDate() + 30);
@@ -204,7 +232,8 @@
                    String(now.getMonth() + 1).padStart(2, '0') + "-" + 
                    String(now.getDate()).padStart(2, '0') + " " + 
                    String(now.getHours()).padStart(2, '0') + ":" + 
-                   String(now.getMinutes()).padStart(2, '0');
+                   String(now.getMinutes()).padStart(2, '0') + ":" + 
+                   String(now.getSeconds()).padStart(2, '0');
         }
 
         function extractCommonPrefix(arr) {
@@ -242,7 +271,8 @@
                         name: skuLine,
                         bomOk: false,
                         detailOk: false,
-                        sapOk: false
+                        sapOk: false,
+                        nodeRecords: {} // 保存各个节点的完成时间与备注
                     });
                 });
             } else {
@@ -251,7 +281,8 @@
                     name: seriesName + " (标配)",
                     bomOk: false,
                     detailOk: false,
-                    sapOk: false
+                    sapOk: false,
+                    nodeRecords: {}
                 });
             }
 
@@ -261,6 +292,7 @@
                 name: seriesName,
                 category: category,
                 prodDate: prodDate,
+                remark: "",
                 status: "进行中",
                 archivedAt: null,
                 createdAt: nowTime,
@@ -278,7 +310,7 @@
             syncToCloud();
         }
 
-        // 打开编辑
+        // 打开编辑系列弹窗
         function openEditModal(prodId) {
             currentEditingId = prodId;
             const p = products.find(item => item.id === prodId);
@@ -287,7 +319,7 @@
             document.getElementById("edit-name").value = p.name || "";
             document.getElementById("edit-category").value = p.category || "";
             document.getElementById("edit-prod-date").value = p.prodDate || "";
-            document.getElementById("edit-reason").value = "";
+            document.getElementById("edit-reason").value = p.remark || "";
             document.getElementById("edit-modal").classList.remove("hidden");
         }
 
@@ -305,38 +337,30 @@
             const newName = document.getElementById("edit-name").value.trim();
             const newCategory = document.getElementById("edit-category").value.trim();
             const newProdDate = document.getElementById("edit-prod-date").value;
-            const reason = document.getElementById("edit-reason").value.trim();
+            const newReason = document.getElementById("edit-reason").value.trim();
 
             if (!newName) return alert("产品名称不能为空！");
 
             let changes = [];
             if (p.name !== newName) changes.push(`型号由【${p.name}】改为【${newName}】`);
             if (p.category !== newCategory) changes.push(`品类由【${p.category}】改为【${newCategory}】`);
-            if (p.prodDate !== newProdDate) changes.push(`量产大货时间由【${p.prodDate || '未设'}】改为【${newProdDate || '未设'}】`);
+            if (p.prodDate !== newProdDate) changes.push(`大货截点由【${p.prodDate || '未设'}】改为【${newProdDate || '未设'}】`);
+            if ((p.remark || "") !== newReason) changes.push(`备注由【${p.remark || '无'}】更新为【${newReason || '无'}】`);
 
-            // 只要修改了内容或填写了备注，均触发记录
-            if (changes.length > 0 || reason) {
+            if (changes.length > 0) {
                 const nowTime = getNowString();
                 if (!p.historyLogs) p.historyLogs = [];
                 
-                let descText = "";
-                if (changes.length > 0 && reason) {
-                    descText = changes.join("； ") + ` (变动原因/备注: ${reason})`;
-                } else if (changes.length > 0) {
-                    descText = changes.join("； ");
-                } else {
-                    descText = `更新说明/备注: ${reason}`;
-                }
-
                 p.historyLogs.unshift({
                     time: nowTime,
                     type: "UPDATE",
-                    desc: descText
+                    desc: changes.join("； ")
                 });
 
                 p.name = newName;
                 p.category = newCategory;
                 p.prodDate = newProdDate;
+                p.remark = newReason;
 
                 closeEditModal();
                 renderTable();
@@ -344,6 +368,72 @@
             } else {
                 closeEditModal();
             }
+        }
+
+        // 触发节点勾选弹窗
+        function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+            const sku = p.skus.find(s => s.id === skuId);
+            if (!sku) return;
+
+            const targetVal = checkboxEl.checked;
+            // 暂时回退 checkbox 界面状态，待弹窗确认后再正式赋值
+            checkboxEl.checked = !targetVal;
+
+            pendingCheck = {
+                prodId: prodId,
+                skuId: skuId,
+                key: key,
+                label: label,
+                targetVal: targetVal
+            };
+
+            document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️";
+            document.getElementById("check-modal-title").innerText = targetVal ? `确认完成【${label}】` : `取消【${label}】状态`;
+            document.getElementById("check-modal-subtitle").innerText = `规格: ${sku.name}`;
+            document.getElementById("check-remark-input").value = "";
+            document.getElementById("check-modal").classList.remove("hidden");
+        }
+
+        function closeCheckModal() {
+            document.getElementById("check-modal").classList.add("hidden");
+            pendingCheck = { prodId: null, skuId: null, key: null, label: null, targetVal: false };
+        }
+
+        // 确认节点变动并记录时间与原因
+        function confirmNodeCheckChange() {
+            const { prodId, skuId, key, label, targetVal } = pendingCheck;
+            if (!prodId || !skuId) return;
+
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+            const sku = p.skus.find(s => s.id === skuId);
+            if (!sku) return;
+
+            const remark = document.getElementById("check-remark-input").value.trim();
+            const nowTime = getNowString();
+
+            sku[key] = targetVal;
+            if (!sku.nodeRecords) sku.nodeRecords = {};
+            
+            sku.nodeRecords[key] = {
+                status: targetVal,
+                time: nowTime,
+                remark: remark
+            };
+
+            if (!p.historyLogs) p.historyLogs = [];
+            const actionText = targetVal ? "标记完成 ✅" : "取消完成 ↩️";
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: targetVal ? "NODE_DONE" : "NODE_CANCEL",
+                desc: `【${sku.name}】的【${label}】${actionText}${remark ? ` (说明: ${remark})` : ''}`
+            });
+
+            closeCheckModal();
+            renderTable();
+            syncToCloud();
         }
 
         function changeProdStatus(prodId, val) {
@@ -361,7 +451,7 @@
                 p.historyLogs.unshift({
                     time: nowTime,
                     type: "ARCHIVE",
-                    desc: `项目已完成并执行归档`
+                    desc: `项目已完成全流程并执行归档`
                 });
             } else {
                 p.archivedAt = null;
@@ -376,6 +466,7 @@
             syncToCloud();
         }
 
+        // 查看追溯日志
         function openLogsModal(prodId) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -392,7 +483,9 @@
                     let label = "流转";
                     if (log.type === "CREATE") { badgeClass = "bg-blue-50 text-blue-700 border-blue-200"; label = "创建"; }
                     else if (log.type === "ARCHIVE") { badgeClass = "bg-green-50 text-green-700 border-green-200"; label = "归档"; }
-                    else if (log.type === "UPDATE") { badgeClass = "bg-yellow-50 text-yellow-700 border-yellow-200"; label = "变更"; }
+                    else if (log.type === "UPDATE") { badgeClass = "bg-yellow-50 text-yellow-700 border-yellow-200"; label = "系列变更"; }
+                    else if (log.type === "NODE_DONE") { badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; label = "节点完成"; }
+                    else if (log.type === "NODE_CANCEL") { badgeClass = "bg-red-50 text-red-700 border-red-200"; label = "节点回退"; }
 
                     const item = document.createElement("div");
                     item.className = "bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start space-x-3";
@@ -424,7 +517,8 @@
                 name: skuName.trim(),
                 bomOk: false,
                 detailOk: false,
-                sapOk: false
+                sapOk: false,
+                nodeRecords: {}
             });
             if (!p.historyLogs) p.historyLogs = [];
             p.historyLogs.unshift({
@@ -480,24 +574,6 @@
             }
         }
 
-        function toggleSkuCheck(prodId, skuId, key, label) {
-            const p = products.find(item => item.id === prodId);
-            if (!p) return;
-            const sku = p.skus.find(s => s.id === skuId);
-            if (!sku) return;
-
-            sku[key] = !sku[key];
-            const nowTime = getNowString();
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({
-                time: nowTime,
-                type: "UPDATE",
-                desc: `【${sku.name}】的【${label}】标记为: ${sku[key] ? '已完成 ✅' : '未完成 ❌'}`
-            });
-            renderTable();
-            syncToCloud();
-        }
-
         function toggleExpand(id) {
             expandedRows[id] = !expandedRows[id];
             renderTable();
@@ -515,7 +591,7 @@
             }
         }
 
-        // 渲染主表格（含搜索过滤）
+        // 渲染主表格
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             tbody.innerHTML = "";
@@ -531,14 +607,13 @@
                 if (prod.status === "进行中") runningCount++;
                 if (prod.status === "已归档") archivedCount++;
 
-                // 搜索匹配判断
                 let isMatch = true;
                 if (keyword) {
                     const matchName = (prod.name || "").toLowerCase().includes(keyword);
                     const matchCategory = (prod.category || "").toLowerCase().includes(keyword);
+                    const matchRemark = (prod.remark || "").toLowerCase().includes(keyword);
                     const matchSkus = (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
-                    isMatch = matchName || matchCategory || matchSkus;
-                    // 若匹配到了子 SKU 则自动展开
+                    isMatch = matchName || matchCategory || matchRemark || matchSkus;
                     if (isMatch && matchSkus) expandedRows[prod.id] = true;
                 }
 
@@ -562,6 +637,9 @@
                     }
                 }
 
+                // 显式展示备注/延期原因
+                let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
+
                 const isExpanded = !!expandedRows[prod.id];
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
@@ -580,7 +658,10 @@
                     </td>
                     <td class="p-3.5 text-gray-600">${escapeHtml(prod.category)}</td>
                     <td class="p-3.5 font-mono ${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${prod.prodDate || '-'}</td>
-                    <td class="p-3.5">${statusBadge}</td>
+                    <td class="p-3.5">
+                        ${statusBadge}
+                        ${remarkBadge}
+                    </td>
                     <td class="p-3.5">
                         <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none">
                             <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
@@ -588,7 +669,7 @@
                         </select>
                     </td>
                     <td class="p-3.5 text-right space-x-2 font-medium">
-                        <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改</button>
+                        <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改/备注</button>
                         <button onclick="openLogsModal('${prod.id}')" class="text-indigo-600 hover:underline">追溯(${logCount})</button>
                         <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
                         <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
@@ -596,6 +677,7 @@
                 `;
                 tbody.appendChild(tr);
 
+                // 子 SKU 抽屉
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/80";
@@ -609,6 +691,15 @@
                                 <div class="space-y-2">
                     `;
                     prod.skus.forEach(sku => {
+                        // 节点提示信息生成
+                        const getTip = (key) => {
+                            if (sku.nodeRecords && sku.nodeRecords[key] && sku.nodeRecords[key].status) {
+                                const rec = sku.nodeRecords[key];
+                                return ` title="完成于: ${rec.time} ${rec.remark ? '&#10;说明: ' + rec.remark : ''}"`;
+                            }
+                            return '';
+                        };
+
                         subHtml += `
                             <div class="flex items-center justify-between bg-gray-50 hover:bg-gray-100/80 p-2.5 rounded border border-gray-200 text-xs transition">
                                 <div class="flex items-center space-x-2">
@@ -617,16 +708,16 @@
                                     <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600" title="删除规格">🗑️</button>
                                 </div>
                                 <div class="flex items-center space-x-6">
-                                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                                        <input type="checkbox" onchange="toggleSkuCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审')" ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('bomOk')}>
+                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)" ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM/价审</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                                        <input type="checkbox" onchange="toggleSkuCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收')" ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('detailOk')}>
+                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)" ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">策划/详情页验收</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                                        <input type="checkbox" onchange="toggleSkuCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码')" ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('sapOk')}>
+                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)" ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">SKU编码/69编码</span>
                                     </label>
                                 </div>
@@ -671,12 +762,13 @@
                 fileSha = data.sha;
                 products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                 
-                // 兼容性修复老数据缺失 ID
                 products.forEach((p, pIdx) => {
                     if (!p.id) p.id = "P_" + (Date.now() + pIdx);
+                    if (!p.remark) p.remark = "";
                     if (p.skus) {
                         p.skus.forEach((s, sIdx) => {
                             if (!s.id) s.id = "S_" + (Date.now() + pIdx + "_" + sIdx);
+                            if (!s.nodeRecords) s.nodeRecords = {};
                         });
                     }
                 });
