@@ -76,7 +76,7 @@
             </div>
             
             <div class="flex items-center space-x-2.5 w-full md:w-auto flex-wrap">
-                <button onclick="exportSelectedToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 shadow-sm">
+                <button onclick="exportSelectedToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 shadow border border-emerald-800 cursor-pointer">
                     <span>📥 导出选中系列至 Excel</span>
                 </button>
                 <div class="relative flex-1 md:w-60">
@@ -162,7 +162,7 @@
         </div>
     </div>
 
-    <!-- 追溯记录弹窗 (严格视口居中与独立滚动) -->
+    <!-- 追溯记录弹窗 -->
     <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 80vh; max-height: 600px;">
             <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -545,7 +545,6 @@
             lockBodyScroll(false);
         }
 
-        // 多选操作管理
         function toggleProductSelect(prodId, checked) {
             if (checked) {
                 selectedProductIds.add(prodId);
@@ -584,13 +583,12 @@
             }
         }
 
-        // 导出 Excel (CSV 格式，带 UTF-8 BOM，原生兼容 Excel/WPS)
+        // 导出 Excel (精准字段 + 最新节点时间 + 最新备注)
         function exportSelectedToExcel() {
             let targetProducts = [];
             if (selectedProductIds.size > 0) {
                 targetProducts = products.filter(p => selectedProductIds.has(p.id));
             } else {
-                // 如果未勾选任何项，提示是否导出全部
                 if (confirm("当前未勾选特定系列，是否默认导出【全部产品系列】？")) {
                     targetProducts = products;
                 } else {
@@ -602,41 +600,44 @@
                 return alert("没有可导出的数据！");
             }
 
-            // 构造 CSV 表头
+            // 精准结构表头
             const headers = [
                 "产品系列/主型号",
                 "子变体SKU",
                 "品类/渠道",
-                "量产大货截点",
-                "项目状态",
-                "财务BOM/价审",
-                "财务BOM确认时间/备注",
-                "策划/详情页验收",
-                "详情页确认时间/备注",
-                "SKU编码/69编码",
-                "69编码确认时间/备注",
-                "当前延期/变动备注",
-                "历史追溯明细"
+                "量产大货时间",
+                "当前状态",
+                "财务BOM/价审状态",
+                "财务BOM确认时间",
+                "财务BOM说明",
+                "策划/详情页验收状态",
+                "详情页确认时间",
+                "详情页验收说明",
+                "SKU编码/69编码状态",
+                "69编码确认时间",
+                "69编码说明",
+                "最新变动/延期备注",
+                "最新更新时间"
             ];
 
             let csvRows = [];
             csvRows.push(headers.join(","));
 
             const cleanCell = (str) => {
-                if (!str) return '""';
+                if (str === undefined || str === null) return '""';
                 let s = String(str).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ');
                 return `"${s}"`;
             };
 
             targetProducts.forEach(prod => {
-                const logsSummary = (prod.historyLogs || []).map(l => `[${l.time}] ${l.desc}`).join(" | ");
-                
+                const latestLogTime = (prod.historyLogs && prod.historyLogs.length > 0) ? prod.historyLogs[0].time : (prod.createdAt || '');
+
                 (prod.skus || []).forEach(sku => {
                     const rec = sku.nodeRecords || {};
-                    
-                    const bomTimeStr = rec.bomOk ? `${rec.bomOk.time || ''} ${rec.bomOk.remark || ''}` : '';
-                    const detailTimeStr = rec.detailOk ? `${rec.detailOk.time || ''} ${rec.detailOk.remark || ''}` : '';
-                    const sapTimeStr = rec.sapOk ? `${rec.sapOk.time || ''} ${rec.sapOk.remark || ''}` : '';
+
+                    const bomRec = rec.bomOk || {};
+                    const detailRec = rec.detailOk || {};
+                    const sapRec = rec.sapOk || {};
 
                     const row = [
                         cleanCell(prod.name),
@@ -645,19 +646,22 @@
                         cleanCell(prod.prodDate || '-'),
                         cleanCell(prod.status),
                         cleanCell(sku.bomOk ? '已完成' : '未完成'),
-                        cleanCell(bomTimeStr),
+                        cleanCell(bomRec.time || ''),
+                        cleanCell(bomRec.remark || ''),
                         cleanCell(sku.detailOk ? '已完成' : '未完成'),
-                        cleanCell(detailTimeStr),
+                        cleanCell(detailRec.time || ''),
+                        cleanCell(detailRec.remark || ''),
                         cleanCell(sku.sapOk ? '已完成' : '未完成'),
-                        cleanCell(sapTimeStr),
+                        cleanCell(sapRec.time || ''),
+                        cleanCell(sapRec.remark || ''),
                         cleanCell(prod.remark || ''),
-                        cleanCell(logsSummary)
+                        cleanCell(latestLogTime)
                     ];
                     csvRows.push(row.join(","));
                 });
             });
 
-            const csvString = "\uFEFF" + csvRows.join("\n"); // \uFEFF 添加 UTF-8 BOM，防止中文乱码
+            const csvString = "\uFEFF" + csvRows.join("\n");
             const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const downloadLink = document.createElement("a");
@@ -755,7 +759,6 @@
             }
         }
 
-        // 渲染主表格
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             tbody.innerHTML = "";
