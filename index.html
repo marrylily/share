@@ -13,45 +13,44 @@
 <body class="bg-gray-100 text-gray-800 min-h-screen">
 
     <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- 顶部导航与状态 -->
         <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">主品聚合 · 子 SKU 批量录入 · 变更留痕 · 归档时间追溯</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 变更留痕 · 归档时间追溯</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
-                <button onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs border border-gray-300 font-medium">⚙️ 配置</button>
+                <button onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs border border-gray-300 font-medium">⚙️ 账号配置</button>
             </div>
         </header>
 
-        <!-- 批量新建产品录入栏 -->
+        <!-- 批量新建面板 -->
         <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
-            <h2 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
-                <span>➕ 批量录入新品系列及变体 SKU</span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mb-3">
+            <h2 class="text-sm font-bold text-gray-800 mb-3">⚡ 批量粘贴 SKU 自动裂变生成</h2>
+            
+            <div class="mb-3">
+                <label class="block text-gray-700 font-semibold mb-1 text-xs">
+                    子变体 / SKU 列表 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(从表格直接复制多行粘贴，系统自动识别系列名)</span>
+                </label>
+                <textarea id="p-skus-batch" rows="4" placeholder="HD-LD22-H枪灰色1.3&#10;HD-LD22-H枪灰色1.5&#10;HD-LD22-H奶白色1.3-1&#10;HD-LD22-H奶白色1.5-1" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs mb-1">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名 <span class="text-red-500">*</span></label>
-                    <input type="text" id="p-name" placeholder="如: HD-LD22-H 系列" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名 <span class="text-gray-400 font-normal">(选填，留空自动提取)</span></label>
+                    <input type="text" id="p-name" placeholder="自动提取如: HD-LD22-H" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道</label>
-                    <input type="text" id="p-category" placeholder="如: 落地晾衣架" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道 <span class="text-red-500">*</span></label>
+                    <input type="text" id="p-category" placeholder="如: 落地 / 手摇" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">量产大货截点 <span class="text-red-500">*</span></label>
-                    <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end">
-                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold shadow-sm transition">⚡ 批量创建并建立父子矩阵</button>
+                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold shadow-sm transition">🚀 智能裂变并创建矩阵</button>
                 </div>
-            </div>
-            <div>
-                <label class="block text-gray-600 font-medium mb-1">
-                    子变体 / SKU 列表 <span class="text-gray-400 font-normal">(一行一个，可直接从 Excel / 表格复制粘贴多行)</span>
-                </label>
-                <textarea id="p-skus-batch" rows="3" placeholder="HD-LD22-H奶白色1.3&#10;HD-LD22-H奶白色1.5&#10;HD-LD22-H枪灰色1.3&#10;HD-LD22-H枪灰色1.5" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
         </div>
 
@@ -88,7 +87,7 @@
         </div>
     </div>
 
-    <!-- 修改产品信息弹窗 -->
+    <!-- 修改弹窗 -->
     <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-40">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
@@ -110,7 +109,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 备注说明</label>
-                    <input type="text" id="edit-reason" placeholder="如: 工厂排产调整、配件延迟..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="edit-reason" placeholder="如: 工厂排产调整、物料延误..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-5">
@@ -130,8 +129,7 @@
                 </h2>
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-600 text-base font-bold">✕</button>
             </div>
-            <div class="max-h-[380px] overflow-y-auto custom-scroll space-y-2.5 pr-2" id="logs-container">
-            </div>
+            <div class="max-h-[380px] overflow-y-auto custom-scroll space-y-2.5 pr-2" id="logs-container"></div>
             <div class="flex justify-end mt-4">
                 <button onclick="closeLogsModal()" class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">关闭</button>
             </div>
@@ -148,12 +146,12 @@
                     <input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-2 text-gray-900">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">私有仓库名称 (存放数据)</label>
+                    <label class="block text-gray-600 font-medium mb-1">私有仓库名称</label>
                     <input type="text" id="cfg-repo" class="w-full border border-gray-300 rounded p-2 text-gray-900" placeholder="my-tasks">
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">Personal Access Token</label>
-                    <input type="password" id="cfg-token" class="w-full border border-gray-300 rounded p-2 text-gray-900">
+                    <input type="password" id="cfg-token" class="w-full border border-gray-300 rounded p-2 text-gray-900" placeholder="ghp_xxxxxxxxxxxx">
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-5">
@@ -203,15 +201,35 @@
                    String(now.getMinutes()).padStart(2, '0');
         }
 
-        // 批量创建产品与子变体
+        // 自动提取公共前缀
+        function extractCommonPrefix(arr) {
+            if (!arr || arr.length === 0) return "";
+            if (arr.length === 1) return arr[0].replace(/[\u4e00-\u9fa5].*$/, '').replace(/[-_]$/, '') || arr[0];
+            let sorted = arr.concat().sort();
+            let a1 = sorted[0], a2 = sorted[sorted.length - 1], L = a1.length, i = 0;
+            while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
+            let prefix = a1.substring(0, i).replace(/[-_]$/, '');
+            return prefix || arr[0].substring(0, 8);
+        }
+
+        // 批量创建与裂变
         function addProductWithBatchSkus() {
-            const name = document.getElementById("p-name").value.trim();
+            const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
-            if (!name) return alert("请输入主产品型号或系列名称！");
+            const category = document.getElementById("p-category").value.trim() || "常规新品";
+
+            if (!batchText && !document.getElementById("p-name").value.trim()) {
+                return alert("请粘贴子 SKU 列表或输入产品型号！");
+            }
             if (!prodDate) return alert("请选择量产大货时间！");
 
-            const batchText = document.getElementById("p-skus-batch").value.trim();
-            const lines = batchText ? batchText.split('\n').map(l => l.trim()).filter(l => l.length > 0) : [];
+            // 清洗多行输入（去除 Excel 复制带入的双引号）
+            const lines = batchText.split('\n')
+                .map(l => l.replace(/^["'\s]+|["'\s]+$/g, '').trim())
+                .filter(l => l.length > 0);
+
+            let manualName = document.getElementById("p-name").value.trim();
+            let seriesName = manualName || (lines.length > 0 ? extractCommonPrefix(lines) : "新品系列");
 
             let skusList = [];
             if (lines.length > 0) {
@@ -227,7 +245,7 @@
             } else {
                 skusList.push({
                     id: "S_" + Date.now(),
-                    name: name + " (基础标配)",
+                    name: seriesName + " (标配)",
                     bomOk: false,
                     detailOk: false,
                     sapOk: false
@@ -237,14 +255,14 @@
             const nowTime = getNowString();
             const newProd = {
                 id: "P_" + Date.now(),
-                name: name,
-                category: document.getElementById("p-category").value.trim() || "未分类",
+                name: seriesName,
+                category: category,
                 prodDate: prodDate,
                 status: "进行中",
                 archivedAt: null,
                 createdAt: nowTime,
                 historyLogs: [
-                    { time: nowTime, type: "CREATE", desc: `初始化创建产品系列【${name}】，包含 ${skusList.length} 个规格变体` }
+                    { time: nowTime, type: "CREATE", desc: `初始化创建系列【${seriesName}】，裂变生成 ${skusList.length} 个 SKU 变体` }
                 ],
                 skus: skusList
             };
@@ -257,7 +275,6 @@
             syncToCloud();
         }
 
-        // 打开编辑
         function openEditModal(index) {
             currentEditingIndex = index;
             const p = products[index];
@@ -274,7 +291,6 @@
             currentEditingIndex = -1;
         }
 
-        // 保存编辑留痕
         function saveEditChanges() {
             if (currentEditingIndex === -1) return;
             const p = products[currentEditingIndex];
@@ -286,9 +302,9 @@
             if (!newName) return alert("产品名称不能为空！");
 
             let changes = [];
-            if (p.name !== newName) changes.push(`型号由【${p.name}】更改为【${newName}】`);
-            if (p.category !== newCategory) changes.push(`品类由【${p.category}】更改为【${newCategory}】`);
-            if (p.prodDate !== newProdDate) changes.push(`量产大货时间由【${p.prodDate || '未设'}】更改为【${newProdDate || '未设'}】`);
+            if (p.name !== newName) changes.push(`型号由【${p.name}】改为【${newName}】`);
+            if (p.category !== newCategory) changes.push(`品类由【${p.category}】改为【${newCategory}】`);
+            if (p.prodDate !== newProdDate) changes.push(`量产大货时间由【${p.prodDate || '未设'}】改为【${newProdDate || '未设'}】`);
 
             if (changes.length > 0) {
                 const nowTime = getNowString();
@@ -377,7 +393,7 @@
         }
 
         function addSku(prodIndex) {
-            const skuName = prompt("请输入子规格名称 (如: 枪灰1.5m / 奶白1.3m):");
+            const skuName = prompt("请输入子规格名称:");
             if (!skuName) return;
             const nowTime = getNowString();
             const p = products[prodIndex];
@@ -526,7 +542,6 @@
                 `;
                 tbody.appendChild(tr);
 
-                // 子 SKU 抽屉
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/80";
@@ -582,7 +597,7 @@
             const token = localStorage.getItem("wb_token");
             if (!token || !owner) return;
 
-            document.getElementById("sync-status").innerText = "拉取最新矩阵中...";
+            document.getElementById("sync-status").innerText = "拉取云端数据中...";
             try {
                 const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
@@ -619,13 +634,15 @@
 
             document.getElementById("sync-status").innerText = "正在写入云端...";
             try {
-                // 实时拉取一次 sha 防止并发覆盖冲突
+                // 写入前重新拉取最新 sha 解决并发冲突
                 const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
                 });
                 if (checkRes.ok) {
                     const checkData = await checkRes.json();
                     fileSha = checkData.sha;
+                } else {
+                    fileSha = "";
                 }
 
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(products, null, 2))));
@@ -644,13 +661,17 @@
                     body: JSON.stringify(body)
                 });
 
-                if (!res.ok) throw new Error("写入失败");
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.message || "写入失败");
+                }
+
                 const result = await res.json();
                 fileSha = result.content.sha;
                 document.getElementById("sync-status").innerText = "云端已保存 ✅";
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "保存失败 ❌ (检查 Token 权限)";
+                document.getElementById("sync-status").innerText = "保存失败 ❌ (检查 Token 权限/仓库名)";
             }
         }
 
