@@ -94,7 +94,7 @@
     </div>
 
     <!-- 修改产品信息弹窗 -->
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-40">
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-40" onclick="if(event.target===this) closeEditModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
                 <span>✏️ 修改产品及节点 (变动将自动留痕)</span>
@@ -126,7 +126,7 @@
     </div>
 
     <!-- 节点勾选留痕弹窗 -->
-    <div id="check-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50">
+    <div id="check-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
                 <span id="check-action-icon">📝</span>
@@ -144,25 +144,29 @@
         </div>
     </div>
 
-    <!-- 追溯记录弹窗 -->
-    <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50">
-        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-                <h2 class="text-sm font-bold flex items-center space-x-2">
+    <!-- 追溯记录弹窗 (已修复关闭交互与滚动) -->
+    <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden backdrop-blur-sm z-50 p-4" onclick="if(event.target===this) closeLogsModal()">
+        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3 flex-shrink-0">
+                <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
                     <span>📜 全生命周期变更与节点追溯</span>
-                    <span id="logs-title" class="text-blue-600 font-normal"></span>
+                    <span id="logs-title" class="text-blue-600 font-semibold"></span>
                 </h2>
-                <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-600 text-base font-bold">✕</button>
+                <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
-            <div class="max-h-[380px] overflow-y-auto custom-scroll space-y-2.5 pr-2" id="logs-container"></div>
-            <div class="flex justify-end mt-4">
-                <button onclick="closeLogsModal()" class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">关闭</button>
+            
+            <!-- 滚动记录列表 -->
+            <div class="overflow-y-auto custom-scroll space-y-2.5 pr-2 flex-1 my-2" id="logs-container">
+            </div>
+
+            <div class="flex justify-end pt-3 border-t border-gray-100 flex-shrink-0 mt-2">
+                <button onclick="closeLogsModal()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
             </div>
         </div>
     </div>
 
     <!-- 配置弹窗 -->
-    <div id="config-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50">
+    <div id="config-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4">⚙️ GitHub 云端同步配置</h2>
             <div class="space-y-3">
@@ -192,7 +196,6 @@
         let expandedRows = {};
         let currentEditingId = null;
 
-        // 待确认的节点临时变量
         let pendingCheck = {
             prodId: null,
             skuId: null,
@@ -212,6 +215,18 @@
                 document.getElementById("cfg-token").value = localStorage.getItem("wb_token") || "";
                 fetchFromCloud();
             }
+
+            // 监听 Esc 键快速关闭弹窗
+            document.addEventListener('keydown', function(event) {
+                if (event.key === "Escape") {
+                    closeLogsModal();
+                    closeEditModal();
+                    closeCheckModal();
+                    if (!document.getElementById("config-modal").classList.contains("hidden")) {
+                        toggleConfigModal();
+                    }
+                }
+            });
         }
 
         function toggleConfigModal() {
@@ -272,7 +287,7 @@
                         bomOk: false,
                         detailOk: false,
                         sapOk: false,
-                        nodeRecords: {} // 保存各个节点的完成时间与备注
+                        nodeRecords: {}
                     });
                 });
             } else {
@@ -310,7 +325,6 @@
             syncToCloud();
         }
 
-        // 打开编辑系列弹窗
         function openEditModal(prodId) {
             currentEditingId = prodId;
             const p = products.find(item => item.id === prodId);
@@ -328,7 +342,6 @@
             currentEditingId = null;
         }
 
-        // 保存编辑与变动留痕
         function saveEditChanges() {
             if (!currentEditingId) return;
             const p = products.find(item => item.id === currentEditingId);
@@ -370,7 +383,6 @@
             }
         }
 
-        // 触发节点勾选弹窗
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -378,7 +390,6 @@
             if (!sku) return;
 
             const targetVal = checkboxEl.checked;
-            // 暂时回退 checkbox 界面状态，待弹窗确认后再正式赋值
             checkboxEl.checked = !targetVal;
 
             pendingCheck = {
@@ -401,7 +412,6 @@
             pendingCheck = { prodId: null, skuId: null, key: null, label: null, targetVal: false };
         }
 
-        // 确认节点变动并记录时间与原因
         function confirmNodeCheckChange() {
             const { prodId, skuId, key, label, targetVal } = pendingCheck;
             if (!prodId || !skuId) return;
@@ -466,7 +476,7 @@
             syncToCloud();
         }
 
-        // 查看追溯日志
+        // 打开追溯弹窗
         function openLogsModal(prodId) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -476,7 +486,7 @@
 
             const logs = p.historyLogs || [];
             if (logs.length === 0) {
-                container.innerHTML = `<div class="text-gray-400 text-center py-6">暂无历史追溯记录</div>`;
+                container.innerHTML = `<div class="text-gray-400 text-center py-8">暂无历史追溯记录</div>`;
             } else {
                 logs.forEach(log => {
                     let badgeClass = "bg-gray-100 text-gray-700 border-gray-300";
@@ -488,12 +498,12 @@
                     else if (log.type === "NODE_CANCEL") { badgeClass = "bg-red-50 text-red-700 border-red-200"; label = "节点回退"; }
 
                     const item = document.createElement("div");
-                    item.className = "bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start space-x-3";
+                    item.className = "bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-start space-x-3 shadow-xs";
                     item.innerHTML = `
-                        <span class="border px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${label}</span>
-                        <div class="flex-1">
-                            <div class="text-gray-800 leading-relaxed text-xs">${escapeHtml(log.desc)}</div>
-                            <div class="text-[10px] text-gray-500 font-mono mt-1">记录时间: ${log.time}</div>
+                        <span class="border px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 ${badgeClass}">${label}</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-gray-800 leading-relaxed text-xs break-words">${escapeHtml(log.desc)}</div>
+                            <div class="text-[10px] text-gray-400 font-mono mt-1">记录时间: ${log.time}</div>
                         </div>
                     `;
                     container.appendChild(item);
@@ -502,6 +512,7 @@
             document.getElementById("logs-modal").classList.remove("hidden");
         }
 
+        // 关闭追溯弹窗并返回主页面
         function closeLogsModal() {
             document.getElementById("logs-modal").classList.add("hidden");
         }
@@ -637,7 +648,6 @@
                     }
                 }
 
-                // 显式展示备注/延期原因
                 let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
 
                 const isExpanded = !!expandedRows[prod.id];
@@ -677,7 +687,6 @@
                 `;
                 tbody.appendChild(tr);
 
-                // 子 SKU 抽屉
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/80";
@@ -691,7 +700,6 @@
                                 <div class="space-y-2">
                     `;
                     prod.skus.forEach(sku => {
-                        // 节点提示信息生成
                         const getTip = (key) => {
                             if (sku.nodeRecords && sku.nodeRecords[key] && sku.nodeRecords[key].status) {
                                 const rec = sku.nodeRecords[key];
