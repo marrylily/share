@@ -6,27 +6,11 @@
     <title>电商新品生命周期推进矩阵</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* 强制覆盖滚动条样式，确保可见且易滑动 */
-        .force-scroll-y {
-            overflow-y: scroll !important;
-            scrollbar-width: thin;
-            scrollbar-color: #94a3b8 #f1f5f9;
-        }
-        .force-scroll-y::-webkit-scrollbar {
-            width: 8px !important;
-            display: block !important;
-        }
-        .force-scroll-y::-webkit-scrollbar-track {
-            background: #f1f5f9 !important;
-            border-radius: 4px;
-        }
-        .force-scroll-y::-webkit-scrollbar-thumb {
-            background-color: #94a3b8 !important;
-            border-radius: 4px;
-        }
-        .force-scroll-y::-webkit-scrollbar-thumb:hover {
-            background-color: #64748b !important;
-        }
+        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .log-scroll::-webkit-scrollbar { width: 6px; }
+        .log-scroll::-webkit-scrollbar-track { background: #f8fafc; }
+        .log-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen">
@@ -35,7 +19,7 @@
         <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 节点留痕备注 · 归档时间追溯</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 节点留痕备注 · 居中视窗追溯</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -91,8 +75,8 @@
         </div>
 
         <!-- 主表格 -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto force-scroll-y">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-12">
+            <div class="overflow-x-auto custom-scroll">
                 <table class="w-full text-left text-xs text-gray-700">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
@@ -112,9 +96,9 @@
         </div>
     </div>
 
-    <!-- 修改产品信息弹窗 -->
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-40" onclick="if(event.target===this) closeEditModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+    <!-- 修改产品信息弹窗 (视口绝对居中) -->
+    <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeEditModal()">
+        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs transform transition-all">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
                 <span>✏️ 修改产品及节点 (变动将自动留痕)</span>
                 <span id="edit-prod-id" class="text-[10px] text-gray-400 font-mono"></span>
@@ -144,9 +128,9 @@
         </div>
     </div>
 
-    <!-- 节点勾选留痕弹窗 -->
-    <div id="check-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50" onclick="if(event.target===this) closeCheckModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
+    <!-- 节点勾选留痕弹窗 (视口绝对居中) -->
+    <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeCheckModal()">
+        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs transform transition-all">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
                 <span id="check-action-icon">📝</span>
                 <span id="check-modal-title">节点变动记录</span>
@@ -163,10 +147,10 @@
         </div>
     </div>
 
-    <!-- 追溯记录弹窗 (彻底重构滚动容器与交互) -->
-    <div id="logs-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden backdrop-blur-sm z-50 p-4" onclick="if(event.target===this) closeLogsModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="max-height: 85vh;">
-            <!-- 头部 -->
+    <!-- 追溯记录弹窗 (绝对居中视窗 + 独立滑动体验) -->
+    <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeLogsModal()">
+        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col h-[560px] max-h-[90vh]">
+            <!-- 头部固定 -->
             <div class="flex justify-between items-center pb-3 border-b border-gray-200 flex-shrink-0">
                 <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
                     <span>📜 全生命周期变更与节点追溯</span>
@@ -175,11 +159,11 @@
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
             
-            <!-- 强制高度并支持自由滚动的列表容器 -->
-            <div class="force-scroll-y my-3 pr-2 space-y-2.5" id="logs-container" style="height: 420px; max-height: 55vh;">
+            <!-- 内容滚动区 (占满中间，自由滑动) -->
+            <div class="log-scroll overflow-y-auto my-3 pr-2 space-y-2.5 flex-1" id="logs-container">
             </div>
 
-            <!-- 底部按钮 -->
+            <!-- 底部操作栏固定 -->
             <div class="flex justify-end pt-3 border-t border-gray-100 flex-shrink-0">
                 <button onclick="closeLogsModal()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
             </div>
@@ -187,7 +171,7 @@
     </div>
 
     <!-- 配置弹窗 -->
-    <div id="config-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden backdrop-blur-sm z-50" onclick="if(event.target===this) toggleConfigModal()">
+    <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4">⚙️ GitHub 云端同步配置</h2>
             <div class="space-y-3">
@@ -249,8 +233,15 @@
             });
         }
 
+        // 打开弹窗时锁定背景滚动，关闭时解锁
+        function lockBodyScroll(lock) {
+            document.body.style.overflow = lock ? 'hidden' : '';
+        }
+
         function toggleConfigModal() {
-            document.getElementById("config-modal").classList.toggle("hidden");
+            const modal = document.getElementById("config-modal");
+            modal.classList.toggle("hidden");
+            lockBodyScroll(!modal.classList.contains("hidden"));
         }
 
         function saveConfigAndSync() {
@@ -355,11 +346,13 @@
             document.getElementById("edit-prod-date").value = p.prodDate || "";
             document.getElementById("edit-reason").value = p.remark || "";
             document.getElementById("edit-modal").classList.remove("hidden");
+            lockBodyScroll(true);
         }
 
         function closeEditModal() {
             document.getElementById("edit-modal").classList.add("hidden");
             currentEditingId = null;
+            lockBodyScroll(false);
         }
 
         function saveEditChanges() {
@@ -425,11 +418,13 @@
             document.getElementById("check-modal-subtitle").innerText = `规格: ${sku.name}`;
             document.getElementById("check-remark-input").value = "";
             document.getElementById("check-modal").classList.remove("hidden");
+            lockBodyScroll(true);
         }
 
         function closeCheckModal() {
             document.getElementById("check-modal").classList.add("hidden");
             pendingCheck = { prodId: null, skuId: null, key: null, label: null, targetVal: false };
+            lockBodyScroll(false);
         }
 
         function confirmNodeCheckChange() {
@@ -496,7 +491,7 @@
             syncToCloud();
         }
 
-        // 打开追溯弹窗并初始化内容
+        // 打开追溯弹窗（居中锁定并支持滚动）
         function openLogsModal(prodId) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -506,7 +501,7 @@
 
             const logs = p.historyLogs || [];
             if (logs.length === 0) {
-                container.innerHTML = `<div class="text-gray-400 text-center py-12">暂无历史追溯记录</div>`;
+                container.innerHTML = `<div class="text-gray-400 text-center py-16">暂无历史追溯记录</div>`;
             } else {
                 logs.forEach(log => {
                     let badgeClass = "bg-gray-100 text-gray-700 border-gray-300";
@@ -530,12 +525,13 @@
                 });
             }
             document.getElementById("logs-modal").classList.remove("hidden");
-            // 弹窗打开后自动滚到顶部
+            lockBodyScroll(true);
             container.scrollTop = 0;
         }
 
         function closeLogsModal() {
             document.getElementById("logs-modal").classList.add("hidden");
+            lockBodyScroll(false);
         }
 
         function addSku(prodId) {
