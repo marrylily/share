@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>电商新品生命周期推进矩阵</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         html, body {
             overflow-x: hidden;
             width: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
         .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -16,7 +17,7 @@
             overflow-y: scroll !important;
             -webkit-overflow-scrolling: touch;
         }
-        .log-scroll::-webkit-scrollbar { width: 6px; }
+        .log-scroll::-webkit-scrollbar { width: 5px; }
         .log-scroll::-webkit-scrollbar-track { background: #f8fafc; }
         .log-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         
@@ -40,83 +41,94 @@
             text-decoration: underline;
             word-break: break-all;
         }
+
+        /* 响应式显示控制 */
+        @media (max-width: 768px) {
+            .desktop-table-view { display: none !important; }
+            .mobile-card-view { display: block !important; }
+        }
+        @media (min-width: 769px) {
+            .desktop-table-view { display: block !important; }
+            .mobile-card-view { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased">
 
-    <div class="w-full max-w-7xl mx-auto px-3 sm:px-6 py-5">
+    <div class="w-full max-w-7xl mx-auto px-2 sm:px-6 py-3 sm:py-5">
         <!-- 头部导航 -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-5 bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
-                <h1 class="text-lg sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
-                    <span>📊 新品生命周期推进与审计中枢</span>
-                    <span id="role-badge" class="text-xs bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md font-semibold">管理模式</span>
+                <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
+                    <span>📊 新品生命周期推进中枢</span>
+                    <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-xs text-gray-500 mt-0.5" id="header-desc">智能查重拦截 · 节点批量连选 · 系列大备注/文件链接 · 支持导出 Excel</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">多端自适应 · 智能查重 · 批量连选 · 大备注外链 · 支持导出 Excel</p>
             </div>
-            <div class="flex items-center space-x-2.5 flex-wrap">
-                <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
-                <!-- 仅管理模式可见的分享按钮 -->
-                <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs border border-indigo-200 font-bold transition flex items-center space-x-1">
-                    <span>🔗 复制访客只读链接</span>
-                </button>
-                <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs border border-gray-300 font-medium">⚙️ 账号配置</button>
+            <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
+                <span id="auth-tag" class="text-[10px] sm:text-xs bg-red-100 text-red-700 border border-red-200 px-2 sm:px-3 py-1 rounded-full font-medium">未连接云端</span>
+                <div class="flex items-center space-x-1.5">
+                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition flex items-center space-x-1">
+                        <span>🔗 复制只读链接</span>
+                    </button>
+                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 配置</button>
+                </div>
             </div>
         </header>
 
-        <!-- 批量新建面板 (访客模式下自动隐藏) -->
-        <div id="admin-create-panel" class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm mb-5">
-            <h2 class="text-sm font-bold text-gray-800 mb-3">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
+        <!-- 批量新建面板 (只读模式隐藏) -->
+        <div id="admin-create-panel" class="bg-white p-3.5 sm:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 sm:mb-5">
+            <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
             
-            <div class="mb-3">
-                <label class="block text-gray-700 font-semibold mb-1 text-xs">
-                    子变体 / SKU 列表 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(从表格直接复制多行粘贴，系统自动查重与裂变)</span>
+            <div class="mb-2.5">
+                <label class="block text-gray-700 font-semibold mb-1 text-[11px] sm:text-xs">
+                    子变体 / SKU 列表 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(支持表格多行直接粘贴)</span>
                 </label>
-                <textarea id="p-skus-batch" rows="3" placeholder="HD-LD22-H枪灰色1.3&#10;HD-LD22-H枪灰色1.5&#10;HD-LD22-H奶白色1.3-1&#10;HD-LD22-H奶白色1.5-1" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
+                <textarea id="p-skus-batch" rows="3" placeholder="HD-LD22-H枪灰色1.3&#10;HD-LD22-H枪灰色1.5&#10;HD-LD22-H奶白色1.3-1&#10;HD-LD22-H奶白色1.5-1" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs mb-1">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名 <span class="text-gray-400 font-normal">(选填，留空自动提取)</span></label>
-                    <input type="text" id="p-name" placeholder="自动提取如: HD-LD22-H" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1 text-[11px] sm:text-xs">主产品型号 / 系列名 <span class="text-gray-400 font-normal">(选填)</span></label>
+                    <input type="text" id="p-name" placeholder="自动提取如: HD-LD22-H" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道 <span class="text-red-500">*</span></label>
-                    <input type="text" id="p-category" placeholder="如: 落地 / 手摇" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1 text-[11px] sm:text-xs">品类 / 渠道 <span class="text-red-500">*</span></label>
+                    <input type="text" id="p-category" placeholder="如: 落地 / 手摇" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">量产大货截点 <span class="text-red-500">*</span></label>
-                    <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1 text-[11px] sm:text-xs">量产大货截点 <span class="text-red-500">*</span></label>
+                    <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end">
-                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold shadow-sm transition">🚀 智能查重并创建</button>
+                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 rounded-lg font-bold shadow-sm transition text-xs">🚀 智能查重并创建</button>
                 </div>
             </div>
         </div>
 
         <!-- 统计与检索/导出操作条 -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3 text-xs text-gray-600 px-1">
-            <div class="flex items-center space-x-4 flex-wrap">
-                <span>总系列: <strong id="stat-total" class="text-gray-900">0</strong></span>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 mb-3 text-xs text-gray-600 px-1">
+            <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
+                <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
                 <span>🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
-                <span>🔥 紧急重要: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
-                <span>⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
-                <span>✅ 已归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
+                <span>🔥 紧急: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
+                <span>⚡ 进行中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
+                <span>✅ 归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
             </div>
             
-            <div class="flex items-center space-x-2.5 w-full md:w-auto flex-wrap">
-                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3.5 py-1.5 rounded-lg text-xs transition flex items-center space-x-1.5 cursor-pointer">
-                    <span>📥 导出选中系列至 Excel</span>
+            <div class="flex items-center space-x-2 w-full md:w-auto flex-wrap">
+                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
+                    <span>📥 导出 Excel</span>
                 </button>
-                <div class="relative flex-1 md:w-60">
-                    <input type="text" id="search-input" oninput="renderTable()" placeholder="🔍 搜索系列、品类或SKU..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <div class="relative flex-1 md:w-56">
+                    <input type="text" id="search-input" oninput="renderTable()" placeholder="🔍 搜索系列、品类或SKU..." class="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                 </div>
-                <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap">状态检测中...</div>
+                <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">检测中...</div>
             </div>
         </div>
 
-        <!-- 主表格容器 -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-10 w-full">
+        <!-- 桌面端表格视图 (Desktop) -->
+        <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-10 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
                 <table class="w-full text-left text-xs text-gray-700 min-w-[850px]">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
@@ -130,7 +142,7 @@
                             <th class="p-3 min-w-[130px]">量产大货时间</th>
                             <th class="p-3 min-w-[220px]">健康度 / 变动说明 / 大备注</th>
                             <th class="p-3 min-w-[110px]">状态</th>
-                            <th class="p-3 text-right min-w-[170px]" id="th-operations">操作与审计</th>
+                            <th class="p-3 text-right min-w-[170px]">操作与审计</th>
                         </tr>
                     </thead>
                     <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal">
@@ -138,61 +150,75 @@
                 </table>
             </div>
         </div>
+
+        <!-- 手机端卡片流视图 (Mobile) -->
+        <div class="mobile-card-view space-y-3 mb-12">
+            <!-- 手机端顶部全选条 -->
+            <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300">
+                    <span class="font-bold text-gray-700">全选当前系列</span>
+                </label>
+                <span class="text-gray-400 text-[11px]" id="mobile-selected-count">已选 0 项</span>
+            </div>
+            
+            <!-- 卡片容器 -->
+            <div id="mobile-cards-container" class="space-y-3"></div>
+        </div>
     </div>
 
     <!-- 系列大备注弹窗 -->
-    <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeBigNoteModal()">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 650px;">
-            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
+    <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 85vh; max-height: 650px;">
+            <div class="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
                 <div>
-                    <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
-                        <span>📝 系列大备注 & 文件资料备忘录</span>
-                        <span id="big-note-prod-name" class="text-blue-600 font-semibold"></span>
+                    <h2 class="text-xs sm:text-sm font-bold text-gray-900 flex items-center space-x-1 sm:space-x-2">
+                        <span>📝 系列大备注 & 文件备忘</span>
+                        <span id="big-note-prod-name" class="text-blue-600 font-semibold truncate max-w-[150px] sm:max-w-none"></span>
                     </h2>
-                    <p class="text-[11px] text-gray-400 mt-0.5">支持快捷插入删除线、小文件文档外链与长内容滑动留痕</p>
+                    <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">支持删除线、文件外链与长内容滑动</p>
                 </div>
                 <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
 
-            <!-- 工具栏 (访客模式隐藏) -->
-            <div id="big-note-toolbar" class="px-6 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center space-x-2 flex-wrap flex-shrink-0">
-                <span class="text-gray-500 font-medium text-[11px]">快捷格式:</span>
-                <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2 py-1 rounded text-[11px] font-mono transition" title="为选中文本添加删除线">~~ 删除线 ~~</button>
-                <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2 py-1 rounded text-[11px] transition" title="插入飞书/蓝湖/网盘等文件链接">🔗 插入文档/网盘链接</button>
-                <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2 py-1 rounded text-[11px] transition">⏱️ 插入当前时间戳</button>
+            <!-- 工具栏 -->
+            <div id="big-note-toolbar" class="px-3 sm:px-6 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-1.5 sm:space-x-2 flex-wrap flex-shrink-0">
+                <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2 py-1 rounded text-[10px] sm:text-[11px] font-mono transition">~~删除线~~</button>
+                <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2 py-1 rounded text-[10px] sm:text-[11px] transition">🔗 插入外链</button>
+                <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2 py-1 rounded text-[10px] sm:text-[11px] transition">⏱️ 时间戳</button>
             </div>
             
             <!-- 内容滚动区 -->
-            <div class="log-scroll flex-1 p-6 space-y-4 bg-gray-50/40">
+            <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50/40">
                 <div id="big-note-edit-section">
-                    <label class="block text-gray-700 font-bold mb-1">大备注编辑框：</label>
-                    <textarea id="big-note-textarea" rows="7" oninput="updateBigNoteLivePreview()" placeholder="在此输入详细备忘..." class="w-full bg-white border border-gray-300 rounded-xl p-3 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans leading-relaxed"></textarea>
+                    <label class="block text-gray-700 font-bold mb-1 text-xs">大备注编辑框：</label>
+                    <textarea id="big-note-textarea" rows="6" oninput="updateBigNoteLivePreview()" placeholder="在此输入详细备忘..." class="w-full bg-white border border-gray-300 rounded-xl p-2.5 sm:p-3 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans leading-relaxed"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-gray-500 font-semibold mb-1 text-[11px]">资料备忘内容：</label>
-                    <div id="big-note-preview" class="rich-note bg-white border border-gray-200 rounded-xl p-3.5 text-xs text-gray-800 leading-relaxed min-h-[100px] whitespace-pre-wrap"></div>
+                    <label class="block text-gray-500 font-semibold mb-1 text-[11px]">资料备忘内容预览：</label>
+                    <div id="big-note-preview" class="rich-note bg-white border border-gray-200 rounded-xl p-3 text-xs text-gray-800 leading-relaxed min-h-[80px] whitespace-pre-wrap break-words"></div>
                 </div>
             </div>
 
             <!-- 底部操作栏 -->
-            <div class="flex justify-end px-6 py-3.5 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
-                <button onclick="closeBigNoteModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">返回主界面</button>
-                <button id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注并同步</button>
+            <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
+                <button onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">返回主界面</button>
+                <button id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注</button>
             </div>
         </div>
     </div>
 
     <!-- 修改产品信息弹窗 -->
-    <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeEditModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
-            <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
-                <span>✏️ 修改产品及量产大货截点</span>
+    <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeEditModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-3.5 flex items-center justify-between">
+                <span>✏️ 修改产品及大货时间</span>
                 <span id="edit-prod-id" class="text-[10px] text-gray-400 font-mono"></span>
             </h2>
-            <div class="space-y-3">
+            <div class="space-y-2.5">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">产品型号 / 系列 <span class="text-gray-400">(可直接修改)</span></label>
+                    <label class="block text-gray-600 font-medium mb-1">产品型号 / 系列</label>
                     <input type="text" id="edit-name" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
@@ -204,61 +230,61 @@
                     <input type="date" id="edit-prod-date" class="w-full border border-blue-300 bg-blue-50/30 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 延期备注说明 <span class="text-blue-500">(选填，将直接展示在表格)</span></label>
-                    <input type="text" id="edit-reason" placeholder="如: 模具延误整改、包装改版、工厂排产调整..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 延期备注说明</label>
+                    <input type="text" id="edit-reason" placeholder="如: 模具整改、包装改版..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 mt-5">
+            <div class="flex justify-end space-x-2 mt-4">
                 <button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">保存修改</button>
+                <button onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">保存修改</button>
             </div>
         </div>
     </div>
 
     <!-- 节点勾选 / 批量连选留痕弹窗 -->
-    <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeCheckModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
+    <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeCheckModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
                 <span id="check-action-icon">📝</span>
                 <span id="check-modal-title">节点变动记录</span>
             </h2>
             <p class="text-gray-500 mb-3 text-[11px]" id="check-modal-subtitle"></p>
             <div class="mb-4">
-                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 <span class="text-gray-400">(选填，将应用于本次更新)</span></label>
-                <input type="text" id="check-remark-input" placeholder="如: 财务已全过审、第2版详情页确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 (选填)</label>
+                <input type="text" id="check-remark-input" placeholder="如: 财务已全过审、第2版确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <div class="flex justify-end space-x-2">
                 <button onclick="closeCheckModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="confirmNodeCheckChange()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认一键更新</button>
+                <button onclick="confirmNodeCheckChange()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认一键更新</button>
             </div>
         </div>
     </div>
 
     <!-- 追溯记录弹窗 -->
-    <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeLogsModal()">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 80vh; max-height: 600px;">
-            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
-                <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
-                    <span>📜 全生命周期变更与节点追溯</span>
-                    <span id="logs-title" class="text-blue-600 font-semibold"></span>
+    <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeLogsModal()">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 600px;">
+            <div class="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
+                <h2 class="text-xs sm:text-sm font-bold text-gray-900 flex items-center space-x-1.5 sm:space-x-2">
+                    <span>📜 生命周期变更追溯</span>
+                    <span id="logs-title" class="text-blue-600 font-semibold truncate max-w-[150px] sm:max-w-none"></span>
                 </h2>
                 <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
             
-            <div class="log-scroll flex-1 p-6 space-y-2.5 bg-gray-50/50" id="logs-container">
+            <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-2.5 bg-gray-50/50" id="logs-container">
             </div>
 
-            <div class="flex justify-end px-6 py-3.5 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl">
-                <button onclick="closeLogsModal()" class="px-6 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
+            <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl">
+                <button onclick="closeLogsModal()" class="px-5 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition shadow-sm">返回主界面</button>
             </div>
         </div>
     </div>
 
     <!-- 配置弹窗 -->
-    <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) toggleConfigModal()">
-        <div class="bg-white border border-gray-200 p-6 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
-            <h2 class="text-sm font-bold text-gray-900 mb-4">⚙️ GitHub 云端同步配置</h2>
-            <div class="space-y-3">
+    <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-3">⚙️ GitHub 云端同步配置</h2>
+            <div class="space-y-2.5">
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">GitHub 用户名</label>
                     <input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-2 text-gray-900">
@@ -272,9 +298,9 @@
                     <input type="password" id="cfg-token" class="w-full border border-gray-300 rounded p-2 text-gray-900" placeholder="ghp_xxxxxxxxxxxx">
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 mt-5">
+            <div class="flex justify-end space-x-2 mt-4">
                 <button onclick="toggleConfigModal()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded">取消</button>
-                <button onclick="saveConfigAndSync()" class="px-3 py-1.5 bg-blue-600 text-white rounded font-medium">保存配置</button>
+                <button onclick="saveConfigAndSync()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded font-medium">保存配置</button>
             </div>
         </div>
     </div>
@@ -286,7 +312,7 @@
         let selectedProductIds = new Set();
         let currentEditingId = null;
         let currentBigNoteProdId = null;
-        let isReadOnlyMode = false; // 是否为只读访客模式
+        let isReadOnlyMode = false;
 
         let pendingCheck = {
             prodId: null,
@@ -303,7 +329,6 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
-            // 检查 URL 是否携带访客只读参数 (e.g. ?mode=readonly 或带 token 参数)
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
             const paramOwner = urlParams.get('owner');
@@ -340,13 +365,11 @@
             });
         }
 
-        // 应用访客只读界面的 UI 隐藏逻辑
         function applyReadOnlyUI() {
-            document.getElementById("role-badge").innerText = "👀 访客只读模式";
-            document.getElementById("role-badge").className = "text-xs bg-gray-100 text-gray-700 border border-gray-300 px-2 py-0.5 rounded-md font-semibold";
-            document.getElementById("header-desc").innerText = "当前处于只读视图 · 支持自由筛选、查看大备注备忘及勾选导出 Excel";
+            document.getElementById("role-badge").innerText = "👀 访客只读";
+            document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
+            document.getElementById("header-desc").innerText = "只读视图 · 支持手机/电脑筛选、查阅大备注与导出 Excel";
 
-            // 隐藏修改与配置入口
             if (document.getElementById("admin-create-panel")) document.getElementById("admin-create-panel").style.display = "none";
             if (document.getElementById("btn-share-readonly")) document.getElementById("btn-share-readonly").style.display = "none";
             if (document.getElementById("btn-config")) document.getElementById("btn-config").style.display = "none";
@@ -355,21 +378,20 @@
             if (document.getElementById("btn-save-big-note")) document.getElementById("btn-save-big-note").style.display = "none";
         }
 
-        // 一键生成访客只读分享链接
         function copyReadOnlyShareLink() {
             const owner = localStorage.getItem("wb_owner");
             const repo = localStorage.getItem("wb_repo");
             const token = localStorage.getItem("wb_token");
 
             if (!owner || !repo || !token) {
-                return alert("请先完成【⚙️ 账号配置】并成功同步云端后，再生成分享链接！");
+                return alert("请先完成【⚙️ 配置】并同步云端后再生成分享链接！");
             }
 
             const currentUrl = window.location.origin + window.location.pathname;
             const shareUrl = `${currentUrl}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&token=${encodeURIComponent(token)}`;
 
             navigator.clipboard.writeText(shareUrl).then(() => {
-                alert("🎉 访客只读链接已复制到剪贴板！\n\n其他人打开此链接后：\n1. 只能查看、筛选、查看大备注与追溯日志。\n2. 可以任意勾选系列导出 Excel。\n3. 无法进行任何修改、删除或云端同步操作，无需登录！");
+                alert("🎉 访客只读链接已复制！手机/电脑均可直接打开免登查阅！");
             }).catch(() => {
                 prompt("请复制以下只读分享链接：", shareUrl);
             });
@@ -495,7 +517,7 @@
         }
 
         function saveBigNoteChanges() {
-            if (isReadOnlyMode) return alert("当前为只读模式，无法修改数据！");
+            if (isReadOnlyMode) return alert("只读模式无法修改！");
             if (!currentBigNoteProdId) return;
             const p = products.find(item => item.id === currentBigNoteProdId);
             if (!p) return;
@@ -517,7 +539,7 @@
 
         // ================= 批量新建逻辑 =================
         function addProductWithBatchSkus() {
-            if (isReadOnlyMode) return alert("当前为只读模式，无法添加新系列！");
+            if (isReadOnlyMode) return alert("只读模式无法创建！");
             const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
             const category = document.getElementById("p-category").value.trim() || "常规新品";
@@ -549,7 +571,7 @@
             uniqueInputSkus.forEach(sku => {
                 let lower = sku.toLowerCase();
                 if (existingSkuMap[lower]) {
-                    globalConflicts.push(`• 【${sku}】 (已存在于系列：${existingSkuMap[lower]})`);
+                    globalConflicts.push(`• 【${sku}】 (已存在于：${existingSkuMap[lower]})`);
                 } else {
                     validSkus.push(sku);
                 }
@@ -708,7 +730,7 @@
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
             if (isReadOnlyMode) {
                 checkboxEl.checked = !checkboxEl.checked;
-                return alert("当前为只读模式，无法修改推进节点！");
+                return alert("当前为只读模式！");
             }
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -735,7 +757,7 @@
         }
 
         function triggerBatchColumnCheck(prodId, key, label) {
-            if (isReadOnlyMode) return alert("当前为只读模式，无法批量修改！");
+            if (isReadOnlyMode) return alert("只读模式无法批量修改！");
             const p = products.find(item => item.id === prodId);
             if (!p || !p.skus || p.skus.length === 0) return;
 
@@ -752,7 +774,7 @@
 
             document.getElementById("check-action-icon").innerText = targetVal ? "⚡" : "↩️";
             document.getElementById("check-modal-title").innerText = targetVal ? `批量标记【${label}】已完成` : `批量取消【${label}】状态`;
-            document.getElementById("check-modal-subtitle").innerText = `将同时应用到【${p.name}】下的全部 ${p.skus.length} 个 SKU`;
+            document.getElementById("check-modal-subtitle").innerText = `将同时应用到全部 ${p.skus.length} 个 SKU`;
             document.getElementById("check-remark-input").value = "";
             document.getElementById("check-modal").classList.remove("hidden");
             lockBodyScroll(true);
@@ -847,24 +869,24 @@
 
             const logs = p.historyLogs || [];
             if (logs.length === 0) {
-                container.innerHTML = `<div class="text-gray-400 text-center py-16">暂无历史追溯记录</div>`;
+                container.innerHTML = `<div class="text-gray-400 text-center py-12">暂无历史追溯记录</div>`;
             } else {
                 logs.forEach(log => {
                     let badgeClass = "bg-gray-100 text-gray-700 border-gray-300";
                     let label = "流转";
                     if (log.type === "CREATE") { badgeClass = "bg-blue-50 text-blue-700 border-blue-200"; label = "创建"; }
                     else if (log.type === "ARCHIVE") { badgeClass = "bg-green-50 text-green-700 border-green-200"; label = "归档"; }
-                    else if (log.type === "UPDATE") { badgeClass = "bg-yellow-50 text-yellow-700 border-yellow-200"; label = "系列变更"; }
-                    else if (log.type === "NODE_DONE") { badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; label = "节点完成"; }
-                    else if (log.type === "NODE_CANCEL") { badgeClass = "bg-red-50 text-red-700 border-red-200"; label = "节点回退"; }
+                    else if (log.type === "UPDATE") { badgeClass = "bg-yellow-50 text-yellow-700 border-yellow-200"; label = "变更"; }
+                    else if (log.type === "NODE_DONE") { badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; label = "完成"; }
+                    else if (log.type === "NODE_CANCEL") { badgeClass = "bg-red-50 text-red-700 border-red-200"; label = "回退"; }
 
                     const item = document.createElement("div");
-                    item.className = "bg-white p-3.5 rounded-xl border border-gray-200 flex items-start space-x-3 shadow-xs";
+                    item.className = "bg-white p-3 rounded-xl border border-gray-200 flex items-start space-x-2.5 shadow-xs";
                     item.innerHTML = `
-                        <span class="border px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 ${badgeClass}">${label}</span>
+                        <span class="border px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 mt-0.5 ${badgeClass}">${label}</span>
                         <div class="flex-1 min-w-0">
                             <div class="text-gray-800 leading-relaxed text-xs break-words">${escapeHtml(log.desc)}</div>
-                            <div class="text-[10px] text-gray-400 font-mono mt-1">记录时间: ${log.time}</div>
+                            <div class="text-[10px] text-gray-400 font-mono mt-0.5">${log.time}</div>
                         </div>
                     `;
                     container.appendChild(item);
@@ -902,19 +924,21 @@
 
         function updateSelectAllCheckboxState() {
             const selectAllEl = document.getElementById("select-all-checkbox");
-            if (!selectAllEl) return;
-            if (products.length === 0) {
-                selectAllEl.checked = false;
-                selectAllEl.indeterminate = false;
-            } else if (selectedProductIds.size === products.length) {
-                selectAllEl.checked = true;
-                selectAllEl.indeterminate = false;
-            } else if (selectedProductIds.size > 0) {
-                selectAllEl.checked = false;
-                selectAllEl.indeterminate = true;
-            } else {
-                selectAllEl.checked = false;
-                selectAllEl.indeterminate = false;
+            const mobileSelectAllEl = document.getElementById("mobile-select-all");
+            const mobileCountEl = document.getElementById("mobile-selected-count");
+
+            if (mobileCountEl) mobileCountEl.innerText = `已选 ${selectedProductIds.size} 项`;
+
+            const isAll = (products.length > 0 && selectedProductIds.size === products.length);
+            const isInd = (selectedProductIds.size > 0 && selectedProductIds.size < products.length);
+
+            if (selectAllEl) {
+                selectAllEl.checked = isAll;
+                selectAllEl.indeterminate = isInd;
+            }
+            if (mobileSelectAllEl) {
+                mobileSelectAllEl.checked = isAll;
+                mobileSelectAllEl.indeterminate = isInd;
             }
         }
 
@@ -1017,7 +1041,7 @@
             for (let p of products) {
                 let found = (p.skus || []).find(s => s.name.trim().toLowerCase() === targetSku.toLowerCase());
                 if (found) {
-                    return alert(`❌ 无法添加：规格【${targetSku}】已存在于产品系列【${p.name}】中！`);
+                    return alert(`❌ 规格【${targetSku}】已存在于【${p.name}】中！`);
                 }
             }
 
@@ -1057,7 +1081,7 @@
                 for (let otherP of products) {
                     let found = (otherP.skus || []).find(s => s.id !== skuId && s.name.trim().toLowerCase() === targetSku.toLowerCase());
                     if (found) {
-                        return alert(`❌ 规格名称重复：【${targetSku}】已存在于产品系列【${otherP.name}】中！`);
+                        return alert(`❌ 【${targetSku}】已存在于【${otherP.name}】中！`);
                     }
                 }
 
@@ -1107,7 +1131,7 @@
             const pIdx = products.findIndex(item => item.id === prodId);
             if (pIdx === -1) return;
 
-            if (confirm(`确定删除该产品系列【${products[pIdx].name}】吗？删除后将彻底移除。`)) {
+            if (confirm(`确定删除该产品系列【${products[pIdx].name}】吗？`)) {
                 delete expandedRows[prodId];
                 selectedProductIds.delete(prodId);
                 products.splice(pIdx, 1);
@@ -1116,10 +1140,12 @@
             }
         }
 
-        // 渲染主表格
+        // 渲染主视图（桌面表格 + 手机端卡片流）
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
+            const mobileContainer = document.getElementById("mobile-cards-container");
             tbody.innerHTML = "";
+            mobileContainer.innerHTML = "";
 
             const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
             const today = new Date().toISOString().split('T')[0];
@@ -1160,15 +1186,14 @@
                         delayCount++;
                         statusBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded font-bold">🚨 延期 ${Math.abs(diffDays)} 天</span>`;
                     } else if (diffDays <= 7) {
-                        statusBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded font-bold">⚠️ 剩余 ${diffDays} 天</span>`;
+                        statusBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded font-bold">⚠️ 剩 ${diffDays} 天</span>`;
                     } else {
                         statusBadge = `<span class="text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">倒计时 ${diffDays} 天</span>`;
                     }
                 }
 
                 let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
-
-                let bigNoteBadge = prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="mt-1 text-[11px] text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center space-x-1 font-medium transition ml-1" title="查看/编辑大备注"><span>📌 资料备忘</span></button>` : '';
+                let bigNoteBadge = prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="mt-1 text-[11px] text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center space-x-1 font-medium transition ml-1" title="查看大备注"><span>📌 备忘</span></button>` : '';
 
                 const isExpanded = !!expandedRows[prod.id];
                 const isSelected = selectedProductIds.has(prod.id);
@@ -1176,42 +1201,16 @@
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
 
-                // 状态单元格：只读模式显示静态徽标，管理模式显示下拉菜单
-                let statusCellHtml = "";
-                if (isReadOnlyMode) {
-                    if (isUrgent) {
-                        statusCellHtml = `<span class="text-red-700 bg-red-100 border border-red-300 px-2.5 py-1 rounded font-bold">🔥 紧急重要</span>`;
-                    } else if (prod.status === "已归档") {
-                        statusCellHtml = `<span class="text-gray-600 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded font-medium">✅ 已归档</span>`;
-                    } else {
-                        statusCellHtml = `<span class="text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded font-medium">⚡ 进行中</span>`;
-                    }
-                } else {
-                    statusCellHtml = `
-                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
-                            <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
-                            <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
-                            <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
-                        </select>
-                    `;
-                }
-
-                // 操作按钮栏：只读模式仅保留大备注与追溯
-                let operationsHtml = "";
-                if (isReadOnlyMode) {
-                    operationsHtml = `
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
-                    `;
-                } else {
-                    operationsHtml = `
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改/备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
-                        <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
-                        <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
-                    `;
-                }
+                // ================= 1. 桌面表格渲染 =================
+                let desktopStatusHtml = isReadOnlyMode ? `
+                    <span class="${isUrgent ? 'text-red-700 font-bold bg-red-50 border border-red-200' : (prod.status === '已归档' ? 'text-gray-600 bg-gray-100 border border-gray-200' : 'text-blue-700 bg-blue-50 border border-blue-200')} px-2 py-0.5 rounded text-xs">${prod.status}</span>
+                ` : `
+                    <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
+                        <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
+                        <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
+                        <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
+                    </select>
+                `;
 
                 const tr = document.createElement("tr");
                 tr.className = `hover:bg-blue-50/40 transition-colors ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : (isDelayed ? 'bg-red-50/30' : '')} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
@@ -1228,7 +1227,7 @@
                         <div class="flex items-center space-x-1.5 flex-wrap">
                             ${isUrgent ? '<span class="bg-red-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">紧急</span>' : ''}
                             <span>${escapeHtml(prod.name)}</span>
-                            ${!isReadOnlyMode ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]" title="快速修改系列名">✏️</button>` : ''}
+                            ${!isReadOnlyMode ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]">✏️</button>` : ''}
                             <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 font-normal">${skuCount} SKU</span>
                         </div>
                     </td>
@@ -1236,7 +1235,7 @@
                     <td class="p-3 font-mono">
                         <div class="flex items-center space-x-1.5">
                             <span class="${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${cleanProdDate || '-'}</span>
-                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 opacity-60 hover:opacity-100 transition text-[11px]" title="修改大货时间及备注">✏️</button>` : ''}
+                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 text-[11px]">✏️</button>` : ''}
                         </div>
                     </td>
                     <td class="p-3">
@@ -1245,10 +1244,16 @@
                         ${bigNoteBadge}
                     </td>
                     <td class="p-3">
-                        ${statusCellHtml}
+                        ${desktopStatusHtml}
                     </td>
                     <td class="p-3 text-right space-x-2 font-medium">
-                        ${operationsHtml}
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改</button>` : ''}
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
+                        ${!isReadOnlyMode ? `
+                            <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
+                            <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
+                        ` : ''}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1261,16 +1266,16 @@
                             <div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格对接列表</span>
-                                        <span class="text-[11px] text-gray-400 font-normal">(${skuCount} 个变体)</span>
+                                        <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格列表</span>
+                                        <span class="text-[11px] text-gray-400">(${skuCount} 个变体)</span>
                                     </div>
                                     ${!isReadOnlyMode ? `
                                     <div class="flex items-center space-x-2 flex-wrap">
                                         <span class="text-[11px] text-gray-500 font-semibold">⚡ 快捷连选:</span>
-                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-200 transition" title="一键将该系列全部SKU的财务BOM标记完成/取消">财务BOM 全选</button>
-                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'detailOk', '策划/详情页验收')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-medium border border-indigo-200 transition" title="一键将该系列全部SKU的详情页标记完成/取消">详情页 全选</button>
-                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'sapOk', 'SKU编码/69编码')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-medium border border-emerald-200 transition" title="一键将该系列全部SKU的69编码标记完成/取消">69编码 全选</button>
-                                        <button onclick="addSku('${prod.id}')" class="text-blue-600 hover:underline text-xs font-medium ml-2">+ 添加新规格</button>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-200 transition">财务BOM 全选</button>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'detailOk', '策划/详情页验收')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-medium border border-indigo-200 transition">详情页 全选</button>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'sapOk', 'SKU编码/69编码')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-medium border border-emerald-200 transition">69编码 全选</button>
+                                        <button onclick="addSku('${prod.id}')" class="text-blue-600 hover:underline text-xs font-medium ml-2">+ 新规格</button>
                                     </div>` : ''}
                                 </div>
                                 <div class="space-y-2">
@@ -1289,8 +1294,8 @@
                                 <div class="flex items-center space-x-2">
                                     <span class="text-gray-800 font-semibold">${escapeHtml(sku.name)}</span>
                                     ${!isReadOnlyMode ? `
-                                        <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-gray-600" title="修改规格名">✏️</button>
-                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600" title="删除规格">🗑️</button>
+                                        <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-gray-600">✏️</button>
+                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600">🗑️</button>
                                     ` : ''}
                                 </div>
                                 <div class="flex items-center space-x-6">
@@ -1314,6 +1319,113 @@
                     subTr.innerHTML = subHtml;
                     tbody.appendChild(subTr);
                 }
+
+                // ================= 2. 手机端卡片流渲染 =================
+                const card = document.createElement("div");
+                card.className = `bg-white rounded-xl border ${isUrgent ? 'border-red-400 shadow-md bg-red-50/20' : 'border-gray-200 shadow-sm'} p-3.5 space-y-2.5`;
+                
+                let mobileSubHtml = "";
+                if (isExpanded) {
+                    mobileSubHtml = `
+                        <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                            ${!isReadOnlyMode ? `
+                            <div class="flex items-center justify-between pb-1 flex-wrap gap-1">
+                                <span class="text-[11px] text-gray-500 font-bold">快捷连选:</span>
+                                <div class="space-x-1">
+                                    <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] border border-blue-200">财务BOM</button>
+                                    <button onclick="triggerBatchColumnCheck('${prod.id}', 'detailOk', '策划/详情页验收')" class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] border border-indigo-200">详情页</button>
+                                    <button onclick="triggerBatchColumnCheck('${prod.id}', 'sapOk', 'SKU编码/69编码')" class="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] border border-emerald-200">69编码</button>
+                                </div>
+                            </div>` : ''}
+                            <div class="space-y-2">
+                    `;
+                    prod.skus.forEach(sku => {
+                        mobileSubHtml += `
+                            <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs space-y-1.5">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">${escapeHtml(sku.name)}</span>
+                                    ${!isReadOnlyMode ? `
+                                    <div class="space-x-2 text-[11px]">
+                                        <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-500">✏️</button>
+                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-500">🗑️</button>
+                                    </div>` : ''}
+                                </div>
+                                <div class="grid grid-cols-3 gap-1 pt-1 text-[11px]">
+                                    <label class="flex items-center space-x-1">
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-400'}">财务BOM</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1">
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-400'}">详情页</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1">
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-400'}">69编码</span>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    mobileSubHtml += `</div></div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300">
+                            <div>
+                                <div class="flex items-center space-x-1.5">
+                                    ${isUrgent ? '<span class="bg-red-600 text-white text-[9px] px-1 py-0.2 rounded font-bold">紧急</span>' : ''}
+                                    <h3 class="font-bold text-sm text-gray-900">${escapeHtml(prod.name)}</h3>
+                                </div>
+                                <div class="text-[11px] text-gray-500 mt-0.5">${escapeHtml(prod.category)} · ${skuCount} 个变体</div>
+                            </div>
+                        </div>
+                        <div>
+                            ${isReadOnlyMode ? `
+                                <span class="text-xs px-2 py-0.5 rounded font-bold ${isUrgent ? 'text-red-700 bg-red-100' : (prod.status === '已归档' ? 'text-gray-600 bg-gray-100' : 'text-blue-700 bg-blue-50')}">${prod.status}</span>
+                            ` : `
+                                <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-1.5 py-0.5 text-xs focus:outline-none">
+                                    <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option>
+                                    <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option>
+                                    <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>已归档</option>
+                                </select>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-gray-50">
+                        <div class="flex items-center space-x-1.5 font-mono">
+                            <span class="text-gray-400">大货:</span>
+                            <span class="${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${cleanProdDate || '-'}</span>
+                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 text-[10px]">✏️</button>` : ''}
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+
+                    ${(prod.remark || prod.bigNote) ? `
+                        <div class="flex items-center space-x-1.5 flex-wrap pt-0.5">
+                            ${remarkBadge}
+                            ${bigNoteBadge}
+                        </div>
+                    ` : ''}
+
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-xs">
+                        <button onclick="toggleExpand('${prod.id}')" class="text-blue-600 font-bold flex items-center space-x-1">
+                            <span>${isExpanded ? '▲ 收起规格' : '▼ 展开变体 (' + skuCount + ')'}</span>
+                        </button>
+                        <div class="space-x-2.5">
+                            <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 font-medium">大备注</button>
+                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 font-medium">修改</button>` : ''}
+                            <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 font-medium">追溯(${logCount})</button>
+                            ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 font-medium">删除</button>` : ''}
+                        </div>
+                    </div>
+
+                    ${mobileSubHtml}
+                `;
+                mobileContainer.appendChild(card);
             });
 
             document.getElementById("stat-total").innerText = products.length;
@@ -1325,7 +1437,7 @@
         }
 
         async function fetchFromCloudCustom(owner, repo, token) {
-            document.getElementById("sync-status").innerText = "拉取访客只读数据...";
+            document.getElementById("sync-status").innerText = "拉取数据...";
             try {
                 const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
@@ -1354,9 +1466,9 @@
                     }
                 });
 
-                document.getElementById("sync-status").innerText = "只读同步最新 ✅";
-                document.getElementById("auth-tag").innerText = `只读授权: ${owner}`;
-                document.getElementById("auth-tag").className = "text-xs bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1 rounded-full font-medium";
+                document.getElementById("sync-status").innerText = "已同步 ✅";
+                document.getElementById("auth-tag").innerText = `只读: ${owner}`;
+                document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-2 sm:px-3 py-1 rounded-full font-medium";
                 renderTable();
             } catch (err) {
                 console.error(err);
@@ -1370,7 +1482,7 @@
             const token = localStorage.getItem("wb_token");
             if (!token || !owner) return;
 
-            document.getElementById("sync-status").innerText = "拉取云端数据中...";
+            document.getElementById("sync-status").innerText = "拉取数据...";
             try {
                 const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
@@ -1379,9 +1491,9 @@
                 if (res.status === 404) {
                     products = [];
                     fileSha = "";
-                    document.getElementById("sync-status").innerText = "已就绪 (新文件)";
+                    document.getElementById("sync-status").innerText = "已就绪";
                     document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
-                    document.getElementById("auth-tag").className = "text-xs bg-green-100 text-green-800 border border-green-200 px-3 py-1 rounded-full font-medium";
+                    document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-100 text-green-800 border border-green-200 px-2 sm:px-3 py-1 rounded-full font-medium";
                     renderTable();
                     return;
                 }
@@ -1403,9 +1515,9 @@
                     }
                 });
 
-                document.getElementById("sync-status").innerText = "已同步最新";
+                document.getElementById("sync-status").innerText = "已同步 ✅";
                 document.getElementById("auth-tag").innerText = `已连接: ${owner}`;
-                document.getElementById("auth-tag").className = "text-xs bg-green-100 text-green-800 border border-green-200 px-3 py-1 rounded-full font-medium";
+                document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-100 text-green-800 border border-green-200 px-2 sm:px-3 py-1 rounded-full font-medium";
                 renderTable();
             } catch (err) {
                 console.error(err);
@@ -1414,13 +1526,13 @@
         }
 
         async function syncToCloud() {
-            if (isReadOnlyMode) return; // 只读模式直接拦截云端写入
+            if (isReadOnlyMode) return;
             const owner = localStorage.getItem("wb_owner");
             const repo = localStorage.getItem("wb_repo");
             const token = localStorage.getItem("wb_token");
             if (!token) return;
 
-            document.getElementById("sync-status").innerText = "正在写入云端...";
+            document.getElementById("sync-status").innerText = "正在写入...";
             try {
                 const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${token}` }
@@ -1458,7 +1570,7 @@
                 document.getElementById("sync-status").innerText = "云端已保存 ✅";
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "保存失败 ❌ (检查 Token 权限/仓库名)";
+                document.getElementById("sync-status").innerText = "保存失败 ❌";
             }
         }
 
