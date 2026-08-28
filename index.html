@@ -42,11 +42,11 @@
             word-break: break-all;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 860px) {
             .desktop-table-view { display: none !important; }
             .mobile-card-view { display: block !important; }
         }
-        @media (min-width: 769px) {
+        @media (min-width: 861px) {
             .desktop-table-view { display: block !important; }
             .mobile-card-view { display: none !important; }
         }
@@ -62,7 +62,7 @@
                     <span>📊 新品生命周期推进中枢</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">复合筛选器 · 多端自适应 · 智能查重 · 批量连选 · 支持导出 Excel</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">节点全局透视 · 复合筛选器 · 智能查重 · 批量连选 · 支持导出 Excel</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <!-- 🔍 多维度智能筛选器控制面板 (新增) -->
+        <!-- 多维度智能筛选器控制面板 -->
         <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm mb-3 text-xs space-y-2.5">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <div class="flex items-center space-x-1.5 font-bold text-gray-800">
@@ -119,7 +119,6 @@
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                <!-- 品类筛选 -->
                 <div>
                     <label class="block text-gray-500 text-[10px] mb-0.5">品类/渠道</label>
                     <select id="filter-category" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -127,7 +126,6 @@
                     </select>
                 </div>
 
-                <!-- 状态筛选 -->
                 <div>
                     <label class="block text-gray-500 text-[10px] mb-0.5">推进状态</label>
                     <select id="filter-status" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -138,7 +136,6 @@
                     </select>
                 </div>
 
-                <!-- 健康度/预警筛选 -->
                 <div>
                     <label class="block text-gray-500 text-[10px] mb-0.5">健康度预警</label>
                     <select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -149,9 +146,8 @@
                     </select>
                 </div>
 
-                <!-- 大备注备忘筛选 -->
                 <div>
-                    <label class="block text-gray-500 text-[10px] mb-0.5">大备注资料</label>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">大备注备忘</label>
                     <select id="filter-bignote" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
                         <option value="ALL">全部</option>
                         <option value="HAS_NOTE">📌 仅看有大备注</option>
@@ -159,7 +155,6 @@
                     </select>
                 </div>
 
-                <!-- 搜索框 -->
                 <div class="col-span-2 sm:col-span-4 md:col-span-1">
                     <label class="block text-gray-500 text-[10px] mb-0.5">关键词精准搜索</label>
                     <input type="text" id="search-input" oninput="renderTable()" placeholder="型号/变体/备注..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -178,28 +173,29 @@
             </div>
             
             <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3.5 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
+                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
                     <span>📥 导出选中系列至 Excel</span>
                 </button>
                 <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">检测中...</div>
             </div>
         </div>
 
-        <!-- 桌面端表格视图 -->
+        <!-- 桌面端表格视图 (新增节点聚合透视列) -->
         <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
-                <table class="w-full text-left text-xs text-gray-700 min-w-[850px]">
+                <table class="w-full text-left text-xs text-gray-700 min-w-[980px]">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
                             <th class="p-3 w-8 text-center">
                                 <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer" title="全选/取消全选">
                             </th>
                             <th class="p-3 w-10 text-center">展开</th>
-                            <th class="p-3 min-w-[200px]">产品型号 / 系列</th>
-                            <th class="p-3 min-w-[90px]">品类</th>
-                            <th class="p-3 min-w-[130px]">量产大货时间</th>
-                            <th class="p-3 min-w-[220px]">健康度 / 变动说明 / 大备注</th>
-                            <th class="p-3 min-w-[110px]">状态</th>
+                            <th class="p-3 min-w-[180px]">产品型号 / 系列</th>
+                            <th class="p-3 min-w-[80px]">品类</th>
+                            <th class="p-3 min-w-[120px]">量产大货时间</th>
+                            <th class="p-3 min-w-[270px]">三大核心节点总进度 (折叠透视)</th>
+                            <th class="p-3 min-w-[180px]">排期/变动说明/大备注</th>
+                            <th class="p-3 min-w-[100px]">状态</th>
                             <th class="p-3 text-right min-w-[170px]">操作与审计</th>
                         </tr>
                     </thead>
@@ -494,7 +490,6 @@
             if (!selectEl) return;
             const currentVal = selectEl.value;
 
-            // 提取所有不重复品类
             let categories = new Set();
             products.forEach(p => {
                 if (p.category && p.category.trim()) categories.add(p.category.trim());
@@ -1365,14 +1360,13 @@
             }
         }
 
-        // 渲染主表格（支持多维复合筛选）
+        // 渲染主表格（支持三大节点进度透视）
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
             tbody.innerHTML = "";
             mobileContainer.innerHTML = "";
 
-            // 获取全部筛选条件
             const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
             const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
             const filterStat = (document.getElementById("filter-status") ? document.getElementById("filter-status").value : "ALL");
@@ -1396,22 +1390,14 @@
                 const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
                 const isDelayed = (prod.status !== "已归档" && cleanProdDate && diffDays < 0);
 
-                // 1. 品类筛选
                 if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
-
-                // 2. 状态筛选
                 if (filterStat !== "ALL" && prod.status !== filterStat) return;
-
-                // 3. 健康度预警筛选
                 if (filterHealth === "DELAY" && !isDelayed) return;
                 if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7 || prod.status === "已归档")) return;
                 if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7) || prod.status === "已归档")) return;
-
-                // 4. 大备注筛选
                 if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
                 if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
 
-                // 5. 关键词搜索
                 if (keyword) {
                     const matchName = (prod.name || "").toLowerCase().includes(keyword);
                     const matchCategory = (prod.category || "").toLowerCase().includes(keyword);
@@ -1446,6 +1432,44 @@
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
 
+                // ================= 🎯 核心升级：计算三大节点的聚合进度 =================
+                let bomDoneCount = 0;
+                let detailDoneCount = 0;
+                let sapDoneCount = 0;
+
+                (prod.skus || []).forEach(s => {
+                    if (s.bomOk) bomDoneCount++;
+                    if (s.detailOk) detailDoneCount++;
+                    if (s.sapOk) sapDoneCount++;
+                });
+
+                const getProgressBadge = (title, count, total, key, label) => {
+                    let isAll = (total > 0 && count === total);
+                    let isNone = (count === 0);
+                    let colorClass = isAll 
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" 
+                        : (isNone ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
+                    
+                    let icon = isAll ? "✅" : (isNone ? "⚪" : "⏳");
+                    let clickAttr = !isReadOnlyMode ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${key}', '${label}')" style="cursor: pointer;" title="点击快捷切换该系列全部SKU的【${label}】"` : '';
+
+                    return `
+                        <div ${clickAttr} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${colorClass} transition hover:shadow-xs">
+                            <span>${icon} ${title}</span>
+                            <span class="font-mono text-[10px]">(${count}/${total})</span>
+                        </div>
+                    `;
+                };
+
+                const nodesProgressHtml = `
+                    <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                        ${getProgressBadge('BOM/价审', bomDoneCount, skuCount, 'bomOk', '财务BOM/价审')}
+                        ${getProgressBadge('详情页', detailDoneCount, skuCount, 'detailOk', '策划/详情页验收')}
+                        ${getProgressBadge('69编码', sapDoneCount, skuCount, 'sapOk', 'SKU编码/69编码')}
+                    </div>
+                `;
+
+                // 桌面端状态渲染
                 let desktopStatusHtml = isReadOnlyMode ? `
                     <span class="${isUrgent ? 'text-red-700 font-bold bg-red-50 border border-red-200' : (prod.status === '已归档' ? 'text-gray-600 bg-gray-100 border border-gray-200' : 'text-blue-700 bg-blue-50 border border-blue-200')} px-2 py-0.5 rounded text-xs">${prod.status}</span>
                 ` : `
@@ -1482,6 +1506,10 @@
                             ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 text-[11px]">✏️</button>` : ''}
                         </div>
                     </td>
+                    <!-- 🎯 节点全局透视列 -->
+                    <td class="p-3">
+                        ${nodesProgressHtml}
+                    </td>
                     <td class="p-3">
                         ${statusBadge}
                         ${remarkBadge}
@@ -1506,11 +1534,11 @@
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/80";
                     let subHtml = `
-                        <td colspan="8" class="p-3.5 pl-12">
+                        <td colspan="9" class="p-3.5 pl-12">
                             <div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格列表</span>
+                                        <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格明细对接</span>
                                         <span class="text-[11px] text-gray-400">(${skuCount} 个变体)</span>
                                     </div>
                                     ${!isReadOnlyMode ? `
@@ -1564,6 +1592,7 @@
                     tbody.appendChild(subTr);
                 }
 
+                // ================= 手机端卡片流渲染 =================
                 const card = document.createElement("div");
                 card.className = `bg-white rounded-xl border ${isUrgent ? 'border-red-400 shadow-md bg-red-50/20' : 'border-gray-200 shadow-sm'} p-3.5 space-y-2.5`;
                 
@@ -1638,6 +1667,11 @@
                         </div>
                     </div>
 
+                    <!-- 手机端节点聚合展示 -->
+                    <div class="pt-1">
+                        ${nodesProgressHtml}
+                    </div>
+
                     <div class="flex items-center justify-between text-xs pt-1 border-t border-gray-50">
                         <div class="flex items-center space-x-1.5 font-mono">
                             <span class="text-gray-400">大货:</span>
@@ -1671,7 +1705,6 @@
                 mobileContainer.appendChild(card);
             });
 
-            // 更新统计指标
             document.getElementById("stat-total").innerText = products.length;
             document.getElementById("stat-delay").innerText = delayCount;
             document.getElementById("stat-urgent").innerText = urgentCount;
