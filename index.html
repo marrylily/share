@@ -42,7 +42,6 @@
             word-break: break-all;
         }
 
-        /* 响应式显示控制 */
         @media (max-width: 768px) {
             .desktop-table-view { display: none !important; }
             .mobile-card-view { display: block !important; }
@@ -63,7 +62,7 @@
                     <span>📊 新品生命周期推进中枢</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">多端自适应 · 智能查重 · 批量连选 · 大备注外链 · 支持导出 Excel</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">多端自适应 · 智能查重 · 批量连选 · 备忘速记 · 支持导出 Excel</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -131,7 +130,7 @@
         </div>
 
         <!-- 桌面端表格视图 -->
-        <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-10 w-full">
+        <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
                 <table class="w-full text-left text-xs text-gray-700 min-w-[850px]">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
@@ -155,7 +154,7 @@
         </div>
 
         <!-- 手机端卡片流视图 -->
-        <div class="mobile-card-view space-y-3 mb-12">
+        <div class="mobile-card-view space-y-3 mb-6">
             <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
                 <label class="flex items-center space-x-2 cursor-pointer">
                     <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300">
@@ -164,6 +163,44 @@
                 <span class="text-gray-400 text-[11px]" id="mobile-selected-count">已选 0 项</span>
             </div>
             <div id="mobile-cards-container" class="space-y-3"></div>
+        </div>
+
+        <!-- 📌 全局琐事速记与重要事项备忘板 (新增) -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-10">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
+                <div class="flex items-center space-x-2">
+                    <span class="text-base sm:text-lg">📌</span>
+                    <h2 class="text-xs sm:text-sm font-bold text-gray-900">运营重要备忘 & 琐事消息速记板</h2>
+                    <span id="memo-count-tag" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">0 项提醒</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-xs text-gray-500 hover:text-gray-800">折叠 ▲</button>
+                </div>
+            </div>
+
+            <div id="memo-panel-body" class="pt-3 space-y-3">
+                <!-- 新增备忘输入区 (只读模式隐藏) -->
+                <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
+                    <select id="memo-priority" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                        <option value="🔥 紧急重要">🔥 紧急重要</option>
+                        <option value="⚡ 常规跟进" selected>⚡ 常规跟进</option>
+                        <option value="💡 琐事记录">💡 琐事记录</option>
+                    </select>
+                    <input type="text" id="memo-input" placeholder="输入待办/琐事提醒，如：下午 3 点找陈工确认包装盒打样进度、核对京东活动价..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <button onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-xs flex-shrink-0">
+                        + 添加备忘
+                    </button>
+                </div>
+
+                <!-- 备忘列表 -->
+                <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1">
+                </div>
+
+                <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
+                    <span>💡 提示：点击事项左侧可打勾标为完成（自动删除线）；数据随矩阵全局同步。</span>
+                    <button id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline">清理已完成事项</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -307,12 +344,14 @@
 
     <script>
         let products = [];
+        let globalMemos = []; // 全局备忘列表
         let fileSha = "";
         let expandedRows = {};
         let selectedProductIds = new Set();
         let currentEditingId = null;
         let currentBigNoteProdId = null;
         let isReadOnlyMode = false;
+        let isMemoPanelOpen = true;
 
         let pendingCheck = {
             prodId: null,
@@ -368,7 +407,7 @@
         function applyReadOnlyUI() {
             document.getElementById("role-badge").innerText = "👀 访客只读";
             document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
-            document.getElementById("header-desc").innerText = "只读视图 · 支持手机/电脑筛选、查阅大备注与导出 Excel";
+            document.getElementById("header-desc").innerText = "只读视图 · 支持手机/电脑筛选、查阅大备注、备忘与导出 Excel";
 
             if (document.getElementById("admin-create-panel")) document.getElementById("admin-create-panel").style.display = "none";
             if (document.getElementById("btn-share-readonly")) document.getElementById("btn-share-readonly").style.display = "none";
@@ -376,6 +415,8 @@
             if (document.getElementById("big-note-toolbar")) document.getElementById("big-note-toolbar").style.display = "none";
             if (document.getElementById("big-note-edit-section")) document.getElementById("big-note-edit-section").style.display = "none";
             if (document.getElementById("btn-save-big-note")) document.getElementById("btn-save-big-note").style.display = "none";
+            if (document.getElementById("memo-create-box")) document.getElementById("memo-create-box").style.display = "none";
+            if (document.getElementById("btn-clear-done-memo")) document.getElementById("btn-clear-done-memo").style.display = "none";
         }
 
         function copyReadOnlyShareLink() {
@@ -394,6 +435,108 @@
                 alert("🎉 访客只读链接已复制！手机/电脑均可直接打开免登查阅！");
             }).catch(() => {
                 prompt("请复制以下只读分享链接：", shareUrl);
+            });
+        }
+
+        // ================= 📌 全局备忘录管理逻辑 =================
+        function toggleMemoPanel() {
+            isMemoPanelOpen = !isMemoPanelOpen;
+            const panel = document.getElementById("memo-panel-body");
+            const btn = document.getElementById("memo-toggle-btn");
+            if (isMemoPanelOpen) {
+                panel.style.display = "block";
+                btn.innerText = "折叠 ▲";
+            } else {
+                panel.style.display = "none";
+                btn.innerText = "展开 ▼";
+            }
+        }
+
+        function addMemoItem() {
+            if (isReadOnlyMode) return alert("只读模式无法添加备忘！");
+            const input = document.getElementById("memo-input");
+            const text = input.value.trim();
+            const priority = document.getElementById("memo-priority").value;
+
+            if (!text) return alert("请输入备忘内容！");
+
+            const newMemo = {
+                id: "M_" + Date.now(),
+                text: text,
+                priority: priority,
+                done: false,
+                createdAt: getNowString().substring(5, 16)
+            };
+
+            globalMemos.unshift(newMemo);
+            input.value = "";
+            renderMemos();
+            syncToCloud();
+        }
+
+        function toggleMemoStatus(memoId) {
+            if (isReadOnlyMode) return;
+            const m = globalMemos.find(item => item.id === memoId);
+            if (!m) return;
+            m.done = !m.done;
+            renderMemos();
+            syncToCloud();
+        }
+
+        function removeMemo(memoId) {
+            if (isReadOnlyMode) return;
+            const idx = globalMemos.findIndex(item => item.id === memoId);
+            if (idx === -1) return;
+            globalMemos.splice(idx, 1);
+            renderMemos();
+            syncToCloud();
+        }
+
+        function clearDoneMemos() {
+            if (isReadOnlyMode) return;
+            const hasDone = globalMemos.some(m => m.done);
+            if (!hasDone) return alert("当前没有已完成的事项！");
+            if (confirm("确定清理所有已打勾完成的备忘事项吗？")) {
+                globalMemos = globalMemos.filter(m => !m.done);
+                renderMemos();
+                syncToCloud();
+            }
+        }
+
+        function renderMemos() {
+            const container = document.getElementById("memo-list-container");
+            const countTag = document.getElementById("memo-count-tag");
+            container.innerHTML = "";
+
+            const pendingCount = globalMemos.filter(m => !m.done).length;
+            countTag.innerText = `${pendingCount} 项待办 (共 ${globalMemos.length})`;
+
+            if (globalMemos.length === 0) {
+                container.innerHTML = `<div class="text-gray-400 text-center py-5 text-xs">暂无备忘事项，可以在上方输入紧急待办或琐事记录~</div>`;
+                return;
+            }
+
+            globalMemos.forEach(memo => {
+                let badgeClass = "bg-gray-100 text-gray-700 border-gray-300";
+                if (memo.priority.includes("紧急")) badgeClass = "bg-red-50 text-red-700 border-red-200 font-bold";
+                else if (memo.priority.includes("常规")) badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+                else if (memo.priority.includes("琐事")) badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+
+                const item = document.createElement("div");
+                item.className = `flex items-center justify-between p-2.5 rounded-lg border transition ${memo.done ? 'bg-gray-50/70 border-gray-200 text-gray-400' : 'bg-white border-gray-200 hover:border-amber-300 shadow-xs'}`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2.5 flex-1 min-w-0 pr-2">
+                        <input type="checkbox" onchange="toggleMemoStatus('${memo.id}')" ${memo.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="w-4 h-4 rounded text-amber-600 border-gray-300 focus:ring-0 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'} flex-shrink-0">
+                        <span class="border px-1.5 py-0.2 rounded text-[10px] flex-shrink-0 ${badgeClass}">${escapeHtml(memo.priority)}</span>
+                        <span class="text-xs break-words flex-1 ${memo.done ? 'line-through text-gray-400' : 'text-gray-800'}">${escapeHtml(memo.text)}</span>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-shrink-0 text-[10px] text-gray-400 font-mono">
+                        <span>${memo.createdAt || ''}</span>
+                        ${!isReadOnlyMode ? `<button onclick="removeMemo('${memo.id}')" class="text-gray-400 hover:text-red-600 text-xs" title="删除备忘">🗑️</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
             });
         }
 
@@ -421,7 +564,8 @@
                    String(now.getMonth() + 1).padStart(2, '0') + "-" + 
                    String(now.getDate()).padStart(2, '0') + " " + 
                    String(now.getHours()).padStart(2, '0') + ":" + 
-                   String(now.getMinutes()).padStart(2, '0');
+                   String(now.getMinutes()).padStart(2, '0') + ":" + 
+                   String(now.getSeconds()).padStart(2, '0');
         }
 
         function normalizeDate(str) {
@@ -1428,6 +1572,7 @@
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
             updateSelectAllCheckboxState();
+            renderMemos(); // 同步刷新备忘板
         }
 
         async function fetchFromCloudCustom(owner, repo, token) {
@@ -1439,14 +1584,24 @@
 
                 if (res.status === 404) {
                     products = [];
+                    globalMemos = [];
                     document.getElementById("sync-status").innerText = "无云端数据";
                     renderTable();
                     return;
                 }
 
                 const data = await res.json();
-                products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                 
+                // 兼容老数据（纯数组）与新格式（包含 products 和 memos）
+                if (Array.isArray(parsed)) {
+                    products = parsed;
+                    globalMemos = [];
+                } else {
+                    products = parsed.products || [];
+                    globalMemos = parsed.memos || [];
+                }
+
                 products.forEach((p, pIdx) => {
                     if (!p.id) p.id = "P_" + (Date.now() + pIdx);
                     if (!p.remark) p.remark = "";
@@ -1461,7 +1616,6 @@
                 });
 
                 document.getElementById("sync-status").innerText = "已同步 ✅";
-                // 统一只显示绿色状态圆点与“数据已同步”，不显露用户名
                 document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>数据已同步</span>`;
                 document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1";
                 renderTable();
@@ -1485,6 +1639,7 @@
 
                 if (res.status === 404) {
                     products = [];
+                    globalMemos = [];
                     fileSha = "";
                     document.getElementById("sync-status").innerText = "已就绪";
                     document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>已连接云端</span>`;
@@ -1495,8 +1650,16 @@
 
                 const data = await res.json();
                 fileSha = data.sha;
-                products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                
+                const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+
+                if (Array.isArray(parsed)) {
+                    products = parsed;
+                    globalMemos = [];
+                } else {
+                    products = parsed.products || [];
+                    globalMemos = parsed.memos || [];
+                }
+
                 products.forEach((p, pIdx) => {
                     if (!p.id) p.id = "P_" + (Date.now() + pIdx);
                     if (!p.remark) p.remark = "";
@@ -1539,9 +1702,15 @@
                     fileSha = "";
                 }
 
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(products, null, 2))));
+                // 聚合产品矩阵与备忘录
+                const payloadData = {
+                    products: products,
+                    memos: globalMemos
+                };
+
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payloadData, null, 2))));
                 const body = {
-                    message: "Update products matrix, big notes & audit logs",
+                    message: "Update products matrix, memos & audit logs",
                     content: encoded
                 };
                 if (fileSha) body.sha = fileSha;
