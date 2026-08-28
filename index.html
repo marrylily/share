@@ -62,7 +62,7 @@
                     <span>📊 新品生命周期推进中枢</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">节点全局透视 · 复合筛选器 · 智能查重 · 批量连选 · 支持导出 Excel</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">归档分仓隔离 · 节点全局透视 · 复合筛选 · 备忘速记 · 导出 Excel</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -108,17 +108,29 @@
             </div>
         </div>
 
+        <!-- 🎯 核心升级：双 Tab 切换栏（进行中看板 / 已归档历史库） -->
+        <div class="flex items-center space-x-2 mb-3">
+            <button onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5">
+                <span>⚡ 进行中看板</span>
+                <span id="tab-count-running" class="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+            </button>
+            <button onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5">
+                <span>📦 已归档历史库</span>
+                <span id="tab-count-archived" class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+            </button>
+        </div>
+
         <!-- 多维度智能筛选器控制面板 -->
         <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm mb-3 text-xs space-y-2.5">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <div class="flex items-center space-x-1.5 font-bold text-gray-800">
-                    <span>🔍 多维智能筛选</span>
+                    <span>🔍 智能筛选器</span>
                     <span id="filter-result-count" class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-normal">显示全部</span>
                 </div>
-                <button onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline cursor-pointer">重置所有筛选条件</button>
+                <button onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline cursor-pointer">重置筛选</button>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
                     <label class="block text-gray-500 text-[10px] mb-0.5">品类/渠道</label>
                     <select id="filter-category" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -126,17 +138,7 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-gray-500 text-[10px] mb-0.5">推进状态</label>
-                    <select id="filter-status" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        <option value="ALL">全部状态</option>
-                        <option value="进行中">⚡ 进行中</option>
-                        <option value="紧急重要">🔥 紧急重要</option>
-                        <option value="已归档">✅ 已归档</option>
-                    </select>
-                </div>
-
-                <div>
+                <div id="filter-health-box">
                     <label class="block text-gray-500 text-[10px] mb-0.5">健康度预警</label>
                     <select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
                         <option value="ALL">全部排期</option>
@@ -155,8 +157,8 @@
                     </select>
                 </div>
 
-                <div class="col-span-2 sm:col-span-4 md:col-span-1">
-                    <label class="block text-gray-500 text-[10px] mb-0.5">关键词精准搜索</label>
+                <div>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">关键词搜索</label>
                     <input type="text" id="search-input" oninput="renderTable()" placeholder="型号/变体/备注..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
@@ -166,21 +168,21 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 mb-3 text-xs text-gray-600 px-1">
             <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
                 <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
-                <span>🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
-                <span>🔥 紧急: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
-                <span>⚡ 进行中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
-                <span>✅ 归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
+                <span id="stat-box-delay">🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
+                <span id="stat-box-urgent">🔥 紧急: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
+                <span id="stat-box-running">⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
+                <span>✅ 归档库: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
             </div>
             
             <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
                 <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
-                    <span>📥 导出选中系列至 Excel</span>
+                    <span id="btn-export-label">📥 导出选中系列至 Excel</span>
                 </button>
                 <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">检测中...</div>
             </div>
         </div>
 
-        <!-- 桌面端表格视图 (新增节点聚合透视列) -->
+        <!-- 桌面端表格视图 -->
         <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
                 <table class="w-full text-left text-xs text-gray-700 min-w-[980px]">
@@ -210,7 +212,7 @@
             <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
                 <label class="flex items-center space-x-2 cursor-pointer">
                     <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300">
-                    <span class="font-bold text-gray-700">全选当前系列</span>
+                    <span class="font-bold text-gray-700">全选当前视图</span>
                 </label>
                 <span class="text-gray-400 text-[11px]" id="mobile-selected-count">已选 0 项</span>
             </div>
@@ -398,6 +400,7 @@
         let currentBigNoteProdId = null;
         let isReadOnlyMode = false;
         let isMemoPanelOpen = true;
+        let currentTab = 'RUNNING'; // 'RUNNING' (进行中) 或 'ARCHIVED' (已归档)
 
         let pendingCheck = {
             prodId: null,
@@ -484,6 +487,49 @@
             });
         }
 
+        // ================= 🎯 Tab 切换逻辑 =================
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnRunning = document.getElementById("tab-btn-running");
+            const btnArchived = document.getElementById("tab-btn-archived");
+            const filterHealthBox = document.getElementById("filter-health-box");
+            const btnExportLabel = document.getElementById("btn-export-label");
+
+            if (tab === 'RUNNING') {
+                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (filterHealthBox) filterHealthBox.style.display = "block";
+                if (btnExportLabel) btnExportLabel.innerText = "📥 导出选中进行中系列至 Excel";
+            } else {
+                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (filterHealthBox) filterHealthBox.style.display = "none";
+                if (btnExportLabel) btnExportLabel.innerText = "📥 导出选中已归档系列至 Excel";
+            }
+            renderTable();
+        }
+
+        // 一键将已归档项目恢复为进行中
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+
+            if (confirm(`确定将系列【${p.name}】从归档库恢复到【进行中看板】吗？`)) {
+                p.status = "进行中";
+                p.archivedAt = null;
+                const nowTime = getNowString();
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({
+                    time: nowTime,
+                    type: "STATUS_CHANGE",
+                    desc: `从归档库重新激活恢复至【进行中】`
+                });
+                renderTable();
+                syncToCloud();
+            }
+        }
+
         // ================= 🔍 智能筛选控制逻辑 =================
         function updateCategoryFilterOptions() {
             const selectEl = document.getElementById("filter-category");
@@ -507,7 +553,6 @@
 
         function resetAllFilters() {
             if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
-            if (document.getElementById("filter-status")) document.getElementById("filter-status").value = "ALL";
             if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
             if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
             if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
@@ -854,6 +899,8 @@
             expandedRows[newProd.id] = true;
             document.getElementById("p-name").value = "";
             document.getElementById("p-skus-batch").value = "";
+            currentTab = 'RUNNING';
+            switchTab('RUNNING');
             updateCategoryFilterOptions();
             renderTable();
             syncToCloud();
@@ -1064,7 +1111,7 @@
                 p.historyLogs.unshift({
                     time: nowTime,
                     type: "ARCHIVE",
-                    desc: `项目已完成全流程并执行归档`
+                    desc: `项目已完成全流程并执行归档，移入【已归档历史库】`
                 });
             } else {
                 p.archivedAt = null;
@@ -1131,11 +1178,15 @@
         }
 
         function toggleSelectAll(checked) {
+            // 仅对当前 Tab 可见的数据执行全选/取消
             products.forEach(p => {
-                if (checked) {
-                    selectedProductIds.add(p.id);
-                } else {
-                    selectedProductIds.delete(p.id);
+                const isArchived = (p.status === "已归档");
+                if ((currentTab === 'RUNNING' && !isArchived) || (currentTab === 'ARCHIVED' && isArchived)) {
+                    if (checked) {
+                        selectedProductIds.add(p.id);
+                    } else {
+                        selectedProductIds.delete(p.id);
+                    }
                 }
             });
             renderTable();
@@ -1146,10 +1197,13 @@
             const mobileSelectAllEl = document.getElementById("mobile-select-all");
             const mobileCountEl = document.getElementById("mobile-selected-count");
 
-            if (mobileCountEl) mobileCountEl.innerText = `已选 ${selectedProductIds.size} 项`;
+            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
+            const currentTabSelectedCount = currentTabProducts.filter(p => selectedProductIds.has(p.id)).length;
 
-            const isAll = (products.length > 0 && selectedProductIds.size === products.length);
-            const isInd = (selectedProductIds.size > 0 && selectedProductIds.size < products.length);
+            if (mobileCountEl) mobileCountEl.innerText = `已选 ${currentTabSelectedCount} 项`;
+
+            const isAll = (currentTabProducts.length > 0 && currentTabSelectedCount === currentTabProducts.length);
+            const isInd = (currentTabSelectedCount > 0 && currentTabSelectedCount < currentTabProducts.length);
 
             if (selectAllEl) {
                 selectAllEl.checked = isAll;
@@ -1162,19 +1216,24 @@
         }
 
         function exportSelectedToExcel() {
+            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
             let targetProducts = [];
+
             if (selectedProductIds.size > 0) {
-                targetProducts = products.filter(p => selectedProductIds.has(p.id));
-            } else {
-                if (confirm("当前未勾选特定系列，是否默认导出【全部产品系列】？")) {
-                    targetProducts = products;
+                targetProducts = currentTabProducts.filter(p => selectedProductIds.has(p.id));
+            }
+
+            if (targetProducts.length === 0) {
+                const tabTitle = currentTab === 'RUNNING' ? '进行中看板' : '已归档历史库';
+                if (confirm(`当前未勾选特定系列，是否默认导出【${tabTitle}】下的全部数据？`)) {
+                    targetProducts = currentTabProducts;
                 } else {
                     return;
                 }
             }
 
             if (targetProducts.length === 0) {
-                return alert("没有可导出的数据！");
+                return alert("当前视图没有可导出的数据！");
             }
 
             const headers = [
@@ -1194,6 +1253,7 @@
                 "69编码说明",
                 "延期/变动备注",
                 "系列大备注/文档备忘",
+                "归档时间",
                 "最新更新时间"
             ];
 
@@ -1233,6 +1293,7 @@
                         cleanCell(sapRec.remark || ''),
                         cleanCell(prod.remark || ''),
                         cleanCell(prod.bigNote || ''),
+                        cleanCell(prod.archivedAt || '-'),
                         cleanCell(latestLogTime)
                     ];
                     csvRows.push(row.join(","));
@@ -1244,7 +1305,7 @@
             const url = URL.createObjectURL(blob);
             const downloadLink = document.createElement("a");
             downloadLink.href = url;
-            downloadLink.download = `新品推进矩阵导出_${new Date().toISOString().split('T')[0]}.csv`;
+            downloadLink.download = `新品推进矩阵_${currentTab === 'RUNNING' ? '进行中' : '已归档'}_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
@@ -1350,7 +1411,7 @@
             const pIdx = products.findIndex(item => item.id === prodId);
             if (pIdx === -1) return;
 
-            if (confirm(`确定删除该产品系列【${products[pIdx].name}】吗？`)) {
+            if (confirm(`确定删除该产品系列【${products[pIdx].name}】吗？删除后将彻底移除。`)) {
                 delete expandedRows[prodId];
                 selectedProductIds.delete(prodId);
                 products.splice(pIdx, 1);
@@ -1360,7 +1421,7 @@
             }
         }
 
-        // 渲染主表格（支持三大节点进度透视）
+        // 渲染主表格（自动按当前 Tab 隔离）
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
@@ -1369,7 +1430,6 @@
 
             const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
             const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
-            const filterStat = (document.getElementById("filter-status") ? document.getElementById("filter-status").value : "ALL");
             const filterHealth = (document.getElementById("filter-health") ? document.getElementById("filter-health").value : "ALL");
             const filterBigNote = (document.getElementById("filter-bignote") ? document.getElementById("filter-bignote").value : "ALL");
 
@@ -1382,19 +1442,31 @@
             let matchedCount = 0;
 
             products.forEach(prod => {
-                if (prod.status === "紧急重要") urgentCount++;
-                else if (prod.status === "进行中") runningCount++;
-                else if (prod.status === "已归档") archivedCount++;
+                const isArchived = (prod.status === "已归档");
+                if (isArchived) archivedCount++;
+                else {
+                    runningCount++;
+                    if (prod.status === "紧急重要") urgentCount++;
+                }
+
+                // 🎯 核心隔离：当前 Tab 与项目归档状态不匹配则跳过
+                if (currentTab === 'RUNNING' && isArchived) return;
+                if (currentTab === 'ARCHIVED' && !isArchived) return;
 
                 const cleanProdDate = normalizeDate(prod.prodDate);
                 const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
-                const isDelayed = (prod.status !== "已归档" && cleanProdDate && diffDays < 0);
+                const isDelayed = (!isArchived && cleanProdDate && diffDays < 0);
+                if (isDelayed) delayCount++;
 
+                // 筛选过滤
                 if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
-                if (filterStat !== "ALL" && prod.status !== filterStat) return;
-                if (filterHealth === "DELAY" && !isDelayed) return;
-                if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7 || prod.status === "已归档")) return;
-                if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7) || prod.status === "已归档")) return;
+
+                if (currentTab === 'RUNNING') {
+                    if (filterHealth === "DELAY" && !isDelayed) return;
+                    if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7)) return;
+                    if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7))) return;
+                }
+
                 if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
                 if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
 
@@ -1411,8 +1483,8 @@
                 matchedCount++;
 
                 let statusBadge = "";
-                if (prod.status === "已归档") {
-                    statusBadge = `<span class="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-200">✅ 归档于 ${prod.archivedAt ? prod.archivedAt.split(' ')[0] : '已完成'}</span>`;
+                if (isArchived) {
+                    statusBadge = `<span class="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-200">✅ 归档于 ${prod.archivedAt ? prod.archivedAt.split(' ')[0] : '已结项'}</span>`;
                 } else if (cleanProdDate) {
                     if (diffDays < 0) {
                         statusBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded font-bold">🚨 延期 ${Math.abs(diffDays)} 天</span>`;
@@ -1432,7 +1504,7 @@
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
 
-                // ================= 🎯 核心升级：计算三大节点的聚合进度 =================
+                // 计算三大节点的聚合进度
                 let bomDoneCount = 0;
                 let detailDoneCount = 0;
                 let sapDoneCount = 0;
@@ -1451,7 +1523,7 @@
                         : (isNone ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
                     
                     let icon = isAll ? "✅" : (isNone ? "⚪" : "⏳");
-                    let clickAttr = !isReadOnlyMode ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${key}', '${label}')" style="cursor: pointer;" title="点击快捷切换该系列全部SKU的【${label}】"` : '';
+                    let clickAttr = (!isReadOnlyMode && !isArchived) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${key}', '${label}')" style="cursor: pointer;" title="点击快捷切换该系列全部SKU的【${label}】"` : '';
 
                     return `
                         <div ${clickAttr} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${colorClass} transition hover:shadow-xs">
@@ -1470,18 +1542,42 @@
                 `;
 
                 // 桌面端状态渲染
-                let desktopStatusHtml = isReadOnlyMode ? `
-                    <span class="${isUrgent ? 'text-red-700 font-bold bg-red-50 border border-red-200' : (prod.status === '已归档' ? 'text-gray-600 bg-gray-100 border border-gray-200' : 'text-blue-700 bg-blue-50 border border-blue-200')} px-2 py-0.5 rounded text-xs">${prod.status}</span>
-                ` : `
-                    <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
-                        <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
-                        <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
-                        <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
-                    </select>
-                `;
+                let desktopStatusHtml = "";
+                if (isReadOnlyMode || isArchived) {
+                    desktopStatusHtml = `<span class="${isUrgent ? 'text-red-700 font-bold bg-red-50 border border-red-200' : (isArchived ? 'text-green-700 bg-green-50 border border-green-200 font-semibold' : 'text-blue-700 bg-blue-50 border border-blue-200')} px-2 py-0.5 rounded text-xs">${prod.status}</span>`;
+                } else {
+                    desktopStatusHtml = `
+                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
+                            <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
+                            <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
+                            <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 执行归档</option>
+                        </select>
+                    `;
+                }
+
+                // 操作按钮渲染（归档视图提供“恢复进行中”）
+                let operationsHtml = "";
+                if (isArchived) {
+                    operationsHtml = `
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
+                        ${!isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 hover:underline font-bold">↩️ 恢复进行中</button>` : ''}
+                        ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
+                    `;
+                } else {
+                    operationsHtml = `
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改</button>` : ''}
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
+                        ${!isReadOnlyMode ? `
+                            <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
+                            <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
+                        ` : ''}
+                    `;
+                }
 
                 const tr = document.createElement("tr");
-                tr.className = `hover:bg-blue-50/40 transition-colors ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : (isDelayed ? 'bg-red-50/30' : '')} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
+                tr.className = `hover:bg-blue-50/40 transition-colors ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : (isDelayed ? 'bg-red-50/30' : '')} ${isArchived ? 'bg-gray-50/70' : ''}`;
                 tr.innerHTML = `
                     <td class="p-3 text-center">
                         <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
@@ -1495,7 +1591,7 @@
                         <div class="flex items-center space-x-1.5 flex-wrap">
                             ${isUrgent ? '<span class="bg-red-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">紧急</span>' : ''}
                             <span>${escapeHtml(prod.name)}</span>
-                            ${!isReadOnlyMode ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]">✏️</button>` : ''}
+                            ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]">✏️</button>` : ''}
                             <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 font-normal">${skuCount} SKU</span>
                         </div>
                     </td>
@@ -1503,10 +1599,9 @@
                     <td class="p-3 font-mono">
                         <div class="flex items-center space-x-1.5">
                             <span class="${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${cleanProdDate || '-'}</span>
-                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 text-[11px]">✏️</button>` : ''}
+                            ${!isReadOnlyMode && !isArchived ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 text-[11px]">✏️</button>` : ''}
                         </div>
                     </td>
-                    <!-- 🎯 节点全局透视列 -->
                     <td class="p-3">
                         ${nodesProgressHtml}
                     </td>
@@ -1519,13 +1614,7 @@
                         ${desktopStatusHtml}
                     </td>
                     <td class="p-3 text-right space-x-2 font-medium">
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改</button>` : ''}
-                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
-                        ${!isReadOnlyMode ? `
-                            <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
-                            <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
-                        ` : ''}
+                        ${operationsHtml}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1541,7 +1630,7 @@
                                         <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格明细对接</span>
                                         <span class="text-[11px] text-gray-400">(${skuCount} 个变体)</span>
                                     </div>
-                                    ${!isReadOnlyMode ? `
+                                    ${!isReadOnlyMode && !isArchived ? `
                                     <div class="flex items-center space-x-2 flex-wrap">
                                         <span class="text-[11px] text-gray-500 font-semibold">⚡ 快捷连选:</span>
                                         <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-200 transition">财务BOM 全选</button>
@@ -1565,22 +1654,22 @@
                             <div class="flex items-center justify-between bg-gray-50 hover:bg-gray-100/80 p-2.5 rounded border border-gray-200 text-xs transition">
                                 <div class="flex items-center space-x-2">
                                     <span class="text-gray-800 font-semibold">${escapeHtml(sku.name)}</span>
-                                    ${!isReadOnlyMode ? `
+                                    ${!isReadOnlyMode && !isArchived ? `
                                         <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-gray-600">✏️</button>
                                         <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600">🗑️</button>
                                     ` : ''}
                                 </div>
                                 <div class="flex items-center space-x-6">
-                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('bomOk')}>
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode || isArchived ? 'cursor-default' : 'cursor-pointer'}"${getTip('bomOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM/价审</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('detailOk')}>
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode || isArchived ? 'cursor-default' : 'cursor-pointer'}"${getTip('detailOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">策划/详情页验收</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('sapOk')}>
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode || isArchived ? 'cursor-default' : 'cursor-pointer'}"${getTip('sapOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">SKU编码/69编码</span>
                                     </label>
                                 </div>
@@ -1592,7 +1681,7 @@
                     tbody.appendChild(subTr);
                 }
 
-                // ================= 手机端卡片流渲染 =================
+                // 手机端卡片流渲染
                 const card = document.createElement("div");
                 card.className = `bg-white rounded-xl border ${isUrgent ? 'border-red-400 shadow-md bg-red-50/20' : 'border-gray-200 shadow-sm'} p-3.5 space-y-2.5`;
                 
@@ -1600,7 +1689,7 @@
                 if (isExpanded) {
                     mobileSubHtml = `
                         <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                            ${!isReadOnlyMode ? `
+                            ${!isReadOnlyMode && !isArchived ? `
                             <div class="flex items-center justify-between pb-1 flex-wrap gap-1">
                                 <span class="text-[11px] text-gray-500 font-bold">快捷连选:</span>
                                 <div class="space-x-1">
@@ -1616,7 +1705,7 @@
                             <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs space-y-1.5">
                                 <div class="flex justify-between items-center">
                                     <span class="font-bold text-gray-800">${escapeHtml(sku.name)}</span>
-                                    ${!isReadOnlyMode ? `
+                                    ${!isReadOnlyMode && !isArchived ? `
                                     <div class="space-x-2 text-[11px]">
                                         <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-500">✏️</button>
                                         <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-500">🗑️</button>
@@ -1624,15 +1713,15 @@
                                 </div>
                                 <div class="grid grid-cols-3 gap-1 pt-1 text-[11px]">
                                     <label class="flex items-center space-x-1">
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
                                         <span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-400'}">财务BOM</span>
                                     </label>
                                     <label class="flex items-center space-x-1">
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
                                         <span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-400'}">详情页</span>
                                     </label>
                                     <label class="flex items-center space-x-1">
-                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
                                         <span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-400'}">69编码</span>
                                     </label>
                                 </div>
@@ -1655,19 +1744,18 @@
                             </div>
                         </div>
                         <div>
-                            ${isReadOnlyMode ? `
-                                <span class="text-xs px-2 py-0.5 rounded font-bold ${isUrgent ? 'text-red-700 bg-red-100' : (prod.status === '已归档' ? 'text-gray-600 bg-gray-100' : 'text-blue-700 bg-blue-50')}">${prod.status}</span>
+                            ${isReadOnlyMode || isArchived ? `
+                                <span class="text-xs px-2 py-0.5 rounded font-bold ${isUrgent ? 'text-red-700 bg-red-100' : (isArchived ? 'text-green-700 bg-green-50 border border-green-200' : 'text-blue-700 bg-blue-50')}">${prod.status}</span>
                             ` : `
                                 <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-1.5 py-0.5 text-xs focus:outline-none">
                                     <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option>
                                     <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option>
-                                    <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>已归档</option>
+                                    <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option>
                                 </select>
                             `}
                         </div>
                     </div>
 
-                    <!-- 手机端节点聚合展示 -->
                     <div class="pt-1">
                         ${nodesProgressHtml}
                     </div>
@@ -1676,7 +1764,7 @@
                         <div class="flex items-center space-x-1.5 font-mono">
                             <span class="text-gray-400">大货:</span>
                             <span class="${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${cleanProdDate || '-'}</span>
-                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 text-[10px]">✏️</button>` : ''}
+                            ${!isReadOnlyMode && !isArchived ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 text-[10px]">✏️</button>` : ''}
                         </div>
                         <div>${statusBadge}</div>
                     </div>
@@ -1694,8 +1782,9 @@
                         </button>
                         <div class="space-x-2.5">
                             <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 font-medium">大备注</button>
-                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 font-medium">修改</button>` : ''}
+                            ${!isReadOnlyMode && !isArchived ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-600 font-medium">修改</button>` : ''}
                             <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 font-medium">追溯(${logCount})</button>
+                            ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold">↩️ 恢复</button>` : ''}
                             ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 font-medium">删除</button>` : ''}
                         </div>
                     </div>
@@ -1705,15 +1794,20 @@
                 mobileContainer.appendChild(card);
             });
 
+            // 更新顶部计数与 Tab 徽标
             document.getElementById("stat-total").innerText = products.length;
             document.getElementById("stat-delay").innerText = delayCount;
             document.getElementById("stat-urgent").innerText = urgentCount;
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
+
+            document.getElementById("tab-count-running").innerText = runningCount;
+            document.getElementById("tab-count-archived").innerText = archivedCount;
             
             const filterCountEl = document.getElementById("filter-result-count");
             if (filterCountEl) {
-                filterCountEl.innerText = `筛选出 ${matchedCount} 个系列 (共 ${products.length})`;
+                const currentTabTotal = currentTab === 'RUNNING' ? runningCount : archivedCount;
+                filterCountEl.innerText = `筛选出 ${matchedCount} 个系列 (当前库共 ${currentTabTotal})`;
             }
 
             updateSelectAllCheckboxState();
