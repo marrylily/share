@@ -31,7 +31,6 @@
             background-color: #047857 !important;
         }
 
-        /* 渲染大备注内部的删除线和文件超链接 */
         .rich-note s, .rich-note del, .rich-note strike {
             text-decoration: line-through;
             color: #94a3b8;
@@ -49,17 +48,24 @@
         <!-- 头部导航 -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
-                <h1 class="text-lg sm:text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 节点批量连选 · 系列大备注/文件链接 · 支持导出 Excel</p>
+                <h1 class="text-lg sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
+                    <span>📊 新品生命周期推进与审计中枢</span>
+                    <span id="role-badge" class="text-xs bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md font-semibold">管理模式</span>
+                </h1>
+                <p class="text-xs text-gray-500 mt-0.5" id="header-desc">智能查重拦截 · 节点批量连选 · 系列大备注/文件链接 · 支持导出 Excel</p>
             </div>
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2.5 flex-wrap">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
-                <button onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs border border-gray-300 font-medium">⚙️ 账号配置</button>
+                <!-- 仅管理模式可见的分享按钮 -->
+                <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs border border-indigo-200 font-bold transition flex items-center space-x-1">
+                    <span>🔗 复制访客只读链接</span>
+                </button>
+                <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs border border-gray-300 font-medium">⚙️ 账号配置</button>
             </div>
         </header>
 
-        <!-- 批量新建面板 -->
-        <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm mb-5">
+        <!-- 批量新建面板 (访客模式下自动隐藏) -->
+        <div id="admin-create-panel" class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm mb-5">
             <h2 class="text-sm font-bold text-gray-800 mb-3">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
             
             <div class="mb-3">
@@ -124,7 +130,7 @@
                             <th class="p-3 min-w-[130px]">量产大货时间</th>
                             <th class="p-3 min-w-[220px]">健康度 / 变动说明 / 大备注</th>
                             <th class="p-3 min-w-[110px]">状态</th>
-                            <th class="p-3 text-right min-w-[210px]">操作与审计</th>
+                            <th class="p-3 text-right min-w-[170px]" id="th-operations">操作与审计</th>
                         </tr>
                     </thead>
                     <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal">
@@ -134,7 +140,7 @@
         </div>
     </div>
 
-    <!-- 系列大备注与文档归档工作台弹窗 (支持删除线、链接、滑动) -->
+    <!-- 系列大备注弹窗 -->
     <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 650px;">
             <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -148,31 +154,31 @@
                 <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
 
-            <!-- 工具栏 -->
-            <div class="px-6 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center space-x-2 flex-wrap flex-shrink-0">
+            <!-- 工具栏 (访客模式隐藏) -->
+            <div id="big-note-toolbar" class="px-6 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center space-x-2 flex-wrap flex-shrink-0">
                 <span class="text-gray-500 font-medium text-[11px]">快捷格式:</span>
                 <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2 py-1 rounded text-[11px] font-mono transition" title="为选中文本添加删除线">~~ 删除线 ~~</button>
                 <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2 py-1 rounded text-[11px] transition" title="插入飞书/蓝湖/网盘等文件链接">🔗 插入文档/网盘链接</button>
                 <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2 py-1 rounded text-[11px] transition">⏱️ 插入当前时间戳</button>
             </div>
             
-            <!-- 编辑与预览滚动区 -->
+            <!-- 内容滚动区 -->
             <div class="log-scroll flex-1 p-6 space-y-4 bg-gray-50/40">
-                <div>
+                <div id="big-note-edit-section">
                     <label class="block text-gray-700 font-bold mb-1">大备注编辑框：</label>
-                    <textarea id="big-note-textarea" rows="8" oninput="updateBigNoteLivePreview()" placeholder="在此输入系列的详细跟进备忘录，例如：&#10;1. 08/28 与工程确认：~~老版卡扣结构作废~~，改为一体注塑&#10;2. 详情页排版蓝湖链接：https://lanhuapp.com/...&#10;3. 工厂初版试产资料见网盘：https://pan.quark.cn/..." class="w-full bg-white border border-gray-300 rounded-xl p-3 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans leading-relaxed"></textarea>
+                    <textarea id="big-note-textarea" rows="7" oninput="updateBigNoteLivePreview()" placeholder="在此输入详细备忘..." class="w-full bg-white border border-gray-300 rounded-xl p-3 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans leading-relaxed"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-gray-500 font-semibold mb-1 text-[11px]">实时预览效果：</label>
-                    <div id="big-note-preview" class="rich-note bg-white border border-gray-200 rounded-xl p-3.5 text-xs text-gray-800 leading-relaxed min-h-[80px] whitespace-pre-wrap"></div>
+                    <label class="block text-gray-500 font-semibold mb-1 text-[11px]">资料备忘内容：</label>
+                    <div id="big-note-preview" class="rich-note bg-white border border-gray-200 rounded-xl p-3.5 text-xs text-gray-800 leading-relaxed min-h-[100px] whitespace-pre-wrap"></div>
                 </div>
             </div>
 
-            <!-- 底部保存按钮 -->
+            <!-- 底部操作栏 -->
             <div class="flex justify-end px-6 py-3.5 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
-                <button onclick="closeBigNoteModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">取消</button>
-                <button onclick="saveBigNoteChanges()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注并同步</button>
+                <button onclick="closeBigNoteModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">返回主界面</button>
+                <button id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注并同步</button>
             </div>
         </div>
     </div>
@@ -280,6 +286,7 @@
         let selectedProductIds = new Set();
         let currentEditingId = null;
         let currentBigNoteProdId = null;
+        let isReadOnlyMode = false; // 是否为只读访客模式
 
         let pendingCheck = {
             prodId: null,
@@ -292,13 +299,32 @@
         window.onload = function() {
             const d = new Date();
             d.setDate(d.getDate() + 30);
-            document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
+            if(document.getElementById("p-prod-date")) {
+                document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
+            }
 
-            if (localStorage.getItem("wb_token")) {
-                document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "";
-                document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "";
-                document.getElementById("cfg-token").value = localStorage.getItem("wb_token") || "";
-                fetchFromCloud();
+            // 检查 URL 是否携带访客只读参数 (e.g. ?mode=readonly 或带 token 参数)
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const paramOwner = urlParams.get('owner');
+            const paramRepo = urlParams.get('repo');
+            const paramToken = urlParams.get('token');
+
+            if (mode === 'readonly' || mode === 'view' || (!localStorage.getItem("wb_token") && paramToken)) {
+                isReadOnlyMode = true;
+                applyReadOnlyUI();
+                if (paramOwner && paramRepo && paramToken) {
+                    fetchFromCloudCustom(paramOwner, paramRepo, paramToken);
+                } else if (localStorage.getItem("wb_token")) {
+                    fetchFromCloud();
+                }
+            } else {
+                if (localStorage.getItem("wb_token")) {
+                    document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "";
+                    document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "";
+                    document.getElementById("cfg-token").value = localStorage.getItem("wb_token") || "";
+                    fetchFromCloud();
+                }
             }
 
             document.addEventListener('keydown', function(event) {
@@ -311,6 +337,41 @@
                         toggleConfigModal();
                     }
                 }
+            });
+        }
+
+        // 应用访客只读界面的 UI 隐藏逻辑
+        function applyReadOnlyUI() {
+            document.getElementById("role-badge").innerText = "👀 访客只读模式";
+            document.getElementById("role-badge").className = "text-xs bg-gray-100 text-gray-700 border border-gray-300 px-2 py-0.5 rounded-md font-semibold";
+            document.getElementById("header-desc").innerText = "当前处于只读视图 · 支持自由筛选、查看大备注备忘及勾选导出 Excel";
+
+            // 隐藏修改与配置入口
+            if (document.getElementById("admin-create-panel")) document.getElementById("admin-create-panel").style.display = "none";
+            if (document.getElementById("btn-share-readonly")) document.getElementById("btn-share-readonly").style.display = "none";
+            if (document.getElementById("btn-config")) document.getElementById("btn-config").style.display = "none";
+            if (document.getElementById("big-note-toolbar")) document.getElementById("big-note-toolbar").style.display = "none";
+            if (document.getElementById("big-note-edit-section")) document.getElementById("big-note-edit-section").style.display = "none";
+            if (document.getElementById("btn-save-big-note")) document.getElementById("btn-save-big-note").style.display = "none";
+        }
+
+        // 一键生成访客只读分享链接
+        function copyReadOnlyShareLink() {
+            const owner = localStorage.getItem("wb_owner");
+            const repo = localStorage.getItem("wb_repo");
+            const token = localStorage.getItem("wb_token");
+
+            if (!owner || !repo || !token) {
+                return alert("请先完成【⚙️ 账号配置】并成功同步云端后，再生成分享链接！");
+            }
+
+            const currentUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${currentUrl}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&token=${encodeURIComponent(token)}`;
+
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("🎉 访客只读链接已复制到剪贴板！\n\n其他人打开此链接后：\n1. 只能查看、筛选、查看大备注与追溯日志。\n2. 可以任意勾选系列导出 Excel。\n3. 无法进行任何修改、删除或云端同步操作，无需登录！");
+            }).catch(() => {
+                prompt("请复制以下只读分享链接：", shareUrl);
             });
         }
 
@@ -363,15 +424,12 @@
             return prefix || arr[0].substring(0, 8);
         }
 
-        // 解析并渲染删除线与超链接
         function renderFormattedText(text) {
             if (!text) return '<span class="text-gray-400">暂无大备注内容</span>';
             let safe = escapeHtml(text);
-            // 将 ~~文本~~ 或 <s>文本</s> 转化为删除线
             safe = safe.replace(/~~(.*?)~~/g, '<s>$1</s>');
             safe = safe.replace(/&lt;s&gt;(.*?)&lt;\/s&gt;/g, '<s>$1</s>');
             safe = safe.replace(/&lt;del&gt;(.*?)&lt;\/del&gt;/g, '<s>$1</s>');
-            // 将 URL 识别为可点击外链
             safe = safe.replace(/(https?:\/\/[^\s\n\r]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline font-medium">$1</a>');
             return safe;
         }
@@ -401,6 +459,7 @@
         }
 
         function insertStrikeThrough() {
+            if (isReadOnlyMode) return;
             const textarea = document.getElementById("big-note-textarea");
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
@@ -416,6 +475,7 @@
         }
 
         function insertFileLinkPrompt() {
+            if (isReadOnlyMode) return;
             const link = prompt("请输入或粘贴文档/小文件/网盘外链 (以 http:// 或 https:// 开头):");
             if (!link || link.trim() === "") return;
             const textarea = document.getElementById("big-note-textarea");
@@ -426,6 +486,7 @@
         }
 
         function insertTimestamp() {
+            if (isReadOnlyMode) return;
             const textarea = document.getElementById("big-note-textarea");
             const start = textarea.selectionStart;
             const text = textarea.value;
@@ -434,6 +495,7 @@
         }
 
         function saveBigNoteChanges() {
+            if (isReadOnlyMode) return alert("当前为只读模式，无法修改数据！");
             if (!currentBigNoteProdId) return;
             const p = products.find(item => item.id === currentBigNoteProdId);
             if (!p) return;
@@ -455,6 +517,7 @@
 
         // ================= 批量新建逻辑 =================
         function addProductWithBatchSkus() {
+            if (isReadOnlyMode) return alert("当前为只读模式，无法添加新系列！");
             const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
             const category = document.getElementById("p-category").value.trim() || "常规新品";
@@ -557,6 +620,7 @@
         }
 
         function quickEditSeriesName(prodId) {
+            if (isReadOnlyMode) return;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const newName = prompt("修改产品型号 / 系列名:", p.name);
@@ -576,6 +640,7 @@
         }
 
         function openEditModal(prodId) {
+            if (isReadOnlyMode) return;
             currentEditingId = prodId;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -595,6 +660,7 @@
         }
 
         function saveEditChanges() {
+            if (isReadOnlyMode) return;
             if (!currentEditingId) return;
             const p = products.find(item => item.id === currentEditingId);
             if (!p) return;
@@ -640,6 +706,10 @@
         }
 
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
+            if (isReadOnlyMode) {
+                checkboxEl.checked = !checkboxEl.checked;
+                return alert("当前为只读模式，无法修改推进节点！");
+            }
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const sku = p.skus.find(s => s.id === skuId);
@@ -665,6 +735,7 @@
         }
 
         function triggerBatchColumnCheck(prodId, key, label) {
+            if (isReadOnlyMode) return alert("当前为只读模式，无法批量修改！");
             const p = products.find(item => item.id === prodId);
             if (!p || !p.skus || p.skus.length === 0) return;
 
@@ -694,6 +765,7 @@
         }
 
         function confirmNodeCheckChange() {
+            if (isReadOnlyMode) return;
             const { prodId, skuIds, key, label, targetVal } = pendingCheck;
             if (!prodId || !skuIds || skuIds.length === 0) return;
 
@@ -736,6 +808,7 @@
         }
 
         function changeProdStatus(prodId, val) {
+            if (isReadOnlyMode) return;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const oldStatus = p.status;
@@ -845,7 +918,6 @@
             }
         }
 
-        // 导出 Excel (支持导出最新大备注)
         function exportSelectedToExcel() {
             let targetProducts = [];
             if (selectedProductIds.size > 0) {
@@ -937,6 +1009,7 @@
         }
 
         function addSku(prodId) {
+            if (isReadOnlyMode) return;
             const skuName = prompt("请输入子规格名称:");
             if (!skuName || skuName.trim() === "") return;
             const targetSku = skuName.trim();
@@ -971,6 +1044,7 @@
         }
 
         function editSkuName(prodId, skuId) {
+            if (isReadOnlyMode) return;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const sku = p.skus.find(s => s.id === skuId);
@@ -1002,6 +1076,7 @@
         }
 
         function removeSku(prodId, skuId) {
+            if (isReadOnlyMode) return;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const sIdx = p.skus.findIndex(s => s.id === skuId);
@@ -1028,6 +1103,7 @@
         }
 
         function removeProduct(prodId) {
+            if (isReadOnlyMode) return;
             const pIdx = products.findIndex(item => item.id === prodId);
             if (pIdx === -1) return;
 
@@ -1092,7 +1168,6 @@
 
                 let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
 
-                // 大备注胶囊预览
                 let bigNoteBadge = prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="mt-1 text-[11px] text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center space-x-1 font-medium transition ml-1" title="查看/编辑大备注"><span>📌 资料备忘</span></button>` : '';
 
                 const isExpanded = !!expandedRows[prod.id];
@@ -1100,6 +1175,43 @@
                 const isUrgent = prod.status === "紧急重要";
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
+
+                // 状态单元格：只读模式显示静态徽标，管理模式显示下拉菜单
+                let statusCellHtml = "";
+                if (isReadOnlyMode) {
+                    if (isUrgent) {
+                        statusCellHtml = `<span class="text-red-700 bg-red-100 border border-red-300 px-2.5 py-1 rounded font-bold">🔥 紧急重要</span>`;
+                    } else if (prod.status === "已归档") {
+                        statusCellHtml = `<span class="text-gray-600 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded font-medium">✅ 已归档</span>`;
+                    } else {
+                        statusCellHtml = `<span class="text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded font-medium">⚡ 进行中</span>`;
+                    }
+                } else {
+                    statusCellHtml = `
+                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
+                            <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
+                            <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
+                            <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
+                        </select>
+                    `;
+                }
+
+                // 操作按钮栏：只读模式仅保留大备注与追溯
+                let operationsHtml = "";
+                if (isReadOnlyMode) {
+                    operationsHtml = `
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
+                    `;
+                } else {
+                    operationsHtml = `
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改/备注</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
+                        <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
+                        <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
+                    `;
+                }
 
                 const tr = document.createElement("tr");
                 tr.className = `hover:bg-blue-50/40 transition-colors ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : (isDelayed ? 'bg-red-50/30' : '')} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
@@ -1116,7 +1228,7 @@
                         <div class="flex items-center space-x-1.5 flex-wrap">
                             ${isUrgent ? '<span class="bg-red-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">紧急</span>' : ''}
                             <span>${escapeHtml(prod.name)}</span>
-                            <button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]" title="快速修改系列名">✏️</button>
+                            ${!isReadOnlyMode ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]" title="快速修改系列名">✏️</button>` : ''}
                             <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 font-normal">${skuCount} SKU</span>
                         </div>
                     </td>
@@ -1124,7 +1236,7 @@
                     <td class="p-3 font-mono">
                         <div class="flex items-center space-x-1.5">
                             <span class="${isDelayed ? 'text-red-600 font-bold' : 'text-gray-700'}">${cleanProdDate || '-'}</span>
-                            <button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 opacity-60 hover:opacity-100 transition text-[11px]" title="修改大货时间及备注">✏️</button>
+                            ${!isReadOnlyMode ? `<button onclick="openEditModal('${prod.id}')" class="text-blue-500 hover:text-blue-700 opacity-60 hover:opacity-100 transition text-[11px]" title="修改大货时间及备注">✏️</button>` : ''}
                         </div>
                     </td>
                     <td class="p-3">
@@ -1133,18 +1245,10 @@
                         ${bigNoteBadge}
                     </td>
                     <td class="p-3">
-                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
-                            <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
-                            <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
-                            <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
-                        </select>
+                        ${statusCellHtml}
                     </td>
                     <td class="p-3 text-right space-x-2 font-medium">
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改/备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
-                        <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
-                        <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
+                        ${operationsHtml}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1160,13 +1264,14 @@
                                         <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格对接列表</span>
                                         <span class="text-[11px] text-gray-400 font-normal">(${skuCount} 个变体)</span>
                                     </div>
+                                    ${!isReadOnlyMode ? `
                                     <div class="flex items-center space-x-2 flex-wrap">
                                         <span class="text-[11px] text-gray-500 font-semibold">⚡ 快捷连选:</span>
                                         <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-200 transition" title="一键将该系列全部SKU的财务BOM标记完成/取消">财务BOM 全选</button>
                                         <button onclick="triggerBatchColumnCheck('${prod.id}', 'detailOk', '策划/详情页验收')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-medium border border-indigo-200 transition" title="一键将该系列全部SKU的详情页标记完成/取消">详情页 全选</button>
                                         <button onclick="triggerBatchColumnCheck('${prod.id}', 'sapOk', 'SKU编码/69编码')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-medium border border-emerald-200 transition" title="一键将该系列全部SKU的69编码标记完成/取消">69编码 全选</button>
                                         <button onclick="addSku('${prod.id}')" class="text-blue-600 hover:underline text-xs font-medium ml-2">+ 添加新规格</button>
-                                    </div>
+                                    </div>` : ''}
                                 </div>
                                 <div class="space-y-2">
                     `;
@@ -1183,20 +1288,22 @@
                             <div class="flex items-center justify-between bg-gray-50 hover:bg-gray-100/80 p-2.5 rounded border border-gray-200 text-xs transition">
                                 <div class="flex items-center space-x-2">
                                     <span class="text-gray-800 font-semibold">${escapeHtml(sku.name)}</span>
-                                    <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-gray-600" title="修改规格名">✏️</button>
-                                    <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600" title="删除规格">🗑️</button>
+                                    ${!isReadOnlyMode ? `
+                                        <button onclick="editSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-gray-600" title="修改规格名">✏️</button>
+                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-red-400 hover:text-red-600" title="删除规格">🗑️</button>
+                                    ` : ''}
                                 </div>
                                 <div class="flex items-center space-x-6">
-                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('bomOk')}>
-                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)" ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('bomOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM/价审', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM/价审</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('detailOk')}>
-                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)" ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('detailOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '策划/详情页验收', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">策划/详情页验收</span>
                                     </label>
-                                    <label class="flex items-center space-x-1.5 cursor-pointer"${getTip('sapOk')}>
-                                        <input type="checkbox" onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)" ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <label class="flex items-center space-x-1.5 ${isReadOnlyMode ? 'cursor-default' : 'cursor-pointer'}"${getTip('sapOk')}>
+                                        <input type="checkbox" ${isReadOnlyMode ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', 'SKU编码/69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0">
                                         <span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">SKU编码/69编码</span>
                                     </label>
                                 </div>
@@ -1215,6 +1322,46 @@
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
             updateSelectAllCheckboxState();
+        }
+
+        async function fetchFromCloudCustom(owner, repo, token) {
+            document.getElementById("sync-status").innerText = "拉取访客只读数据...";
+            try {
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                    headers: { "Authorization": `token ${token}` }
+                });
+
+                if (res.status === 404) {
+                    products = [];
+                    document.getElementById("sync-status").innerText = "无云端数据";
+                    renderTable();
+                    return;
+                }
+
+                const data = await res.json();
+                products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                
+                products.forEach((p, pIdx) => {
+                    if (!p.id) p.id = "P_" + (Date.now() + pIdx);
+                    if (!p.remark) p.remark = "";
+                    if (!p.bigNote) p.bigNote = "";
+                    p.prodDate = normalizeDate(p.prodDate);
+                    if (p.skus) {
+                        p.skus.forEach((s, sIdx) => {
+                            if (!s.id) s.id = "S_" + (Date.now() + pIdx + "_" + sIdx);
+                            if (!s.nodeRecords) s.nodeRecords = {};
+                        });
+                    }
+                });
+
+                document.getElementById("sync-status").innerText = "只读同步最新 ✅";
+                document.getElementById("auth-tag").innerText = `只读授权: ${owner}`;
+                document.getElementById("auth-tag").className = "text-xs bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1 rounded-full font-medium";
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                document.getElementById("sync-status").innerText = "同步异常";
+            }
         }
 
         async function fetchFromCloud() {
@@ -1267,6 +1414,7 @@
         }
 
         async function syncToCloud() {
+            if (isReadOnlyMode) return; // 只读模式直接拦截云端写入
             const owner = localStorage.getItem("wb_owner");
             const repo = localStorage.getItem("wb_repo");
             const token = localStorage.getItem("wb_token");
