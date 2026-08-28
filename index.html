@@ -30,6 +30,17 @@
         .btn-export-excel:hover {
             background-color: #047857 !important;
         }
+
+        /* 渲染大备注内部的删除线和文件超链接 */
+        .rich-note s, .rich-note del, .rich-note strike {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        .rich-note a {
+            color: #2563eb;
+            text-decoration: underline;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased">
@@ -39,7 +50,7 @@
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-lg sm:text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 节点批量连选 · 紧急重要标识 · 支持勾选导出 Excel</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 节点批量连选 · 系列大备注/文件链接 · 支持导出 Excel</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -101,7 +112,7 @@
         <!-- 主表格容器 -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-10 w-full">
             <div class="overflow-x-auto custom-scroll w-full">
-                <table class="w-full text-left text-xs text-gray-700 min-w-[780px]">
+                <table class="w-full text-left text-xs text-gray-700 min-w-[850px]">
                     <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                         <tr>
                             <th class="p-3 w-8 text-center">
@@ -110,15 +121,58 @@
                             <th class="p-3 w-10 text-center">展开</th>
                             <th class="p-3 min-w-[200px]">产品型号 / 系列</th>
                             <th class="p-3 min-w-[90px]">品类</th>
-                            <th class="p-3 min-w-[140px]">量产大货时间</th>
-                            <th class="p-3 min-w-[180px]">健康度 / 延期说明 / 归档</th>
+                            <th class="p-3 min-w-[130px]">量产大货时间</th>
+                            <th class="p-3 min-w-[220px]">健康度 / 变动说明 / 大备注</th>
                             <th class="p-3 min-w-[110px]">状态</th>
-                            <th class="p-3 text-right min-w-[190px]">操作与审计</th>
+                            <th class="p-3 text-right min-w-[210px]">操作与审计</th>
                         </tr>
                     </thead>
                     <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal">
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系列大备注与文档归档工作台弹窗 (支持删除线、链接、滑动) -->
+    <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeBigNoteModal()">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 650px;">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-2">
+                        <span>📝 系列大备注 & 文件资料备忘录</span>
+                        <span id="big-note-prod-name" class="text-blue-600 font-semibold"></span>
+                    </h2>
+                    <p class="text-[11px] text-gray-400 mt-0.5">支持快捷插入删除线、小文件文档外链与长内容滑动留痕</p>
+                </div>
+                <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="px-6 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center space-x-2 flex-wrap flex-shrink-0">
+                <span class="text-gray-500 font-medium text-[11px]">快捷格式:</span>
+                <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2 py-1 rounded text-[11px] font-mono transition" title="为选中文本添加删除线">~~ 删除线 ~~</button>
+                <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2 py-1 rounded text-[11px] transition" title="插入飞书/蓝湖/网盘等文件链接">🔗 插入文档/网盘链接</button>
+                <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2 py-1 rounded text-[11px] transition">⏱️ 插入当前时间戳</button>
+            </div>
+            
+            <!-- 编辑与预览滚动区 -->
+            <div class="log-scroll flex-1 p-6 space-y-4 bg-gray-50/40">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-1">大备注编辑框：</label>
+                    <textarea id="big-note-textarea" rows="8" oninput="updateBigNoteLivePreview()" placeholder="在此输入系列的详细跟进备忘录，例如：&#10;1. 08/28 与工程确认：~~老版卡扣结构作废~~，改为一体注塑&#10;2. 详情页排版蓝湖链接：https://lanhuapp.com/...&#10;3. 工厂初版试产资料见网盘：https://pan.quark.cn/..." class="w-full bg-white border border-gray-300 rounded-xl p-3 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-gray-500 font-semibold mb-1 text-[11px]">实时预览效果：</label>
+                    <div id="big-note-preview" class="rich-note bg-white border border-gray-200 rounded-xl p-3.5 text-xs text-gray-800 leading-relaxed min-h-[80px] whitespace-pre-wrap"></div>
+                </div>
+            </div>
+
+            <!-- 底部保存按钮 -->
+            <div class="flex justify-end px-6 py-3.5 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
+                <button onclick="closeBigNoteModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">取消</button>
+                <button onclick="saveBigNoteChanges()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注并同步</button>
             </div>
         </div>
     </div>
@@ -225,11 +279,11 @@
         let expandedRows = {};
         let selectedProductIds = new Set();
         let currentEditingId = null;
+        let currentBigNoteProdId = null;
 
-        // 记录批量或单个待确认节点
         let pendingCheck = {
             prodId: null,
-            skuIds: [], // 支持多个 SKU
+            skuIds: [],
             key: null,
             label: null,
             targetVal: false
@@ -249,6 +303,7 @@
 
             document.addEventListener('keydown', function(event) {
                 if (event.key === "Escape") {
+                    closeBigNoteModal();
                     closeLogsModal();
                     closeEditModal();
                     closeCheckModal();
@@ -308,6 +363,97 @@
             return prefix || arr[0].substring(0, 8);
         }
 
+        // 解析并渲染删除线与超链接
+        function renderFormattedText(text) {
+            if (!text) return '<span class="text-gray-400">暂无大备注内容</span>';
+            let safe = escapeHtml(text);
+            // 将 ~~文本~~ 或 <s>文本</s> 转化为删除线
+            safe = safe.replace(/~~(.*?)~~/g, '<s>$1</s>');
+            safe = safe.replace(/&lt;s&gt;(.*?)&lt;\/s&gt;/g, '<s>$1</s>');
+            safe = safe.replace(/&lt;del&gt;(.*?)&lt;\/del&gt;/g, '<s>$1</s>');
+            // 将 URL 识别为可点击外链
+            safe = safe.replace(/(https?:\/\/[^\s\n\r]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline font-medium">$1</a>');
+            return safe;
+        }
+
+        // ================= 大备注模态框逻辑 =================
+        function openBigNoteModal(prodId) {
+            currentBigNoteProdId = prodId;
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+
+            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`;
+            document.getElementById("big-note-textarea").value = p.bigNote || "";
+            updateBigNoteLivePreview();
+            document.getElementById("big-note-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeBigNoteModal() {
+            document.getElementById("big-note-modal").classList.add("hidden");
+            currentBigNoteProdId = null;
+            lockBodyScroll(false);
+        }
+
+        function updateBigNoteLivePreview() {
+            const val = document.getElementById("big-note-textarea").value;
+            document.getElementById("big-note-preview").innerHTML = renderFormattedText(val);
+        }
+
+        function insertStrikeThrough() {
+            const textarea = document.getElementById("big-note-textarea");
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+
+            if (start !== end) {
+                const selected = text.substring(start, end);
+                textarea.value = text.substring(0, start) + `~~${selected}~~` + text.substring(end);
+            } else {
+                textarea.value = text.substring(0, start) + `~~划掉作废内容~~` + text.substring(end);
+            }
+            updateBigNoteLivePreview();
+        }
+
+        function insertFileLinkPrompt() {
+            const link = prompt("请输入或粘贴文档/小文件/网盘外链 (以 http:// 或 https:// 开头):");
+            if (!link || link.trim() === "") return;
+            const textarea = document.getElementById("big-note-textarea");
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + ` 🔗资料链接: ${link.trim()} ` + text.substring(start);
+            updateBigNoteLivePreview();
+        }
+
+        function insertTimestamp() {
+            const textarea = document.getElementById("big-note-textarea");
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + `[${getNowString().substring(5, 16)}] ` + text.substring(start);
+            updateBigNoteLivePreview();
+        }
+
+        function saveBigNoteChanges() {
+            if (!currentBigNoteProdId) return;
+            const p = products.find(item => item.id === currentBigNoteProdId);
+            if (!p) return;
+
+            const newVal = document.getElementById("big-note-textarea").value.trim();
+            p.bigNote = newVal;
+
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: getNowString(),
+                type: "UPDATE",
+                desc: `更新了系列大备注与备忘资料`
+            });
+
+            closeBigNoteModal();
+            renderTable();
+            syncToCloud();
+        }
+
+        // ================= 批量新建逻辑 =================
         function addProductWithBatchSkus() {
             const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
@@ -392,6 +538,7 @@
                 category: category,
                 prodDate: normalizeDate(prodDate),
                 remark: "",
+                bigNote: "",
                 status: "进行中",
                 archivedAt: null,
                 createdAt: nowTime,
@@ -492,7 +639,6 @@
             }
         }
 
-        // 单个 SKU 点击触发
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -500,7 +646,7 @@
             if (!sku) return;
 
             const targetVal = checkboxEl.checked;
-            checkboxEl.checked = !targetVal; // 暂不直接变动，等待弹窗确认
+            checkboxEl.checked = !targetVal;
 
             pendingCheck = {
                 prodId: prodId,
@@ -518,12 +664,10 @@
             lockBodyScroll(true);
         }
 
-        // 连选整列一键全选 / 反选
         function triggerBatchColumnCheck(prodId, key, label) {
             const p = products.find(item => item.id === prodId);
             if (!p || !p.skus || p.skus.length === 0) return;
 
-            // 如果全部已勾选，则操作为全部取消；否则为全部勾选
             const isAllChecked = p.skus.every(s => !!s[key]);
             const targetVal = !isAllChecked;
 
@@ -549,7 +693,6 @@
             lockBodyScroll(false);
         }
 
-        // 一键确认批量或单项修改
         function confirmNodeCheckChange() {
             const { prodId, skuIds, key, label, targetVal } = pendingCheck;
             if (!prodId || !skuIds || skuIds.length === 0) return;
@@ -702,6 +845,7 @@
             }
         }
 
+        // 导出 Excel (支持导出最新大备注)
         function exportSelectedToExcel() {
             let targetProducts = [];
             if (selectedProductIds.size > 0) {
@@ -733,7 +877,8 @@
                 "SKU编码/69编码状态",
                 "69编码确认时间",
                 "69编码说明",
-                "最新变动/延期备注",
+                "延期/变动备注",
+                "系列大备注/文档备忘",
                 "最新更新时间"
             ];
 
@@ -772,6 +917,7 @@
                         cleanCell(sapRec.time || ''),
                         cleanCell(sapRec.remark || ''),
                         cleanCell(prod.remark || ''),
+                        cleanCell(prod.bigNote || ''),
                         cleanCell(latestLogTime)
                     ];
                     csvRows.push(row.join(","));
@@ -894,6 +1040,7 @@
             }
         }
 
+        // 渲染主表格
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             tbody.innerHTML = "";
@@ -916,8 +1063,9 @@
                     const matchName = (prod.name || "").toLowerCase().includes(keyword);
                     const matchCategory = (prod.category || "").toLowerCase().includes(keyword);
                     const matchRemark = (prod.remark || "").toLowerCase().includes(keyword);
+                    const matchBigNote = (prod.bigNote || "").toLowerCase().includes(keyword);
                     const matchSkus = (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
-                    isMatch = matchName || matchCategory || matchRemark || matchSkus;
+                    isMatch = matchName || matchCategory || matchRemark || matchBigNote || matchSkus;
                     if (isMatch && matchSkus) expandedRows[prod.id] = true;
                 }
 
@@ -943,6 +1091,9 @@
                 }
 
                 let remarkBadge = prod.remark ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block font-medium">📝 ${escapeHtml(prod.remark)}</div>` : '';
+
+                // 大备注胶囊预览
+                let bigNoteBadge = prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="mt-1 text-[11px] text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center space-x-1 font-medium transition ml-1" title="查看/编辑大备注"><span>📌 资料备忘</span></button>` : '';
 
                 const isExpanded = !!expandedRows[prod.id];
                 const isSelected = selectedProductIds.has(prod.id);
@@ -979,6 +1130,7 @@
                     <td class="p-3">
                         ${statusBadge}
                         ${remarkBadge}
+                        ${bigNoteBadge}
                     </td>
                     <td class="p-3">
                         <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
@@ -988,8 +1140,9 @@
                         </select>
                     </td>
                     <td class="p-3 text-right space-x-2 font-medium">
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
                         <button onclick="openEditModal('${prod.id}')" class="text-blue-600 hover:underline">修改/备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-indigo-600 hover:underline">追溯(${logCount})</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯(${logCount})</button>
                         <button onclick="addSku('${prod.id}')" class="text-emerald-600 hover:underline">+规格</button>
                         <button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>
                     </td>
@@ -1093,6 +1246,7 @@
                 products.forEach((p, pIdx) => {
                     if (!p.id) p.id = "P_" + (Date.now() + pIdx);
                     if (!p.remark) p.remark = "";
+                    if (!p.bigNote) p.bigNote = "";
                     p.prodDate = normalizeDate(p.prodDate);
                     if (p.skus) {
                         p.skus.forEach((s, sIdx) => {
@@ -1132,7 +1286,7 @@
 
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(products, null, 2))));
                 const body = {
-                    message: "Update products matrix & audit logs",
+                    message: "Update products matrix, big notes & audit logs",
                     content: encoded
                 };
                 if (fileSha) body.sha = fileSha;
