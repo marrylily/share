@@ -20,7 +20,6 @@
         .log-scroll::-webkit-scrollbar-track { background: #f8fafc; }
         .log-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         
-        /* 强制高对比度导出按钮 */
         .btn-export-excel {
             background-color: #059669 !important;
             color: #ffffff !important;
@@ -40,7 +39,7 @@
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-lg sm:text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能前缀识别 · 子 SKU 裂变 · 大货时间变动留痕 · 支持勾选导出 Excel</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 子 SKU 裂变 · 紧急重要标识 · 支持勾选导出 Excel</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -50,11 +49,11 @@
 
         <!-- 批量新建面板 -->
         <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm mb-5">
-            <h2 class="text-sm font-bold text-gray-800 mb-3">⚡ 批量粘贴 SKU 自动裂变生成</h2>
+            <h2 class="text-sm font-bold text-gray-800 mb-3">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
             
             <div class="mb-3">
                 <label class="block text-gray-700 font-semibold mb-1 text-xs">
-                    子变体 / SKU 列表 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(从表格直接复制多行粘贴，系统自动识别系列名)</span>
+                    子变体 / SKU 列表 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(从表格直接复制多行粘贴，系统自动查重与裂变)</span>
                 </label>
                 <textarea id="p-skus-batch" rows="3" placeholder="HD-LD22-H枪灰色1.3&#10;HD-LD22-H枪灰色1.5&#10;HD-LD22-H奶白色1.3-1&#10;HD-LD22-H奶白色1.5-1" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
             </div>
@@ -73,7 +72,7 @@
                     <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end">
-                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold shadow-sm transition">🚀 智能裂变创建</button>
+                    <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold shadow-sm transition">🚀 智能查重并创建</button>
                 </div>
             </div>
         </div>
@@ -83,6 +82,7 @@
             <div class="flex items-center space-x-4 flex-wrap">
                 <span>总系列: <strong id="stat-total" class="text-gray-900">0</strong></span>
                 <span>🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
+                <span>🔥 紧急重要: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
                 <span>⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
                 <span>✅ 已归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
             </div>
@@ -108,11 +108,11 @@
                                 <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer" title="全选/取消全选">
                             </th>
                             <th class="p-3 w-10 text-center">展开</th>
-                            <th class="p-3 min-w-[180px]">产品型号 / 系列</th>
+                            <th class="p-3 min-w-[200px]">产品型号 / 系列</th>
                             <th class="p-3 min-w-[90px]">品类</th>
                             <th class="p-3 min-w-[140px]">量产大货时间</th>
                             <th class="p-3 min-w-[180px]">健康度 / 延期说明 / 归档</th>
-                            <th class="p-3 min-w-[90px]">状态</th>
+                            <th class="p-3 min-w-[110px]">状态</th>
                             <th class="p-3 text-right min-w-[190px]">操作与审计</th>
                         </tr>
                     </thead>
@@ -127,12 +127,12 @@
     <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeEditModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-4 flex items-center justify-between">
-                <span>✏️ 修改产品及量产大货截点 (变动将自动留痕)</span>
+                <span>✏️ 修改产品及量产大货截点</span>
                 <span id="edit-prod-id" class="text-[10px] text-gray-400 font-mono"></span>
             </h2>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">产品型号 / 系列</label>
+                    <label class="block text-gray-600 font-medium mb-1">产品型号 / 系列 <span class="text-gray-400">(可直接修改)</span></label>
                     <input type="text" id="edit-name" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
@@ -144,13 +144,13 @@
                     <input type="date" id="edit-prod-date" class="w-full border border-blue-300 bg-blue-50/30 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 延期备注说明 <span class="text-blue-500">(将直接展示在表格)</span></label>
+                    <label class="block text-gray-600 font-medium mb-1">本次变动原因 / 延期备注说明 <span class="text-blue-500">(选填，将直接展示在表格)</span></label>
                     <input type="text" id="edit-reason" placeholder="如: 模具延误整改、包装改版、工厂排产调整..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-5">
                 <button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认修改并留痕</button>
+                <button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">保存修改</button>
             </div>
         </div>
     </div>
@@ -282,10 +282,10 @@
                    String(now.getMonth() + 1).padStart(2, '0') + "-" + 
                    String(now.getDate()).padStart(2, '0') + " " + 
                    String(now.getHours()).padStart(2, '0') + ":" + 
-                   String(now.getMinutes()).padStart(2, '0');
+                   String(now.getMinutes()).padStart(2, '0') + ":" + 
+                   String(now.getSeconds()).padStart(2, '0');
         }
 
-        // 统一清理和校验日期格式为 yyyy-mm-dd
         function normalizeDate(str) {
             if (!str) return "";
             let s = String(str).trim().replace(/\//g, "-");
@@ -307,6 +307,7 @@
             return prefix || arr[0].substring(0, 8);
         }
 
+        // 批量创建（带全局 SKU 重复检测）
         function addProductWithBatchSkus() {
             const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
@@ -317,16 +318,63 @@
             }
             if (!prodDate) return alert("请选择量产大货时间！");
 
-            const lines = batchText.split('\n')
+            let rawLines = batchText.split('\n')
                 .map(l => l.replace(/^["'\s]+|["'\s]+$/g, '').trim())
                 .filter(l => l.length > 0);
 
+            // 1. 同一批次内的自查去重
+            let uniqueInputSkus = [];
+            let internalDupes = [];
+            rawLines.forEach(item => {
+                if (uniqueInputSkus.includes(item)) {
+                    internalDupes.push(item);
+                } else {
+                    uniqueInputSkus.push(item);
+                }
+            });
+
+            // 2. 全库跨系列查重 (扫描现有全部 SKU)
+            let existingSkuMap = {};
+            products.forEach(p => {
+                (p.skus || []).forEach(s => {
+                    existingSkuMap[s.name.trim().toLowerCase()] = p.name;
+                });
+            });
+
+            let globalConflicts = [];
+            let validSkus = [];
+
+            uniqueInputSkus.forEach(sku => {
+                let lower = sku.toLowerCase();
+                if (existingSkuMap[lower]) {
+                    globalConflicts.push(`• 【${sku}】 (已存在于系列：${existingSkuMap[lower]})`);
+                } else {
+                    validSkus.push(sku);
+                }
+            });
+
+            // 如果存在全库冲突
+            if (globalConflicts.length > 0) {
+                let msg = `⚠️ 发现 ${globalConflicts.length} 个 SKU 与已有数据重复：\n\n` + 
+                          globalConflicts.slice(0, 5).join('\n') + 
+                          (globalConflicts.length > 5 ? `\n...等共 ${globalConflicts.length} 个` : '') +
+                          `\n\n是否【跳过重复项】，仅录入剩余 ${validSkus.length} 个新规格？`;
+                
+                if (!confirm(msg)) {
+                    return; // 用户选择取消
+                }
+            }
+
+            if (validSkus.length === 0 && uniqueInputSkus.length > 0) {
+                return alert("❌ 本次提交的所有 SKU 均与已有数据重复，无法创建！");
+            }
+
             let manualName = document.getElementById("p-name").value.trim();
-            let seriesName = manualName || (lines.length > 0 ? extractCommonPrefix(lines) : "新品系列");
+            let seriesName = manualName || (validSkus.length > 0 ? extractCommonPrefix(validSkus) : "新品系列");
 
             let skusList = [];
-            if (lines.length > 0) {
-                lines.forEach((skuLine, i) => {
+            if (validSkus.length > 0) {
+                validSkus.forEach((skuLine, i) => {
                     skusList.push({
                         id: "S_" + Date.now() + "_" + i,
                         name: skuLine,
@@ -371,7 +419,25 @@
             syncToCloud();
         }
 
-        // 打开编辑产品与大货时间弹窗
+        function quickEditSeriesName(prodId) {
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+            const newName = prompt("修改产品型号 / 系列名:", p.name);
+            if (newName && newName.trim() !== "" && newName.trim() !== p.name) {
+                const oldName = p.name;
+                p.name = newName.trim();
+                const nowTime = getNowString();
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({
+                    time: nowTime,
+                    type: "UPDATE",
+                    desc: `系列名由【${oldName}】变更为【${p.name}】`
+                });
+                renderTable();
+                syncToCloud();
+            }
+        }
+
         function openEditModal(prodId) {
             currentEditingId = prodId;
             const p = products.find(item => item.id === prodId);
@@ -391,7 +457,6 @@
             lockBodyScroll(false);
         }
 
-        // 保存编辑与大货时间变动留痕
         function saveEditChanges() {
             if (!currentEditingId) return;
             const p = products.find(item => item.id === currentEditingId);
@@ -612,7 +677,6 @@
             }
         }
 
-        // 导出 Excel
         function exportSelectedToExcel() {
             let targetProducts = [];
             if (selectedProductIds.size > 0) {
@@ -701,15 +765,26 @@
             URL.revokeObjectURL(url);
         }
 
+        // 单个添加规格（防重检测）
         function addSku(prodId) {
             const skuName = prompt("请输入子规格名称:");
-            if (!skuName) return;
+            if (!skuName || skuName.trim() === "") return;
+            const targetSku = skuName.trim();
+
+            // 全库防重校验
+            for (let p of products) {
+                let found = (p.skus || []).find(s => s.name.trim().toLowerCase() === targetSku.toLowerCase());
+                if (found) {
+                    return alert(`❌ 无法添加：规格【${targetSku}】已存在于产品系列【${p.name}】中！`);
+                }
+            }
+
             const p = products.find(item => item.id === prodId);
             if (!p) return;
             const nowTime = getNowString();
             p.skus.push({
                 id: "S_" + Date.now(),
-                name: skuName.trim(),
+                name: targetSku,
                 bomOk: false,
                 detailOk: false,
                 sapOk: false,
@@ -719,7 +794,7 @@
             p.historyLogs.unshift({
                 time: nowTime,
                 type: "UPDATE",
-                desc: `新增变体规格【${skuName.trim()}】`
+                desc: `新增变体规格【${targetSku}】`
             });
             expandedRows[p.id] = true;
             renderTable();
@@ -733,9 +808,19 @@
             if (!sku) return;
 
             const newName = prompt("修改变体规格名称:", sku.name);
-            if (newName && newName.trim() !== sku.name) {
+            if (newName && newName.trim() !== "" && newName.trim() !== sku.name) {
+                const targetSku = newName.trim();
+                
+                // 全库防重校验
+                for (let otherP of products) {
+                    let found = (otherP.skus || []).find(s => s.id !== skuId && s.name.trim().toLowerCase() === targetSku.toLowerCase());
+                    if (found) {
+                        return alert(`❌ 规格名称重复：【${targetSku}】已存在于产品系列【${otherP.name}】中！`);
+                    }
+                }
+
                 const oldName = sku.name;
-                sku.name = newName.trim();
+                sku.name = targetSku;
                 const nowTime = getNowString();
                 if (!p.historyLogs) p.historyLogs = [];
                 p.historyLogs.unshift({
@@ -796,12 +881,14 @@
             const today = new Date().toISOString().split('T')[0];
 
             let delayCount = 0;
+            let urgentCount = 0;
             let runningCount = 0;
             let archivedCount = 0;
 
             products.forEach(prod => {
-                if (prod.status === "进行中") runningCount++;
-                if (prod.status === "已归档") archivedCount++;
+                if (prod.status === "紧急重要") urgentCount++;
+                else if (prod.status === "进行中") runningCount++;
+                else if (prod.status === "已归档") archivedCount++;
 
                 let isMatch = true;
                 if (keyword) {
@@ -838,11 +925,12 @@
 
                 const isExpanded = !!expandedRows[prod.id];
                 const isSelected = selectedProductIds.has(prod.id);
+                const isUrgent = prod.status === "紧急重要";
                 const skuCount = prod.skus ? prod.skus.length : 0;
                 const logCount = prod.historyLogs ? prod.historyLogs.length : 0;
 
                 const tr = document.createElement("tr");
-                tr.className = `hover:bg-blue-50/40 transition-colors ${isDelayed ? 'bg-red-50/30' : ''} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
+                tr.className = `hover:bg-blue-50/40 transition-colors ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : (isDelayed ? 'bg-red-50/30' : '')} ${prod.status === '已归档' ? 'bg-gray-50 text-gray-400' : ''}`;
                 tr.innerHTML = `
                     <td class="p-3 text-center">
                         <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
@@ -852,9 +940,13 @@
                             ${isExpanded ? '▼' : '▶'}
                         </button>
                     </td>
-                    <td class="p-3 font-bold text-gray-900 flex items-center space-x-2">
-                        <span>${escapeHtml(prod.name)}</span>
-                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 font-normal">${skuCount} SKU</span>
+                    <td class="p-3 font-bold text-gray-900">
+                        <div class="flex items-center space-x-1.5 flex-wrap">
+                            ${isUrgent ? '<span class="bg-red-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">紧急</span>' : ''}
+                            <span>${escapeHtml(prod.name)}</span>
+                            <button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 hover:text-blue-600 transition text-[11px]" title="快速修改系列名">✏️</button>
+                            <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 font-normal">${skuCount} SKU</span>
+                        </div>
                     </td>
                     <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
                     <td class="p-3 font-mono">
@@ -868,8 +960,9 @@
                         ${remarkBadge}
                     </td>
                     <td class="p-3">
-                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none">
+                        <select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border ${isUrgent ? 'border-red-400 text-red-700 font-bold' : 'border-gray-300 text-gray-700'} rounded px-2 py-1 text-xs focus:outline-none">
                             <option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>⚡ 进行中</option>
+                            <option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥 紧急重要</option>
                             <option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>✅ 已归档</option>
                         </select>
                     </td>
@@ -935,6 +1028,7 @@
 
             document.getElementById("stat-total").innerText = products.length;
             document.getElementById("stat-delay").innerText = delayCount;
+            document.getElementById("stat-urgent").innerText = urgentCount;
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
             updateSelectAllCheckboxState();
