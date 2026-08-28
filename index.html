@@ -62,7 +62,7 @@
                     <span>📊 新品生命周期推进中枢</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">多端自适应 · 智能查重 · 批量连选 · 备忘速记 · 支持导出 Excel</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">复合筛选器 · 多端自适应 · 智能查重 · 批量连选 · 支持导出 Excel</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -108,7 +108,66 @@
             </div>
         </div>
 
-        <!-- 统计与检索/导出操作条 -->
+        <!-- 🔍 多维度智能筛选器控制面板 (新增) -->
+        <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm mb-3 text-xs space-y-2.5">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <div class="flex items-center space-x-1.5 font-bold text-gray-800">
+                    <span>🔍 多维智能筛选</span>
+                    <span id="filter-result-count" class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-normal">显示全部</span>
+                </div>
+                <button onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline cursor-pointer">重置所有筛选条件</button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                <!-- 品类筛选 -->
+                <div>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">品类/渠道</label>
+                    <select id="filter-category" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部品类</option>
+                    </select>
+                </div>
+
+                <!-- 状态筛选 -->
+                <div>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">推进状态</label>
+                    <select id="filter-status" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部状态</option>
+                        <option value="进行中">⚡ 进行中</option>
+                        <option value="紧急重要">🔥 紧急重要</option>
+                        <option value="已归档">✅ 已归档</option>
+                    </select>
+                </div>
+
+                <!-- 健康度/预警筛选 -->
+                <div>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">健康度预警</label>
+                    <select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部排期</option>
+                        <option value="DELAY">🚨 仅看延期项目</option>
+                        <option value="URGENT_DAYS">⚠️ 7天内即将大货</option>
+                        <option value="NORMAL">🟢 正常推进中</option>
+                    </select>
+                </div>
+
+                <!-- 大备注备忘筛选 -->
+                <div>
+                    <label class="block text-gray-500 text-[10px] mb-0.5">大备注资料</label>
+                    <select id="filter-bignote" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部</option>
+                        <option value="HAS_NOTE">📌 仅看有大备注</option>
+                        <option value="NO_NOTE">⚪ 仅看无大备注</option>
+                    </select>
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="col-span-2 sm:col-span-4 md:col-span-1">
+                    <label class="block text-gray-500 text-[10px] mb-0.5">关键词精准搜索</label>
+                    <input type="text" id="search-input" oninput="renderTable()" placeholder="型号/变体/备注..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计与导出操作条 -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 mb-3 text-xs text-gray-600 px-1">
             <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
                 <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
@@ -118,13 +177,10 @@
                 <span>✅ 归档: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
             </div>
             
-            <div class="flex items-center space-x-2 w-full md:w-auto flex-wrap">
-                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
-                    <span>📥 导出 Excel</span>
+            <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
+                <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3.5 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
+                    <span>📥 导出选中系列至 Excel</span>
                 </button>
-                <div class="relative flex-1 md:w-56">
-                    <input type="text" id="search-input" oninput="renderTable()" placeholder="🔍 搜索系列、品类或SKU..." class="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                </div>
                 <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">检测中...</div>
             </div>
         </div>
@@ -165,7 +221,7 @@
             <div id="mobile-cards-container" class="space-y-3"></div>
         </div>
 
-        <!-- 📌 全局琐事速记与重要事项备忘板 (新增) -->
+        <!-- 📌 全局琐事速记与重要事项备忘板 -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-10">
             <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
                 <div class="flex items-center space-x-2">
@@ -179,25 +235,22 @@
             </div>
 
             <div id="memo-panel-body" class="pt-3 space-y-3">
-                <!-- 新增备忘输入区 (只读模式隐藏) -->
                 <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
                     <select id="memo-priority" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-500">
                         <option value="🔥 紧急重要">🔥 紧急重要</option>
                         <option value="⚡ 常规跟进" selected>⚡ 常规跟进</option>
                         <option value="💡 琐事记录">💡 琐事记录</option>
                     </select>
-                    <input type="text" id="memo-input" placeholder="输入待办/琐事提醒，如：下午 3 点找陈工确认包装盒打样进度、核对京东活动价..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <input type="text" id="memo-input" placeholder="输入待办/琐事提醒..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
                     <button onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-xs flex-shrink-0">
                         + 添加备忘
                     </button>
                 </div>
 
-                <!-- 备忘列表 -->
-                <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1">
-                </div>
+                <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1"></div>
 
                 <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
-                    <span>💡 提示：点击事项左侧可打勾标为完成（自动删除线）；数据随矩阵全局同步。</span>
+                    <span>💡 提示：点击左侧复选框标为完成（自动删除线）；数据随矩阵全局同步。</span>
                     <button id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline">清理已完成事项</button>
                 </div>
             </div>
@@ -218,14 +271,12 @@
                 <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition" title="关闭 (Esc)">✕</button>
             </div>
 
-            <!-- 工具栏 -->
             <div id="big-note-toolbar" class="px-3 sm:px-6 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-1.5 sm:space-x-2 flex-wrap flex-shrink-0">
                 <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2 py-1 rounded text-[10px] sm:text-[11px] font-mono transition">~~删除线~~</button>
                 <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2 py-1 rounded text-[10px] sm:text-[11px] transition">🔗 插入外链</button>
                 <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2 py-1 rounded text-[10px] sm:text-[11px] transition">⏱️ 时间戳</button>
             </div>
             
-            <!-- 内容滚动区 -->
             <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-3 sm:space-y-4 bg-gray-50/40">
                 <div id="big-note-edit-section">
                     <label class="block text-gray-700 font-bold mb-1 text-xs">大备注编辑框：</label>
@@ -238,7 +289,6 @@
                 </div>
             </div>
 
-            <!-- 底部操作栏 -->
             <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
                 <button onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">返回主界面</button>
                 <button id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注</button>
@@ -344,7 +394,7 @@
 
     <script>
         let products = [];
-        let globalMemos = []; // 全局备忘列表
+        let globalMemos = [];
         let fileSha = "";
         let expandedRows = {};
         let selectedProductIds = new Set();
@@ -436,6 +486,37 @@
             }).catch(() => {
                 prompt("请复制以下只读分享链接：", shareUrl);
             });
+        }
+
+        // ================= 🔍 智能筛选控制逻辑 =================
+        function updateCategoryFilterOptions() {
+            const selectEl = document.getElementById("filter-category");
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+
+            // 提取所有不重复品类
+            let categories = new Set();
+            products.forEach(p => {
+                if (p.category && p.category.trim()) categories.add(p.category.trim());
+            });
+
+            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
+            Array.from(categories).sort().forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === currentVal) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-status")) document.getElementById("filter-status").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
         }
 
         // ================= 📌 全局备忘录管理逻辑 =================
@@ -778,6 +859,7 @@
             expandedRows[newProd.id] = true;
             document.getElementById("p-name").value = "";
             document.getElementById("p-skus-batch").value = "";
+            updateCategoryFilterOptions();
             renderTable();
             syncToCloud();
         }
@@ -861,6 +943,7 @@
                 p.remark = newReason;
 
                 closeEditModal();
+                updateCategoryFilterOptions();
                 renderTable();
                 syncToCloud();
             } else {
@@ -1276,54 +1359,76 @@
                 delete expandedRows[prodId];
                 selectedProductIds.delete(prodId);
                 products.splice(pIdx, 1);
+                updateCategoryFilterOptions();
                 renderTable();
                 syncToCloud();
             }
         }
 
+        // 渲染主表格（支持多维复合筛选）
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
             tbody.innerHTML = "";
             mobileContainer.innerHTML = "";
 
+            // 获取全部筛选条件
             const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
+            const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
+            const filterStat = (document.getElementById("filter-status") ? document.getElementById("filter-status").value : "ALL");
+            const filterHealth = (document.getElementById("filter-health") ? document.getElementById("filter-health").value : "ALL");
+            const filterBigNote = (document.getElementById("filter-bignote") ? document.getElementById("filter-bignote").value : "ALL");
+
             const today = new Date().toISOString().split('T')[0];
 
             let delayCount = 0;
             let urgentCount = 0;
             let runningCount = 0;
             let archivedCount = 0;
+            let matchedCount = 0;
 
             products.forEach(prod => {
                 if (prod.status === "紧急重要") urgentCount++;
                 else if (prod.status === "进行中") runningCount++;
                 else if (prod.status === "已归档") archivedCount++;
 
-                let isMatch = true;
+                const cleanProdDate = normalizeDate(prod.prodDate);
+                const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                const isDelayed = (prod.status !== "已归档" && cleanProdDate && diffDays < 0);
+
+                // 1. 品类筛选
+                if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
+
+                // 2. 状态筛选
+                if (filterStat !== "ALL" && prod.status !== filterStat) return;
+
+                // 3. 健康度预警筛选
+                if (filterHealth === "DELAY" && !isDelayed) return;
+                if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7 || prod.status === "已归档")) return;
+                if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7) || prod.status === "已归档")) return;
+
+                // 4. 大备注筛选
+                if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
+                if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
+
+                // 5. 关键词搜索
                 if (keyword) {
                     const matchName = (prod.name || "").toLowerCase().includes(keyword);
                     const matchCategory = (prod.category || "").toLowerCase().includes(keyword);
                     const matchRemark = (prod.remark || "").toLowerCase().includes(keyword);
                     const matchBigNote = (prod.bigNote || "").toLowerCase().includes(keyword);
                     const matchSkus = (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
-                    isMatch = matchName || matchCategory || matchRemark || matchBigNote || matchSkus;
-                    if (isMatch && matchSkus) expandedRows[prod.id] = true;
+                    if (!matchName && !matchCategory && !matchRemark && !matchBigNote && !matchSkus) return;
+                    if (matchSkus) expandedRows[prod.id] = true;
                 }
 
-                if (!isMatch) return;
+                matchedCount++;
 
-                let isDelayed = false;
                 let statusBadge = "";
-                const cleanProdDate = normalizeDate(prod.prodDate);
-
                 if (prod.status === "已归档") {
                     statusBadge = `<span class="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-200">✅ 归档于 ${prod.archivedAt ? prod.archivedAt.split(' ')[0] : '已完成'}</span>`;
                 } else if (cleanProdDate) {
-                    const diffDays = Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24));
                     if (diffDays < 0) {
-                        isDelayed = true;
-                        delayCount++;
                         statusBadge = `<span class="bg-red-100 text-red-700 border border-red-300 px-2 py-0.5 rounded font-bold">🚨 延期 ${Math.abs(diffDays)} 天</span>`;
                     } else if (diffDays <= 7) {
                         statusBadge = `<span class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-2 py-0.5 rounded font-bold">⚠️ 剩 ${diffDays} 天</span>`;
@@ -1566,13 +1671,20 @@
                 mobileContainer.appendChild(card);
             });
 
+            // 更新统计指标
             document.getElementById("stat-total").innerText = products.length;
             document.getElementById("stat-delay").innerText = delayCount;
             document.getElementById("stat-urgent").innerText = urgentCount;
             document.getElementById("stat-running").innerText = runningCount;
             document.getElementById("stat-archived").innerText = archivedCount;
+            
+            const filterCountEl = document.getElementById("filter-result-count");
+            if (filterCountEl) {
+                filterCountEl.innerText = `筛选出 ${matchedCount} 个系列 (共 ${products.length})`;
+            }
+
             updateSelectAllCheckboxState();
-            renderMemos(); // 同步刷新备忘板
+            renderMemos();
         }
 
         async function fetchFromCloudCustom(owner, repo, token) {
@@ -1586,6 +1698,7 @@
                     products = [];
                     globalMemos = [];
                     document.getElementById("sync-status").innerText = "无云端数据";
+                    updateCategoryFilterOptions();
                     renderTable();
                     return;
                 }
@@ -1593,7 +1706,6 @@
                 const data = await res.json();
                 const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                 
-                // 兼容老数据（纯数组）与新格式（包含 products 和 memos）
                 if (Array.isArray(parsed)) {
                     products = parsed;
                     globalMemos = [];
@@ -1618,6 +1730,7 @@
                 document.getElementById("sync-status").innerText = "已同步 ✅";
                 document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>数据已同步</span>`;
                 document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1";
+                updateCategoryFilterOptions();
                 renderTable();
             } catch (err) {
                 console.error(err);
@@ -1644,6 +1757,7 @@
                     document.getElementById("sync-status").innerText = "已就绪";
                     document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>已连接云端</span>`;
                     document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1";
+                    updateCategoryFilterOptions();
                     renderTable();
                     return;
                 }
@@ -1676,6 +1790,7 @@
                 document.getElementById("sync-status").innerText = "已同步 ✅";
                 document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>已连接云端</span>`;
                 document.getElementById("auth-tag").className = "text-[10px] sm:text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1";
+                updateCategoryFilterOptions();
                 renderTable();
             } catch (err) {
                 console.error(err);
@@ -1702,7 +1817,6 @@
                     fileSha = "";
                 }
 
-                // 聚合产品矩阵与备忘录
                 const payloadData = {
                     products: products,
                     memos: globalMemos
