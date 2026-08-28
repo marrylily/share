@@ -39,7 +39,7 @@
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-lg sm:text-xl font-bold text-gray-900">📊 新品生命周期推进与审计追溯中枢</h1>
-                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 子 SKU 裂变 · 紧急重要标识 · 支持勾选导出 Excel</p>
+                <p class="text-xs text-gray-500 mt-0.5">智能查重拦截 · 节点批量连选 · 紧急重要标识 · 支持勾选导出 Excel</p>
             </div>
             <div class="flex items-center space-x-3">
                 <span id="auth-tag" class="text-xs bg-red-100 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium">未连接云端</span>
@@ -155,7 +155,7 @@
         </div>
     </div>
 
-    <!-- 节点勾选留痕弹窗 -->
+    <!-- 节点勾选 / 批量连选留痕弹窗 -->
     <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-4" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-6 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
@@ -164,12 +164,12 @@
             </h2>
             <p class="text-gray-500 mb-3 text-[11px]" id="check-modal-subtitle"></p>
             <div class="mb-4">
-                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 (选填)</label>
-                <input type="text" id="check-remark-input" placeholder="如: 财务已核价/已过审、第2版详情页确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 <span class="text-gray-400">(选填，将应用于本次更新)</span></label>
+                <input type="text" id="check-remark-input" placeholder="如: 财务已全过审、第2版详情页确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <div class="flex justify-end space-x-2">
                 <button onclick="closeCheckModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="confirmNodeCheckChange()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认记录</button>
+                <button onclick="confirmNodeCheckChange()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认一键更新</button>
             </div>
         </div>
     </div>
@@ -226,9 +226,10 @@
         let selectedProductIds = new Set();
         let currentEditingId = null;
 
+        // 记录批量或单个待确认节点
         let pendingCheck = {
             prodId: null,
-            skuId: null,
+            skuIds: [], // 支持多个 SKU
             key: null,
             label: null,
             targetVal: false
@@ -307,7 +308,6 @@
             return prefix || arr[0].substring(0, 8);
         }
 
-        // 批量创建（带全局 SKU 重复检测）
         function addProductWithBatchSkus() {
             const batchText = document.getElementById("p-skus-batch").value.trim();
             const prodDate = document.getElementById("p-prod-date").value;
@@ -322,18 +322,11 @@
                 .map(l => l.replace(/^["'\s]+|["'\s]+$/g, '').trim())
                 .filter(l => l.length > 0);
 
-            // 1. 同一批次内的自查去重
             let uniqueInputSkus = [];
-            let internalDupes = [];
             rawLines.forEach(item => {
-                if (uniqueInputSkus.includes(item)) {
-                    internalDupes.push(item);
-                } else {
-                    uniqueInputSkus.push(item);
-                }
+                if (!uniqueInputSkus.includes(item)) uniqueInputSkus.push(item);
             });
 
-            // 2. 全库跨系列查重 (扫描现有全部 SKU)
             let existingSkuMap = {};
             products.forEach(p => {
                 (p.skus || []).forEach(s => {
@@ -353,16 +346,13 @@
                 }
             });
 
-            // 如果存在全库冲突
             if (globalConflicts.length > 0) {
                 let msg = `⚠️ 发现 ${globalConflicts.length} 个 SKU 与已有数据重复：\n\n` + 
                           globalConflicts.slice(0, 5).join('\n') + 
                           (globalConflicts.length > 5 ? `\n...等共 ${globalConflicts.length} 个` : '') +
                           `\n\n是否【跳过重复项】，仅录入剩余 ${validSkus.length} 个新规格？`;
                 
-                if (!confirm(msg)) {
-                    return; // 用户选择取消
-                }
+                if (!confirm(msg)) return;
             }
 
             if (validSkus.length === 0 && uniqueInputSkus.length > 0) {
@@ -502,6 +492,7 @@
             }
         }
 
+        // 单个 SKU 点击触发
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
             const p = products.find(item => item.id === prodId);
             if (!p) return;
@@ -509,11 +500,11 @@
             if (!sku) return;
 
             const targetVal = checkboxEl.checked;
-            checkboxEl.checked = !targetVal;
+            checkboxEl.checked = !targetVal; // 暂不直接变动，等待弹窗确认
 
             pendingCheck = {
                 prodId: prodId,
-                skuId: skuId,
+                skuIds: [skuId],
                 key: key,
                 label: label,
                 targetVal: targetVal
@@ -527,39 +518,73 @@
             lockBodyScroll(true);
         }
 
+        // 连选整列一键全选 / 反选
+        function triggerBatchColumnCheck(prodId, key, label) {
+            const p = products.find(item => item.id === prodId);
+            if (!p || !p.skus || p.skus.length === 0) return;
+
+            // 如果全部已勾选，则操作为全部取消；否则为全部勾选
+            const isAllChecked = p.skus.every(s => !!s[key]);
+            const targetVal = !isAllChecked;
+
+            pendingCheck = {
+                prodId: prodId,
+                skuIds: p.skus.map(s => s.id),
+                key: key,
+                label: label,
+                targetVal: targetVal
+            };
+
+            document.getElementById("check-action-icon").innerText = targetVal ? "⚡" : "↩️";
+            document.getElementById("check-modal-title").innerText = targetVal ? `批量标记【${label}】已完成` : `批量取消【${label}】状态`;
+            document.getElementById("check-modal-subtitle").innerText = `将同时应用到【${p.name}】下的全部 ${p.skus.length} 个 SKU`;
+            document.getElementById("check-remark-input").value = "";
+            document.getElementById("check-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
         function closeCheckModal() {
             document.getElementById("check-modal").classList.add("hidden");
-            pendingCheck = { prodId: null, skuId: null, key: null, label: null, targetVal: false };
+            pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
             lockBodyScroll(false);
         }
 
+        // 一键确认批量或单项修改
         function confirmNodeCheckChange() {
-            const { prodId, skuId, key, label, targetVal } = pendingCheck;
-            if (!prodId || !skuId) return;
+            const { prodId, skuIds, key, label, targetVal } = pendingCheck;
+            if (!prodId || !skuIds || skuIds.length === 0) return;
 
             const p = products.find(item => item.id === prodId);
             if (!p) return;
-            const sku = p.skus.find(s => s.id === skuId);
-            if (!sku) return;
 
             const remark = document.getElementById("check-remark-input").value.trim();
             const nowTime = getNowString();
 
-            sku[key] = targetVal;
-            if (!sku.nodeRecords) sku.nodeRecords = {};
-            
-            sku.nodeRecords[key] = {
-                status: targetVal,
-                time: nowTime,
-                remark: remark
-            };
-
             if (!p.historyLogs) p.historyLogs = [];
+
+            let affectedSkuNames = [];
+            p.skus.forEach(sku => {
+                if (skuIds.includes(sku.id)) {
+                    sku[key] = targetVal;
+                    if (!sku.nodeRecords) sku.nodeRecords = {};
+                    sku.nodeRecords[key] = {
+                        status: targetVal,
+                        time: nowTime,
+                        remark: remark
+                    };
+                    affectedSkuNames.push(sku.name);
+                }
+            });
+
             const actionText = targetVal ? "标记完成 ✅" : "取消完成 ↩️";
+            const desc = skuIds.length > 1 
+                ? `批量将全部 ${skuIds.length} 个 SKU 的【${label}】${actionText}${remark ? ` (说明: ${remark})` : ''}`
+                : `【${affectedSkuNames[0]}】的【${label}】${actionText}${remark ? ` (说明: ${remark})` : ''}`;
+
             p.historyLogs.unshift({
                 time: nowTime,
                 type: targetVal ? "NODE_DONE" : "NODE_CANCEL",
-                desc: `【${sku.name}】的【${label}】${actionText}${remark ? ` (说明: ${remark})` : ''}`
+                desc: desc
             });
 
             closeCheckModal();
@@ -765,13 +790,11 @@
             URL.revokeObjectURL(url);
         }
 
-        // 单个添加规格（防重检测）
         function addSku(prodId) {
             const skuName = prompt("请输入子规格名称:");
             if (!skuName || skuName.trim() === "") return;
             const targetSku = skuName.trim();
 
-            // 全库防重校验
             for (let p of products) {
                 let found = (p.skus || []).find(s => s.name.trim().toLowerCase() === targetSku.toLowerCase());
                 if (found) {
@@ -811,7 +834,6 @@
             if (newName && newName.trim() !== "" && newName.trim() !== sku.name) {
                 const targetSku = newName.trim();
                 
-                // 全库防重校验
                 for (let otherP of products) {
                     let found = (otherP.skus || []).find(s => s.id !== skuId && s.name.trim().toLowerCase() === targetSku.toLowerCase());
                     if (found) {
@@ -872,7 +894,6 @@
             }
         }
 
-        // 渲染主表格
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             tbody.innerHTML = "";
@@ -981,9 +1002,18 @@
                     let subHtml = `
                         <td colspan="8" class="p-3.5 pl-12">
                             <div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm">
-                                <div class="flex justify-between items-center mb-2.5">
-                                    <span class="text-xs font-bold text-gray-700">📋 【${escapeHtml(prod.name)}】变体规格对接列表：</span>
-                                    <button onclick="addSku('${prod.id}')" class="text-blue-600 hover:underline text-xs font-medium">+ 添加新规格</button>
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-bold text-gray-800">📋 【${escapeHtml(prod.name)}】变体规格对接列表</span>
+                                        <span class="text-[11px] text-gray-400 font-normal">(${skuCount} 个变体)</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2 flex-wrap">
+                                        <span class="text-[11px] text-gray-500 font-semibold">⚡ 快捷连选:</span>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'bomOk', '财务BOM/价审')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-200 transition" title="一键将该系列全部SKU的财务BOM标记完成/取消">财务BOM 全选</button>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'detailOk', '策划/详情页验收')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-medium border border-indigo-200 transition" title="一键将该系列全部SKU的详情页标记完成/取消">详情页 全选</button>
+                                        <button onclick="triggerBatchColumnCheck('${prod.id}', 'sapOk', 'SKU编码/69编码')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-medium border border-emerald-200 transition" title="一键将该系列全部SKU的69编码标记完成/取消">69编码 全选</button>
+                                        <button onclick="addSku('${prod.id}')" class="text-blue-600 hover:underline text-xs font-medium ml-2">+ 添加新规格</button>
+                                    </div>
                                 </div>
                                 <div class="space-y-2">
                     `;
