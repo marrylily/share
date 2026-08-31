@@ -42,6 +42,7 @@
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
 
     <div class="w-full max-w-7xl mx-auto px-2 sm:px-6 py-3 sm:py-5">
+        <!-- 头部导航与全局状态 -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
                 <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
@@ -53,8 +54,8 @@
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                    <span id="auth-tag-text">检测中...</span>
+                    <span id="auth-dot" class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                    <span id="auth-tag-text">就绪</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
@@ -68,6 +69,7 @@
             </div>
         </header>
 
+        <!-- 顶层主工作区切换导航 -->
         <nav class="flex items-center space-x-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-xs overflow-x-auto custom-scroll">
             <button onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap">
                 <span>📊 新品排期推进矩阵</span>
@@ -83,6 +85,7 @@
             </button>
         </nav>
 
+        <!-- ================= 模块 1：新品生命周期推进矩阵 ================= -->
         <div id="module-matrix" class="space-y-4">
             <div id="admin-create-panel" class="bg-white p-3.5 sm:p-5 rounded-xl border border-gray-200 shadow-sm">
                 <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
@@ -111,6 +114,7 @@
                 </div>
             </div>
 
+            <!-- 双 Tab 切换栏 -->
             <div class="flex items-center space-x-2">
                 <button onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5">
                     <span>⚡ 进行中看板</span>
@@ -122,6 +126,7 @@
                 </button>
             </div>
 
+            <!-- 智能筛选器 -->
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2.5">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <div class="flex items-center space-x-1.5 font-bold text-gray-800">
@@ -161,6 +166,7 @@
                 </div>
             </div>
 
+            <!-- 统计与导出条 -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 text-xs text-gray-600 px-1">
                 <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
                     <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
@@ -177,6 +183,7 @@
                 </div>
             </div>
 
+            <!-- 桌面表格视图 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[980px]">
@@ -200,6 +207,7 @@
                 </div>
             </div>
 
+            <!-- 手机卡片流视图 -->
             <div class="mobile-card-view space-y-3">
                 <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
                     <label class="flex items-center space-x-2 cursor-pointer">
@@ -211,6 +219,7 @@
                 <div id="mobile-cards-container" class="space-y-3"></div>
             </div>
 
+            <!-- 全局备忘板 -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                 <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
                     <div class="flex items-center space-x-2">
@@ -241,6 +250,7 @@
             </div>
         </div>
 
+        <!-- ================= 模块 2：🏷️ 69码与编码库 ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
@@ -303,6 +313,7 @@
             </div>
         </div>
 
+        <!-- ================= 模块 3：💰 全渠道价格中心 ================= -->
         <div id="module-prices" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
@@ -356,6 +367,7 @@
         </div>
     </div>
 
+    <!-- 🏷️ 69码批量导入与智能防重弹窗 -->
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh]">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
@@ -382,6 +394,7 @@
         </div>
     </div>
 
+    <!-- 🏷️ 69码单条修改弹窗 -->
     <div id="barcode-edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeBarcodeEditModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-3.5 flex items-center justify-between">
@@ -413,6 +426,7 @@
         </div>
     </div>
 
+    <!-- 🤖 WorkBuddy AI 智能需求助手抽屉 -->
     <div id="ai-chat-drawer" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex justify-end hidden" onclick="if(event.target===this) toggleAIChatDrawer()">
         <div class="bg-white w-full max-w-lg h-full shadow-2xl flex flex-col justify-between text-xs text-gray-800">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
@@ -464,10 +478,12 @@
         </div>
     </div>
 
+    <!-- 浮动 AI 入口 -->
     <button onclick="toggleAIChatDrawer()" class="fixed bottom-5 right-5 z-40 bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl flex items-center justify-center font-bold text-sm transition transform hover:scale-105 border-2 border-white/50" title="打开 WorkBuddy">
         <span>🤖</span>
     </button>
 
+    <!-- 系列大备注弹窗 -->
     <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 85vh; max-height: 650px;">
             <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -502,6 +518,7 @@
         </div>
     </div>
 
+    <!-- 修改产品信息弹窗 -->
     <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeEditModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-3.5 flex items-center justify-between">
@@ -533,6 +550,7 @@
         </div>
     </div>
 
+    <!-- 节点勾选留痕弹窗 -->
     <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
@@ -551,6 +569,7 @@
         </div>
     </div>
 
+    <!-- 追溯记录弹窗 -->
     <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 600px;">
             <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -567,6 +586,7 @@
         </div>
     </div>
 
+    <!-- ⚙️ 云端双 Token 配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2">⚙️ 双 Token 与多源云端配置</h2>
@@ -643,6 +663,7 @@
             }
         }
 
+        // 强力兼容旧版各种扁平/嵌套数据格式
         function normalizeMatrixData(raw) {
             let pList = [], mList = [], pData = [];
             if (Array.isArray(raw)) {
@@ -694,6 +715,14 @@
             }).filter(item => item.name || item.barcode || item.sapCode);
         }
 
+        // 带 5 秒强制超时的请求包装器，防止网络卡死
+        function fetchWithTimeout(url, options = {}, timeout = 5000) {
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时')), timeout))
+            ]);
+        }
+
         window.onload = function() {
             const d = new Date();
             d.setDate(d.getDate() + 30);
@@ -701,43 +730,36 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
-            if (globalPrices.length === 0) {
-                globalPrices = [
-                    {"code": "320213001000", "model": "D-3001", "channel": "厂销", "category": "电动", "desc": "香槟色、单杆机、照明、伸缩晾杆1.2M-2.0M", "cost": 585.0, "s_price": 1099.0, "r_price": 1259.0, "margin": "46.8%"},
-                    {"code": "320243106002", "model": "D-3106", "channel": "厂销", "category": "电动", "desc": "深空灰 主机1M金属机，照明、WiFi，2个小横杆", "cost": 900.0, "s_price": 1499.0, "r_price": 1599.0, "margin": "40.0%"},
-                    {"code": "320233108001", "model": "D-3108", "channel": "厂销", "category": "电动", "desc": "讴歌红 主机1.2M金属机，照明、WiFi，3M高行程", "cost": 1500.0, "s_price": 2899.0, "r_price": 2899.0, "margin": "48.3%"},
-                    {"code": "320233148001", "model": "D-3148+T10", "channel": "组合商品", "category": "电动套装", "desc": "D-3148+T10 电商组合套装D-3148+DY51 铝衣架", "cost": 802.3, "s_price": "-", "r_price": 1358.0, "margin": "-"}
-                ];
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode');
-            const paramOwner = urlParams.get('owner');
-            const paramRepo = urlParams.get('repo');
-            const paramGistBar = urlParams.get('gist_bar');
-            const paramGistPri = urlParams.get('gist_pri');
-            const paramTokenRepo = urlParams.get('token_repo');
-            const paramTokenGist = urlParams.get('token_gist');
-
-            if (mode === 'readonly' || mode === 'view' || (!localStorage.getItem("wb_token_repo") && paramTokenRepo)) {
-                isReadOnlyMode = true;
-                applyReadOnlyUI();
-                fetchFromDualTokenCustom(paramOwner, paramRepo, paramGistBar, paramGistPri, paramTokenRepo, paramTokenGist);
-            } else {
-                document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
-                document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
-                document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
-                document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
-                document.getElementById("cfg-gist-prices").value = localStorage.getItem("wb_gist_prices") || "";
-                document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
-
-                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
-                    fetchAllDualTokenData();
-                } else {
-                    renderTable();
-                    renderPriceTable();
-                    renderBarcodeTable();
+            // 1. 优先读取本地缓存，实现 0 秒瞬间渲染！
+            try {
+                const cachedMatrix = localStorage.getItem("wb_local_matrix");
+                if (cachedMatrix) {
+                    let parsed = JSON.parse(cachedMatrix);
+                    let norm = normalizeMatrixData(parsed);
+                    products = norm.products;
+                    globalMemos = norm.memos;
                 }
+                const cachedBarcodes = localStorage.getItem("wb_local_barcodes");
+                if (cachedBarcodes) {
+                    globalBarcodes = normalizeBarcodesData(JSON.parse(cachedBarcodes));
+                }
+            } catch(e) {}
+
+            renderTable();
+            renderBarcodeTable();
+            renderPriceTable();
+
+            // 2. 填充配置表单
+            document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
+            document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
+            document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
+            document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+            document.getElementById("cfg-gist-prices").value = localStorage.getItem("wb_gist_prices") || "";
+            document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
+
+            // 3. 后台无感异步同步云端
+            if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
+                fetchAllDualTokenData();
             }
 
             document.addEventListener('keydown', function(event) {
@@ -775,6 +797,260 @@
             if (view === 'BARCODES') renderBarcodeTable();
         }
 
+        // ================= 🌐 极速并发通信引擎（5秒熔断 + 双 Token 独立） =================
+        async function fetchAllDualTokenData() {
+            const owner = localStorage.getItem("wb_owner") || "marrylily";
+            const repo = localStorage.getItem("wb_repo") || "my-tasks";
+            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            const gistBarcodes = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+            const gistPrices = localStorage.getItem("wb_gist_prices");
+
+            document.getElementById("sync-status").innerText = "拉取多源数据...";
+            let repoSuccess = false, gistSuccess = false;
+
+            let fetchTasks = [];
+
+            // 1. 独立拉取仓库新品矩阵 (使用仓库 Token)
+            if (owner && repo && tokenRepo) {
+                fetchTasks.push(
+                    fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                        headers: { "Authorization": `token ${tokenRepo}` }
+                    }, 5000)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(data => {
+                        if (data && data.content) {
+                            fileSha = data.sha;
+                            const textContent = safeBase64Decode(data.content);
+                            const parsed = JSON.parse(textContent);
+                            let normalizedMatrix = normalizeMatrixData(parsed);
+                            products = normalizedMatrix.products;
+                            globalMemos = normalizedMatrix.memos;
+                            localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos }));
+                            repoSuccess = true;
+                        }
+                    }).catch(err => console.warn("Repo fetch skipped/failed:", err.message))
+                );
+            }
+
+            // 2. 独立拉取 69 码 Gist (使用 Gist Token)
+            if (gistBarcodes && tokenGist) {
+                fetchTasks.push(
+                    fetchWithTimeout(`https://api.github.com/gists/${gistBarcodes}`, {
+                        headers: { "Authorization": `token ${tokenGist}` }
+                    }, 5000)
+                    .then(g => g.ok ? g.json() : null)
+                    .then(d => {
+                        if (d && d.files) {
+                            for (let fname in d.files) {
+                                let f = d.files[fname];
+                                if (f && f.content) {
+                                    try {
+                                        let parsed = JSON.parse(f.content);
+                                        let normalized = normalizeBarcodesData(parsed);
+                                        if (normalized.length > 0 || Array.isArray(parsed)) {
+                                            globalBarcodes = normalized;
+                                            localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
+                                            gistSuccess = true;
+                                            break;
+                                        }
+                                    } catch(e) {}
+                                }
+                            }
+                        }
+                    }).catch(err => console.warn("Gist barcodes skipped/failed:", err.message))
+                );
+            }
+
+            // 3. 独立拉取价格 Gist
+            if (gistPrices && tokenGist) {
+                fetchTasks.push(
+                    fetchWithTimeout(`https://api.github.com/gists/${gistPrices}`, {
+                        headers: { "Authorization": `token ${tokenGist}` }
+                    }, 4000)
+                    .then(gp => gp.ok ? gp.json() : null)
+                    .then(d => {
+                        if (d && d.files) {
+                            for (let fname in d.files) {
+                                let f = d.files[fname];
+                                if (f && f.content) {
+                                    try {
+                                        let parsed = JSON.parse(f.content);
+                                        if (Array.isArray(parsed) && parsed.length > 0) {
+                                            globalPrices = parsed;
+                                            break;
+                                        }
+                                    } catch(e) {}
+                                }
+                            }
+                        }
+                    }).catch(() => {})
+                );
+            }
+
+            await Promise.allSettled(fetchTasks);
+
+            if (repoSuccess && gistSuccess) {
+                document.getElementById("sync-status").innerText = "三源已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
+            } else if (repoSuccess) {
+                document.getElementById("sync-status").innerText = "新品仓库已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span><span>仅仓库连接</span>`;
+            } else if (gistSuccess) {
+                document.getElementById("sync-status").innerText = "69码 Gist 已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span><span>仅 Gist 连接</span>`;
+            } else {
+                document.getElementById("sync-status").innerText = "已加载本地缓存";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span><span>本地就绪</span>`;
+            }
+
+            updateCategoryFilterOptions();
+            renderTable();
+            renderPriceTable();
+            renderBarcodeTable();
+        }
+
+        async function syncMatrixToCloud() {
+            if (isReadOnlyMode) return;
+            const owner = localStorage.getItem("wb_owner") || "marrylily";
+            const repo = localStorage.getItem("wb_repo") || "my-tasks";
+            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
+            if (!tokenRepo || !owner || !repo) return;
+
+            document.getElementById("sync-status").innerText = "写入仓库...";
+            try {
+                const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                    headers: { "Authorization": `token ${tokenRepo}` }
+                });
+                if (checkRes.ok) {
+                    const cData = await checkRes.json();
+                    fileSha = cData.sha;
+                }
+
+                const payload = { products: products, memos: globalMemos };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${tokenRepo}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update matrix", content: encoded, ...(fileSha ? { sha: fileSha } : {}) })
+                });
+                if (res.ok) {
+                    const rData = await res.json();
+                    fileSha = rData.content.sha;
+                    document.getElementById("sync-status").innerText = "仓库已保存 ✅";
+                    localStorage.setItem("wb_local_matrix", JSON.stringify(payload));
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById("sync-status").innerText = "保存失败 ❌";
+            }
+        }
+
+        async function syncBarcodesToGist() {
+            if (isReadOnlyMode) return;
+            const gistId = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            if (!tokenGist || !gistId) return;
+
+            document.getElementById("sync-status").innerText = "写入 Gist...";
+            try {
+                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { "Authorization": `token ${tokenGist}` }
+                });
+                let targetFileName = "69code_data.json";
+                if (gRes.ok) {
+                    let gData = await gRes.json();
+                    if (gData.files && Object.keys(gData.files).length > 0) {
+                        targetFileName = Object.keys(gData.files)[0];
+                    }
+                }
+
+                let patchBody = { files: {} };
+                patchBody.files[targetFileName] = { content: JSON.stringify(globalBarcodes, null, 2) };
+
+                await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: "PATCH",
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(patchBody)
+                });
+                document.getElementById("sync-status").innerText = "Gist 已保存 ✅";
+                localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
+            } catch (err) {
+                console.error(err);
+                document.getElementById("sync-status").innerText = "Gist 保存失败 ❌";
+            }
+        }
+
+        async function syncPricesToGist() {
+            if (isReadOnlyMode) return;
+            const gistId = localStorage.getItem("wb_gist_prices");
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            if (!tokenGist || !gistId) return;
+
+            document.getElementById("sync-status").innerText = "写入价格 Gist...";
+            try {
+                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { "Authorization": `token ${tokenGist}` }
+                });
+                let targetFileName = "prices_data.json";
+                if (gRes.ok) {
+                    let gData = await gRes.json();
+                    if (gData.files && Object.keys(gData.files).length > 0) {
+                        targetFileName = Object.keys(gData.files)[0];
+                    }
+                }
+
+                let patchBody = { files: {} };
+                patchBody.files[targetFileName] = { content: JSON.stringify(globalPrices, null, 2) };
+
+                await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: "PATCH",
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(patchBody)
+                });
+                document.getElementById("sync-status").innerText = "价格 Gist 已保存 ✅";
+            } catch (err) {
+                console.error(err);
+                document.getElementById("sync-status").innerText = "价格保存失败 ❌";
+            }
+        }
+
+        async function autoCreatePricesGist() {
+            const tokenGist = document.getElementById("cfg-token-gist").value.trim() || document.getElementById("cfg-token-repo").value.trim();
+            if (!tokenGist) return alert("请先在上方填入 Gist 专属 Token！");
+
+            try {
+                document.getElementById("sync-status").innerText = "正在创建价格 Gist...";
+                let r = await fetch("https://api.github.com/gists", {
+                    method: "POST",
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        description: "WorkBuddy 电商全渠道价格库",
+                        public: false,
+                        files: { "prices_data.json": { content: JSON.stringify(globalPrices, null, 2) } }
+                    })
+                });
+                let d = await r.json();
+                if (d.id) {
+                    document.getElementById("cfg-gist-prices").value = d.id;
+                    alert("🎉 价格专属 Secret Gist 创建成功！");
+                }
+            } catch(e) {
+                alert("创建失败，请检查 Gist Token 权限是否包含 'gist'！");
+            }
+        }
+
+        function saveDualTokenConfigAndSync() {
+            localStorage.setItem("wb_owner", document.getElementById("cfg-owner").value.trim());
+            localStorage.setItem("wb_repo", document.getElementById("cfg-repo").value.trim());
+            localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim());
+            localStorage.setItem("wb_gist_barcodes", document.getElementById("cfg-gist-barcodes").value.trim());
+            localStorage.setItem("wb_gist_prices", document.getElementById("cfg-gist-prices").value.trim());
+            localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
+            toggleConfigModal();
+            fetchAllDualTokenData();
+        }
+
         // ================= 🏷️ 69码增强：批量导入防重 + 批量查询缺失 =================
         function toggleBarcodeBatchImportModal() {
             const m = document.getElementById("barcode-batch-import-modal");
@@ -807,7 +1083,6 @@
             const existingBarcodesMap = new Set(globalBarcodes.map(b => (b.barcode || '').trim().toLowerCase()));
 
             lines.forEach((line, idx) => {
-                // 拆分 制表符(\t)、逗号(,)、或连续空格
                 let parts = line.split(/[\t,]+/).map(p => p.trim());
                 if (parts.length === 1) {
                     parts = line.split(/\s{2,}/).map(p => p.trim());
@@ -815,10 +1090,9 @@
 
                 let name = parts[0] || `导入规格_${idx + 1}`;
                 let sapCode = parts[1] || "";
-                let barcode = parts[2] || parts[0]; // 若只有一列则是纯条形码
+                let barcode = parts[2] || parts[0];
                 let remark = parts[3] || "批量导入";
 
-                // 如果只有2列且第二列看起来像69码
                 if (parts.length === 2) {
                     if (/^\d{10,14}$/.test(parts[1])) {
                         barcode = parts[1];
@@ -842,7 +1116,6 @@
             });
 
             pendingImportBarcodes = parsed;
-
             statsEl.innerHTML = `总粘贴行数: <strong>${lines.length}</strong> 行 ｜ 可新增导入: <strong class="text-green-600">${parsed.length}</strong> 条 ｜ 发现重复/冲突: <strong class="text-amber-600">${duplicateExisting.length}</strong> 条`;
 
             if (duplicateExisting.length > 0) {
@@ -857,7 +1130,7 @@
         function confirmBarcodeBatchImport() {
             if (isReadOnlyMode) return alert("只读模式无法导入！");
             if (!pendingImportBarcodes || pendingImportBarcodes.length === 0) {
-                return alert("没有可导入的有效新增数据（可能全部重复或格式不符）！");
+                return alert("没有可导入的有效新增数据！");
             }
 
             globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
@@ -871,13 +1144,10 @@
             const rawText = document.getElementById("barcode-batch-search-input").value.trim();
             if (!rawText) return;
 
-            // 提取所有输入的查询项
             const queryItems = Array.from(new Set(rawText.split(/[\n,\s\t]+/).map(s => s.trim()).filter(s => s.length > 0)));
             if (queryItems.length === 0) return;
 
             barcodeBatchQueryList = queryItems;
-
-            // 查找已匹配与未匹配
             let matchedBarcodes = new Set();
             let missing = [];
 
@@ -896,8 +1166,6 @@
             });
 
             barcodeMissingList = missing;
-
-            // 渲染缺失看板
             const missingBox = document.getElementById("barcode-missing-box");
             const summaryEl = document.getElementById("barcode-missing-summary");
             const listEl = document.getElementById("barcode-missing-list");
@@ -936,7 +1204,6 @@
             const code69 = prompt("请输入 69 商品条形码 (必填):");
             if (!code69) return alert("条形码不能为空！");
 
-            // 查重
             const exists = globalBarcodes.some(b => b.barcode === code69.trim());
             if (exists) {
                 if (!confirm(`⚠️ 69条码【${code69.trim()}】在库中已存在，确定强制录入吗？`)) return;
@@ -1014,7 +1281,6 @@
 
             let matched = 0;
             globalBarcodes.forEach((b, idx) => {
-                // 1. 如果有批量查询核对
                 if (barcodeBatchQueryList.length > 0) {
                     const matchBatch = barcodeBatchQueryList.some(q => 
                         (b.barcode && b.barcode.toLowerCase().includes(q.toLowerCase())) ||
@@ -1024,7 +1290,6 @@
                     if (!matchBatch) return;
                 }
 
-                // 2. 单条常规过滤
                 if (keyword) {
                     const matchName = (b.name || "").toLowerCase().includes(keyword);
                     const matchSap = (b.sapCode || "").toLowerCase().includes(keyword);
@@ -1054,7 +1319,7 @@
             document.getElementById("nav-count-barcodes").innerText = globalBarcodes.length;
         }
 
-        // ================= 基础核心函数与多源通信 =================
+        // ================= 价格模块 =================
         function handlePriceExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1165,6 +1430,7 @@
             URL.revokeObjectURL(url);
         }
 
+        // ================= 🤖 AI 助手 =================
         function toggleAIChatDrawer() {
             const drawer = document.getElementById("ai-chat-drawer");
             drawer.classList.toggle("hidden");
@@ -1258,6 +1524,7 @@
             }, 300);
         }
 
+        // ================= 矩阵常规操作 =================
         function applyReadOnlyUI() {
             document.getElementById("role-badge").innerText = "👀 访客只读";
             document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
@@ -1695,302 +1962,118 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 🌐 隔离且容错的双 Token 通信引擎 =================
-        async function fetchAllDualTokenData() {
-            const owner = localStorage.getItem("wb_owner") || "marrylily";
-            const repo = localStorage.getItem("wb_repo") || "my-tasks";
-            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
-            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
-            const gistBarcodes = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
-            const gistPrices = localStorage.getItem("wb_gist_prices");
+        function renderTable() {
+            const tbody = document.getElementById("product-table-body");
+            const mobileContainer = document.getElementById("mobile-cards-container");
+            tbody.innerHTML = "";
+            mobileContainer.innerHTML = "";
 
-            document.getElementById("sync-status").innerText = "拉取多源数据...";
-            let repoSuccess = false, gistSuccess = false;
+            const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
+            const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
+            const filterHealth = (document.getElementById("filter-health") ? document.getElementById("filter-health").value : "ALL");
+            const filterBigNote = (document.getElementById("filter-bignote") ? document.getElementById("filter-bignote").value : "ALL");
+            const today = new Date().toISOString().split('T')[0];
 
-            if (owner && repo && tokenRepo) {
-                try {
-                    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                        headers: { "Authorization": `token ${tokenRepo}` }
+            let delayCount = 0, urgentCount = 0, runningCount = 0, archivedCount = 0, matchedCount = 0;
+
+            products.forEach(prod => {
+                const isArchived = (prod.status === "已归档");
+                if (isArchived) archivedCount++;
+                else {
+                    runningCount++;
+                    if (prod.status === "紧急重要") urgentCount++;
+                }
+
+                if (currentTab === 'RUNNING' && isArchived) return;
+                if (currentTab === 'ARCHIVED' && !isArchived) return;
+
+                const cleanProdDate = normalizeDate(prod.prodDate);
+                const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                const isDelayed = (!isArchived && cleanProdDate && diffDays < 0);
+                if (isDelayed) delayCount++;
+
+                if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
+                if (currentTab === 'RUNNING') {
+                    if (filterHealth === "DELAY" && !isDelayed) return;
+                    if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7)) return;
+                    if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7))) return;
+                }
+                if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
+                if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
+
+                if (keyword) {
+                    const match = (prod.name || "").toLowerCase().includes(keyword) || (prod.category || "").toLowerCase().includes(keyword) || (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
+                    if (!match) return;
+                }
+
+                matchedCount++;
+                const isExpanded = !!expandedRows[prod.id];
+                const isSelected = selectedProductIds.has(prod.id);
+                const isUrgent = prod.status === "紧急重要";
+                const skuCount = prod.skus ? prod.skus.length : 0;
+
+                let bomDone = 0, detailDone = 0, sapDone = 0;
+                (prod.skus || []).forEach(s => { if (s.bomOk) bomDone++; if (s.detailOk) detailDone++; if (s.sapOk) sapDone++; });
+
+                const getBadge = (t, c, tot, k, l) => {
+                    let all = (tot > 0 && c === tot), none = (c === 0);
+                    let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" : (none ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
+                    let click = (!isReadOnlyMode && !isArchived) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
+                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls}"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
+                };
+
+                const tr = document.createElement("tr");
+                tr.className = `hover:bg-blue-50/40 transition ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300"></td>
+                    <td class="p-3 text-center"><button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold">${isExpanded ? '▼' : '▶'}</button></td>
+                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px]">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
+                    <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
+                    <td class="p-3 font-mono">${cleanProdDate || '-'}</td>
+                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-wrap gap-y-1">${getBadge('BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
+                    <td class="p-3">${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px]">📝 ${escapeHtml(prod.remark)}</span>` : ''} ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">📌 备忘</button>` : ''}</td>
+                    <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
+                    <td class="p-3 text-right space-x-2 font-medium">
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯</button>
+                        ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
+                        ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                if (isExpanded) {
+                    const subTr = document.createElement("tr");
+                    subTr.className = "bg-gray-50/80";
+                    let subHtml = `<td colspan="9" class="p-3.5 pl-12"><div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm space-y-2">`;
+                    prod.skus.forEach(sku => {
+                        subHtml += `
+                            <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded border border-gray-200 text-xs">
+                                <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
+                                <div class="flex items-center space-x-6">
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM</span></label>
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '详情页', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">详情页</span></label>
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', '69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">69编码</span></label>
+                                </div>
+                            </div>
+                        `;
                     });
-                    if (r.ok) {
-                        const data = await r.json();
-                        if (data && data.content) {
-                            fileSha = data.sha;
-                            const textContent = safeBase64Decode(data.content);
-                            const parsed = JSON.parse(textContent);
-                            let normalizedMatrix = normalizeMatrixData(parsed);
-                            products = normalizedMatrix.products;
-                            globalMemos = normalizedMatrix.memos;
-                            repoSuccess = true;
-                        }
-                    } else {
-                        console.warn("Repo fetch status:", r.status);
-                    }
-                } catch (err) {
-                    console.error("Repo fetch error:", err);
+                    subHtml += `</div></td>`;
+                    subTr.innerHTML = subHtml;
+                    tbody.appendChild(subTr);
                 }
-            }
+            });
 
-            if (gistBarcodes && tokenGist) {
-                try {
-                    const g = await fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                        headers: { "Authorization": `token ${tokenGist}` }
-                    });
-                    if (g.ok) {
-                        const d = await g.json();
-                        if (d && d.files) {
-                            for (let fname in d.files) {
-                                let f = d.files[fname];
-                                if (f && f.content) {
-                                    try {
-                                        let parsed = JSON.parse(f.content);
-                                        let normalized = normalizeBarcodesData(parsed);
-                                        if (normalized.length > 0 || Array.isArray(parsed)) {
-                                            globalBarcodes = normalized;
-                                            gistSuccess = true;
-                                            break;
-                                        }
-                                    } catch(e) {}
-                                }
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error("Gist barcodes fetch error:", err);
-                }
-            }
-
-            if (gistPrices && tokenGist) {
-                try {
-                    const gp = await fetch(`https://api.github.com/gists/${gistPrices}`, {
-                        headers: { "Authorization": `token ${tokenGist}` }
-                    });
-                    if (gp.ok) {
-                        const d = await gp.json();
-                        if (d && d.files) {
-                            for (let fname in d.files) {
-                                let f = d.files[fname];
-                                if (f && f.content) {
-                                    try {
-                                        let parsed = JSON.parse(f.content);
-                                        if (Array.isArray(parsed) && parsed.length > 0) {
-                                            globalPrices = parsed;
-                                            break;
-                                        }
-                                    } catch(e) {}
-                                }
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error("Gist prices fetch error:", err);
-                }
-            }
-
-            if (repoSuccess && gistSuccess) {
-                document.getElementById("sync-status").innerText = "三源已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
-            } else if (repoSuccess) {
-                document.getElementById("sync-status").innerText = "新品仓库已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span><span>仅仓库连接</span>`;
-            } else if (gistSuccess) {
-                document.getElementById("sync-status").innerText = "69码 Gist 已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span><span>仅 Gist 连接</span>`;
-            } else {
-                document.getElementById("sync-status").innerText = "未连接云端";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span><span>本地就绪</span>`;
-            }
-
-            updateCategoryFilterOptions();
-            renderTable();
-            renderPriceTable();
-            renderBarcodeTable();
-        }
-
-        async function fetchFromDualTokenCustom(owner, repo, gistBarcodes, gistPrices, tokenRepo, tokenGist) {
-            document.getElementById("sync-status").innerText = "拉取只读数据...";
-            try {
-                if (owner && repo && tokenRepo) {
-                    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                        headers: { "Authorization": `token ${tokenRepo}` }
-                    });
-                    if (r.ok) {
-                        const data = await r.json();
-                        if (data && data.content) {
-                            const textContent = safeBase64Decode(data.content);
-                            const parsed = JSON.parse(textContent);
-                            let normalizedMatrix = normalizeMatrixData(parsed);
-                            products = normalizedMatrix.products;
-                            globalMemos = normalizedMatrix.memos;
-                        }
-                    }
-                }
-                if (gistBarcodes && tokenGist) {
-                    const g = await fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                        headers: { "Authorization": `token ${tokenGist}` }
-                    });
-                    if (g.ok) {
-                        const d = await g.json();
-                        if (d && d.files) {
-                            for (let fname in d.files) {
-                                let f = d.files[fname];
-                                if (f && f.content) {
-                                    try {
-                                        globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
-                                        break;
-                                    } catch(e) {}
-                                }
-                            }
-                        }
-                    }
-                }
-                document.getElementById("sync-status").innerText = "已加载 ✅";
-                updateCategoryFilterOptions();
-                renderTable();
-                renderPriceTable();
-                renderBarcodeTable();
-            } catch(err) {
-                console.error(err);
-            }
-        }
-
-        async function syncMatrixToCloud() {
-            if (isReadOnlyMode) return;
-            const owner = localStorage.getItem("wb_owner") || "marrylily";
-            const repo = localStorage.getItem("wb_repo") || "my-tasks";
-            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
-            if (!tokenRepo || !owner || !repo) return;
-
-            document.getElementById("sync-status").innerText = "写入仓库...";
-            try {
-                const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                    headers: { "Authorization": `token ${tokenRepo}` }
-                });
-                if (checkRes.ok) {
-                    const cData = await checkRes.json();
-                    fileSha = cData.sha;
-                }
-
-                const payload = { products: products, memos: globalMemos };
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                    method: "PUT",
-                    headers: { "Authorization": `token ${tokenRepo}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update matrix", content: encoded, ...(fileSha ? { sha: fileSha } : {}) })
-                });
-                if (res.ok) {
-                    const rData = await res.json();
-                    fileSha = rData.content.sha;
-                    document.getElementById("sync-status").innerText = "仓库已保存 ✅";
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById("sync-status").innerText = "保存失败 ❌";
-            }
-        }
-
-        async function syncBarcodesToGist() {
-            if (isReadOnlyMode) return;
-            const gistId = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
-            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
-            if (!tokenGist || !gistId) return;
-
-            document.getElementById("sync-status").innerText = "写入 Gist...";
-            try {
-                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { "Authorization": `token ${tokenGist}` }
-                });
-                let targetFileName = "69code_data.json";
-                if (gRes.ok) {
-                    let gData = await gRes.json();
-                    if (gData.files && Object.keys(gData.files).length > 0) {
-                        targetFileName = Object.keys(gData.files)[0];
-                    }
-                }
-
-                let patchBody = { files: {} };
-                patchBody.files[targetFileName] = { content: JSON.stringify(globalBarcodes, null, 2) };
-
-                await fetch(`https://api.github.com/gists/${gistId}`, {
-                    method: "PATCH",
-                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(patchBody)
-                });
-                document.getElementById("sync-status").innerText = "Gist 已保存 ✅";
-            } catch (err) {
-                console.error(err);
-                document.getElementById("sync-status").innerText = "Gist 保存失败 ❌";
-            }
-        }
-
-        async function syncPricesToGist() {
-            if (isReadOnlyMode) return;
-            const gistId = localStorage.getItem("wb_gist_prices");
-            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
-            if (!tokenGist || !gistId) return;
-
-            document.getElementById("sync-status").innerText = "写入价格 Gist...";
-            try {
-                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { "Authorization": `token ${tokenGist}` }
-                });
-                let targetFileName = "prices_data.json";
-                if (gRes.ok) {
-                    let gData = await gRes.json();
-                    if (gData.files && Object.keys(gData.files).length > 0) {
-                        targetFileName = Object.keys(gData.files)[0];
-                    }
-                }
-
-                let patchBody = { files: {} };
-                patchBody.files[targetFileName] = { content: JSON.stringify(globalPrices, null, 2) };
-
-                await fetch(`https://api.github.com/gists/${gistId}`, {
-                    method: "PATCH",
-                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(patchBody)
-                });
-                document.getElementById("sync-status").innerText = "价格 Gist 已保存 ✅";
-            } catch (err) {
-                console.error(err);
-                document.getElementById("sync-status").innerText = "价格保存失败 ❌";
-            }
-        }
-
-        async function autoCreatePricesGist() {
-            const tokenGist = document.getElementById("cfg-token-gist").value.trim() || document.getElementById("cfg-token-repo").value.trim();
-            if (!tokenGist) return alert("请先在上方填入 Gist 专属 Token！");
-
-            try {
-                document.getElementById("sync-status").innerText = "正在创建价格 Gist...";
-                let r = await fetch("https://api.github.com/gists", {
-                    method: "POST",
-                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        description: "WorkBuddy 电商全渠道价格库",
-                        public: false,
-                        files: { "prices_data.json": { content: JSON.stringify(globalPrices, null, 2) } }
-                    })
-                });
-                let d = await r.json();
-                if (d.id) {
-                    document.getElementById("cfg-gist-prices").value = d.id;
-                    alert("🎉 价格专属 Secret Gist 创建成功！");
-                }
-            } catch(e) {
-                alert("创建失败，请检查 Gist Token 权限是否包含 'gist'！");
-            }
-        }
-
-        function saveDualTokenConfigAndSync() {
-            localStorage.setItem("wb_owner", document.getElementById("cfg-owner").value.trim());
-            localStorage.setItem("wb_repo", document.getElementById("cfg-repo").value.trim());
-            localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim());
-            localStorage.setItem("wb_gist_barcodes", document.getElementById("cfg-gist-barcodes").value.trim());
-            localStorage.setItem("wb_gist_prices", document.getElementById("cfg-gist-prices").value.trim());
-            localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
-            toggleConfigModal();
-            fetchAllDualTokenData();
+            document.getElementById("stat-total").innerText = products.length;
+            document.getElementById("stat-delay").innerText = delayCount;
+            document.getElementById("stat-urgent").innerText = urgentCount;
+            document.getElementById("stat-running").innerText = runningCount;
+            document.getElementById("stat-archived").innerText = archivedCount;
+            document.getElementById("tab-count-running").innerText = runningCount;
+            document.getElementById("tab-count-archived").innerText = archivedCount;
+            document.getElementById("nav-count-matrix").innerText = products.length;
+            updateSelectAllCheckboxState();
+            renderMemos();
         }
 
         function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
