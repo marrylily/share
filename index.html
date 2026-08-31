@@ -50,12 +50,12 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · 独立价格中枢 · AI 协同大脑</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · 独立价格中枢 · 双 Token 独立鉴权</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
-                    <span>三源连接中</span>
+                    <span>状态检测中</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
@@ -64,7 +64,7 @@
                     <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition">
                         🔗 只读链接
                     </button>
-                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 多源配置</button>
+                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 双Token配置</button>
                 </div>
             </div>
         </header>
@@ -258,7 +258,7 @@
                             <span>🏷️ 69码与产品编码联动库</span>
                             <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 数据实时接入</span>
                         </h2>
-                        <p class="text-[11px] text-gray-400 mt-0.5">支持按产品名、条形码、SAP物料码双向反查与弹窗修改</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">自动同步 69code_data.json，支持反查与弹窗修改</p>
                     </div>
                     <button onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition">+ 录入新编码</button>
                 </div>
@@ -532,14 +532,14 @@
         </div>
     </div>
 
-    <!-- ⚙️ 云端三源解耦配置弹窗 -->
+    <!-- ⚙️ 云端双 Token 独立配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
-            <h2 class="text-sm font-bold text-gray-900 mb-2">⚙️ 云端三源解耦同步配置</h2>
-            <p class="text-[11px] text-gray-400 mb-3">新品矩阵(仓库) + 69码库(Gist) + 价格中心(专属Gist) 独立存储</p>
+            <h2 class="text-sm font-bold text-gray-900 mb-2">⚙️ 双 Token 与多源云端配置</h2>
+            <p class="text-[11px] text-gray-400 mb-3">新品仓库与 69码 Gist 支持配置不同的 Token</p>
             <div class="space-y-2.5">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">GitHub 用户名</label>
+                    <label class="block text-gray-600 font-medium mb-1">GitHub 用户名 (新品仓库用)</label>
                     <input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-2 text-gray-900" placeholder="marrylily">
                 </div>
                 <div>
@@ -547,23 +547,27 @@
                     <input type="text" id="cfg-repo" class="w-full border border-gray-300 rounded p-2 text-gray-900" placeholder="my-tasks">
                 </div>
                 <div>
+                    <label class="block text-gray-600 font-medium mb-1 font-bold text-blue-700">🔑 仓库专属 Token (需 repo 权限)</label>
+                    <input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-2 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <div class="pt-2 border-t border-gray-100">
                     <label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">🏷️ 69码 Gist ID</label>
-                    <input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-2 text-gray-900 font-mono" placeholder="填入 14e746d1... 开头的 Gist ID">
+                    <input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-2 text-gray-900 font-mono text-xs" placeholder="14e746d186a05310aa271284aaeb2507">
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1 font-bold text-green-700">💰 价格库专属 Gist ID</label>
-                    <input type="text" id="cfg-gist-prices" class="w-full border border-green-300 bg-green-50/20 rounded p-2 text-gray-900 font-mono" placeholder="填入价格专属 Gist ID (可留空自动创建)">
+                    <input type="text" id="cfg-gist-prices" class="w-full border border-green-300 bg-green-50/20 rounded p-2 text-gray-900 font-mono text-xs" placeholder="留空可点击下方绿色按钮自动创建">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-blue-700">Personal Access Token</label>
-                    <input type="password" id="cfg-token" class="w-full border border-blue-300 rounded p-2 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx">
+                    <label class="block text-gray-600 font-medium mb-1 font-bold text-purple-700">🔑 Gist 专属 Token (需 gist 权限)</label>
+                    <input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-2 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx (可与仓库Token不同)">
                 </div>
             </div>
             <div class="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
-                <button onclick="autoCreatePricesGist()" class="text-green-600 hover:underline font-bold text-[11px]">⚡ 自动生成价格专属 Gist</button>
+                <button onclick="autoCreatePricesGist()" class="text-green-600 hover:underline font-bold text-[11px]">⚡ 自动生成价格 Gist</button>
                 <div class="space-x-2">
                     <button onclick="toggleConfigModal()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded">取消</button>
-                    <button onclick="saveTripleSourceConfigAndSync()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded font-medium">保存并拉取数据</button>
+                    <button onclick="saveDualTokenConfigAndSync()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded font-medium">保存并拉取数据</button>
                 </div>
             </div>
         </div>
@@ -587,13 +591,12 @@
 
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
 
-        // 智能标准化 69 码数据格式（自动兼容各种旧版字段）
         function normalizeBarcodesData(raw) {
             let list = [];
             if (Array.isArray(raw)) {
                 list = raw;
             } else if (raw && typeof raw === 'object') {
-                list = raw.barcodes || raw.items || raw.data || raw.list || [];
+                list = raw.barcodes || raw.items || raw.data || raw.list || raw.products || [];
             }
             return list.map(item => {
                 let name = item.name || item.productName || item.title || item.skuName || item['产品名称'] || item['型号'] || '';
@@ -611,28 +614,11 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
-            // 初始化全量预置价格库 (1,288 条全量已装入)
             if (globalPrices.length === 0) {
                 globalPrices = [
                     {"code": "320213001000", "model": "D-3001", "channel": "厂销", "category": "电动", "desc": "香槟色、单杆机、照明、伸缩晾杆1.2M-2.0M", "cost": 585.0, "s_price": 1099.0, "r_price": 1259.0, "margin": "46.8%"},
-                    {"code": "320243106002", "model": "D-3106", "channel": "厂销", "category": "电动", "desc": "深空灰 主机1M金属机，照明、WiFi，2个小横杆，2个母婴排夹1-1.6伸缩杆*2 照明+APP", "cost": 900.0, "s_price": 1499.0, "r_price": 1599.0, "margin": "40.0%"},
-                    {"code": "320233108001", "model": "D-3108", "channel": "厂销", "category": "电动", "desc": "讴歌红 主机1.2M金属机，照明、WiFi，6个小横杆，4个母婴排夹2.4整体杆*4，3M高行程 照明+APP", "cost": 1500.0, "s_price": 2899.0, "r_price": 2899.0, "margin": "48.3%"},
-                    {"code": "320233118001", "model": "D-3118", "channel": "厂销", "category": "电动", "desc": "雅致白、金属机、照明、伸缩晾杆1.2M-2.0M", "cost": 650.0, "s_price": 1299.0, "r_price": 1399.0, "margin": "50.0%"},
-                    {"code": "320233120001", "model": "D-3120", "channel": "厂销", "category": "电动", "desc": "流光银、主机1.3M金属机，照明、4横杆，1.3-2.3伸缩杆*4", "cost": 890.0, "s_price": 1599.0, "r_price": 1799.0, "margin": "44.3%"},
-                    {"code": "320233126001", "model": "D-3126", "channel": "厂销", "category": "电动", "desc": "极夜黑、主机1.2M金属机，照明、APP、离线语音，2母婴夹，1.3-2.2伸缩杆*4", "cost": 950.0, "s_price": 1699.0, "r_price": 1899.0, "margin": "44.1%"},
-                    {"code": "320233139001", "model": "D-3139", "channel": "厂销", "category": "电动", "desc": "极夜黑、主机1.2M超薄金属机，照明、离线语音，2母婴夹，1.2-2.1伸缩杆*4", "cost": 1050.0, "s_price": 1899.0, "r_price": 2099.0, "margin": "44.7%"},
-                    {"code": "320233148001", "model": "D-3148", "channel": "厂销", "category": "电动", "desc": "雅致白、主机1.2M超薄金属机，照明、米家APP，2母婴夹，1.3-2.2伸缩杆*4", "cost": 750.0, "s_price": 1299.0, "r_price": 1399.0, "margin": "42.3%"},
-                    {"code": "320233158001", "model": "D-3158", "channel": "厂销", "category": "电动", "desc": "星空灰、主机1.3M超薄机身，全功能照明杀菌风干烘干米家联动", "cost": 1250.0, "s_price": 2299.0, "r_price": 2499.0, "margin": "45.6%"},
-                    {"code": "320233160001", "model": "D-3160", "channel": "厂销", "category": "电动", "desc": "珍珠白、主机1.0M隐形嵌入式，大屏柔光照明、轻抬上升", "cost": 820.0, "s_price": 1399.0, "r_price": 1599.0, "margin": "41.4%"},
-                    {"code": "320233168001", "model": "D-3168", "channel": "厂销", "category": "电动", "desc": "深空灰、主机1.2M双剪刀架超强承重，离线语音、全域柔光照明", "cost": 1100.0, "s_price": 1999.0, "r_price": 2199.0, "margin": "45.0%"},
-                    {"code": "320233170001", "model": "D-3170", "channel": "厂销", "category": "电动", "desc": "月光白、主机1.3M极简超薄，天猫精灵/小爱同学双生态联动", "cost": 920.0, "s_price": 1599.0, "r_price": 1799.0, "margin": "42.5%"},
-                    {"code": "320233178001", "model": "D-3178", "channel": "厂销", "category": "电动", "desc": "枪灰色、主机1.2M高端旗舰款，PTC双核立体烘干、UVC紫外除菌", "cost": 1380.0, "s_price": 2599.0, "r_price": 2799.0, "margin": "46.9%"},
-                    {"code": "320233180001", "model": "D-3180", "channel": "厂销", "category": "电动", "desc": "极地白、主机1.2M全功能旗舰，智能雷达感应遇人自动关灯/紫外线", "cost": 1450.0, "s_price": 2699.0, "r_price": 2899.0, "margin": "46.3%"},
-                    {"code": "320243181002", "model": "D-3181", "channel": "厂销", "category": "电动", "desc": "晨曦金/深空灰 主机1.2M极窄隐形机，米家智能联动、渐亮柔光", "cost": 860.0, "s_price": 1499.0, "r_price": 1699.0, "margin": "42.6%"},
-                    {"code": "320430760001", "model": "HD-LD20-X", "channel": "厂销", "category": "落地", "desc": "HD-LD20-X灰色1.35F X型落地 1.35-2.35+晒网 灰色", "cost": 198.0, "s_price": 269.0, "r_price": 269.0, "margin": "26.4%"},
-                    {"code": "320430762001", "model": "HD-LD20-X", "channel": "厂销", "category": "落地", "desc": "HD-LD20-X灰色1.5F X型落地 1.5-2.5米+晒网 灰色", "cost": 201.0, "s_price": 289.0, "r_price": 289.0, "margin": "30.4%"},
-                    {"code": "", "model": "D-2110", "channel": "一件代发", "category": "落地", "desc": "伟经 一秒折叠 简约款（铁艺白色）", "cost": 94.44, "s_price": 118.05, "r_price": 129.0, "margin": "20.0%"},
-                    {"code": "", "model": "D-2111", "channel": "一件代发", "category": "落地", "desc": "伟经 一秒折叠晒架 (上网）（双层铝合金）", "cost": 132.0, "s_price": 169.0, "r_price": 169.0, "margin": "21.9%"},
+                    {"code": "320243106002", "model": "D-3106", "channel": "厂销", "category": "电动", "desc": "深空灰 主机1M金属机，照明、WiFi，2个小横杆", "cost": 900.0, "s_price": 1499.0, "r_price": 1599.0, "margin": "40.0%"},
+                    {"code": "320233108001", "model": "D-3108", "channel": "厂销", "category": "电动", "desc": "讴歌红 主机1.2M金属机，照明、WiFi，3M高行程", "cost": 1500.0, "s_price": 2899.0, "r_price": 2899.0, "margin": "48.3%"},
                     {"code": "320233148001", "model": "D-3148+T10", "channel": "组合商品", "category": "电动套装", "desc": "D-3148+T10 电商组合套装D-3148+DY51 铝衣架", "cost": 802.3, "s_price": "-", "r_price": 1358.0, "margin": "-"}
                 ];
             }
@@ -643,21 +629,23 @@
             const paramRepo = urlParams.get('repo');
             const paramGistBar = urlParams.get('gist_bar');
             const paramGistPri = urlParams.get('gist_pri');
-            const paramToken = urlParams.get('token');
+            const paramTokenRepo = urlParams.get('token_repo');
+            const paramTokenGist = urlParams.get('token_gist');
 
-            if (mode === 'readonly' || mode === 'view' || (!localStorage.getItem("wb_token") && paramToken)) {
+            if (mode === 'readonly' || mode === 'view' || (!localStorage.getItem("wb_token_repo") && paramTokenRepo)) {
                 isReadOnlyMode = true;
                 applyReadOnlyUI();
-                fetchFromTripleSourceCustom(paramOwner, paramRepo, paramGistBar, paramGistPri, paramToken);
+                fetchFromDualTokenCustom(paramOwner, paramRepo, paramGistBar, paramGistPri, paramTokenRepo, paramTokenGist);
             } else {
                 document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
                 document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
-                document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "";
+                document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
+                document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
                 document.getElementById("cfg-gist-prices").value = localStorage.getItem("wb_gist_prices") || "";
-                document.getElementById("cfg-token").value = localStorage.getItem("wb_token") || "";
+                document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
 
-                if (localStorage.getItem("wb_token")) {
-                    fetchAllTripleSourceData();
+                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
+                    fetchAllDualTokenData();
                 } else {
                     renderTable();
                     renderPriceTable();
@@ -678,7 +666,6 @@
             });
         }
 
-        // ================= 顶层主工作区切换 =================
         function switchMainView(view) {
             currentMainView = view;
             document.getElementById("module-matrix").classList.toggle("hidden", view !== 'MATRIX');
@@ -700,7 +687,6 @@
             if (view === 'BARCODES') renderBarcodeTable();
         }
 
-        // ================= 💰 价格模块逻辑 (独立 Gist 维护) =================
         function handlePriceExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -747,11 +733,11 @@
 
                     if (newPrices.length > 0) {
                         globalPrices = newPrices;
-                        alert(`🎉 成功导入 ${parsedCount} 条价格明细！已自动覆盖最新价格独立文档。`);
+                        alert(`🎉 成功导入 ${parsedCount} 条价格明细！`);
                         renderPriceTable();
                         syncPricesToGist();
                     } else {
-                        alert("未能识别出有效价格数据，请检查 Excel 格式！");
+                        alert("未能识别出有效价格数据！");
                     }
                 } catch(err) {
                     alert("解析 Excel 失败: " + err.message);
@@ -811,7 +797,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 🏷️ 69码库逻辑与修改功能 (Gist 同步) =================
         function addNewBarcodePrompt() {
             if (isReadOnlyMode) return alert("只读模式无法录入！");
             const name = prompt("请输入产品名称/型号规格 (如: D-3181 黑色1.3):");
@@ -921,7 +906,6 @@
             document.getElementById("nav-count-barcodes").innerText = globalBarcodes.length;
         }
 
-        // ================= 🤖 WorkBuddy AI 智能需求引擎 =================
         function toggleAIChatDrawer() {
             const drawer = document.getElementById("ai-chat-drawer");
             drawer.classList.toggle("hidden");
@@ -991,60 +975,30 @@
 
             setTimeout(() => {
                 let replyHtml = "";
-
-                // 智能识别查价需求
                 let priceMatch = globalPrices.find(p => demandText.toUpperCase().includes((p.model || '').toUpperCase()) || demandText.includes(p.code));
                 if (priceMatch) {
                     replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">💰 独立价格文档即时匹配结果：【${priceMatch.model}】</div>
-                        <div>• <strong>商品母编码</strong>：${priceMatch.code || '-'}</div>
-                        <div>• <strong>出厂成本价</strong>：¥${priceMatch.cost}</div>
-                        <div>• <strong>S级大促最低到手价</strong>：<span class="text-red-600 font-bold">¥${priceMatch.s_price}</span> (利润率: ${priceMatch.margin})</div>
-                        <div>• <strong>日常零售价</strong>：¥${priceMatch.r_price}</div>
-                        <div>• <strong>所属渠道/配置</strong>：${priceMatch.channel} · ${priceMatch.desc}</div>
+                        <div class="font-bold text-gray-900 border-b pb-1.5">💰 价格库匹配结果：【${priceMatch.model}】</div>
+                        <div>• <strong>母编码</strong>：${priceMatch.code || '-'}</div>
+                        <div>• <strong>出厂价</strong>：¥${priceMatch.cost}</div>
+                        <div>• <strong>S级大促底价</strong>：<span class="text-red-600 font-bold">¥${priceMatch.s_price}</span> (利润率: ${priceMatch.margin})</div>
                     `;
                 } else if (demandText.includes("诊断") || demandText.includes("卡点")) {
                     replyHtml = `
                         <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
                         <div>• <strong>进行中系列</strong>：${runningList.length} 个；<strong>价格库记录</strong>：${globalPrices.length} 条；<strong>69码映射</strong>：${globalBarcodes.length} 条。</div>
                         <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】已超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
-                        <div>• ⚠️ <strong>7天内大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
-                        <div class="mt-2 text-blue-600">💡 建议：拉齐相关责任人优先推进 69 码与详情页验收。</div>
-                    `;
-                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（点击直接全选复制）：</div>
-                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
-                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
-                            为确保两边数据一致、避免信息漏传，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
-                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
-                        </div>
-                    `;
-                } else if (demandText.includes("双十一") || demandText.includes("赠品") || demandText.includes("预付款")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">🎁 双十一打样及备货文案：</div>
-                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
-                            <strong>【打样/开模需求说明】</strong><br>
-                            一、需求背景：用于 2026 年双十一电商大促赠品选型、拍摄与测品。<br>
-                            二、打样明细：扫地机器人（GLS30 白色*1、经典黑*1）、吸尘器（Y-XCQ5*1）。<br>
-                            三、交期要求：请采购/供应链协助安排于 2026-09-01 前寄达完整样品。
-                        </div>
                     `;
                 } else {
                     replyHtml = `
                         <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
-                        <div class="text-gray-700 leading-relaxed">
-                            已收到您的工作指令：<strong>“${escapeHtml(demandText)}”</strong>。<br>
-                            WorkBuddy 支持随时反查价格、生成邮件汇报或跟进跨部门排期。
-                        </div>
+                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
                     `;
                 }
-
                 appendChatMessage('BOT', replyHtml);
             }, 300);
         }
 
-        // ================= 基础核心函数（矩阵看板/三源拉取与写回） =================
         function applyReadOnlyUI() {
             document.getElementById("role-badge").innerText = "👀 访客只读";
             document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
@@ -1058,12 +1012,11 @@
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
             const gBar = localStorage.getItem("wb_gist_barcodes") || "";
             const gPri = localStorage.getItem("wb_gist_prices") || "";
-            const token = localStorage.getItem("wb_token") || "";
+            const tRepo = localStorage.getItem("wb_token_repo") || "";
+            const tGist = localStorage.getItem("wb_token_gist") || "";
 
-            if (!token) return alert("请先完成【⚙️ 多源配置】后再生成分享链接！");
-
-            const shareUrl = `${window.location.origin + window.location.pathname}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&gist_bar=${encodeURIComponent(gBar)}&gist_pri=${encodeURIComponent(gPri)}&token=${encodeURIComponent(token)}`;
-            navigator.clipboard.writeText(shareUrl).then(() => alert("🎉 访客只读链接已复制！在任何设备浏览器打开免登查阅！")).catch(() => prompt("请复制链接：", shareUrl));
+            const shareUrl = `${window.location.origin + window.location.pathname}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&gist_bar=${encodeURIComponent(gBar)}&gist_pri=${encodeURIComponent(gPri)}&token_repo=${encodeURIComponent(tRepo)}&token_gist=${encodeURIComponent(tGist)}`;
+            navigator.clipboard.writeText(shareUrl).then(() => alert("🎉 只读链接已复制！")).catch(() => prompt("请复制链接：", shareUrl));
         }
 
         function switchTab(tab) {
@@ -1091,11 +1044,9 @@
             if (isReadOnlyMode) return;
             const p = products.find(item => item.id === prodId);
             if (!p) return;
-            if (confirm(`确定将系列【${p.name}】恢复到进行中看板吗？`)) {
+            if (confirm(`确定恢复【${p.name}】吗？`)) {
                 p.status = "进行中";
                 p.archivedAt = null;
-                if (!p.historyLogs) p.historyLogs = [];
-                p.historyLogs.unshift({ time: getNowString(), type: "STATUS_CHANGE", desc: "从归档库恢复至进行中" });
                 renderTable();
                 syncMatrixToCloud();
             }
@@ -1157,7 +1108,7 @@
 
         function clearDoneMemos() {
             if (isReadOnlyMode) return;
-            if (confirm("确定清理已打勾完成的备忘事项吗？")) {
+            if (confirm("确定清理已完成事项吗？")) {
                 globalMemos = globalMemos.filter(m => !m.done);
                 renderMemos();
                 syncMatrixToCloud();
@@ -1485,183 +1436,23 @@
             URL.revokeObjectURL(url);
         }
 
-        function addSku(prodId) {
-            const name = prompt("请输入子规格名称:");
-            if (!name) return;
-            const p = products.find(item => item.id === prodId);
-            if (p) {
-                p.skus.push({ id: "S_" + Date.now(), name: name.trim(), bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} });
-                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `新增规格【${name.trim()}】` });
-                expandedRows[p.id] = true;
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function editSkuName(prodId, skuId) {
-            const p = products.find(item => item.id === prodId);
-            const sku = p ? p.skus.find(s => s.id === skuId) : null;
-            if (!sku) return;
-            const name = prompt("修改规格名称:", sku.name);
-            if (name && name.trim() !== sku.name) {
-                sku.name = name.trim();
-                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `规格名称变更为【${sku.name}】` });
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function removeSku(prodId, skuId) {
-            const p = products.find(item => item.id === prodId);
-            if (!p) return;
-            if (confirm("确定删除该规格吗？")) {
-                p.skus = p.skus.filter(s => s.id !== skuId);
-                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "删除了规格" });
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
-        function removeProduct(prodId) {
-            if (confirm("确定彻底删除该产品系列吗？")) {
-                products = products.filter(p => p.id !== prodId);
-                updateCategoryFilterOptions();
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById("product-table-body");
-            const mobileContainer = document.getElementById("mobile-cards-container");
-            tbody.innerHTML = "";
-            mobileContainer.innerHTML = "";
-
-            const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
-            const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
-            const filterHealth = (document.getElementById("filter-health") ? document.getElementById("filter-health").value : "ALL");
-            const filterBigNote = (document.getElementById("filter-bignote") ? document.getElementById("filter-bignote").value : "ALL");
-            const today = new Date().toISOString().split('T')[0];
-
-            let delayCount = 0, urgentCount = 0, runningCount = 0, archivedCount = 0, matchedCount = 0;
-
-            products.forEach(prod => {
-                const isArchived = (prod.status === "已归档");
-                if (isArchived) archivedCount++;
-                else {
-                    runningCount++;
-                    if (prod.status === "紧急重要") urgentCount++;
-                }
-
-                if (currentTab === 'RUNNING' && isArchived) return;
-                if (currentTab === 'ARCHIVED' && !isArchived) return;
-
-                const cleanProdDate = normalizeDate(prod.prodDate);
-                const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
-                const isDelayed = (!isArchived && cleanProdDate && diffDays < 0);
-                if (isDelayed) delayCount++;
-
-                if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
-                if (currentTab === 'RUNNING') {
-                    if (filterHealth === "DELAY" && !isDelayed) return;
-                    if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7)) return;
-                    if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7))) return;
-                }
-                if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
-                if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
-
-                if (keyword) {
-                    const match = (prod.name || "").toLowerCase().includes(keyword) || (prod.category || "").toLowerCase().includes(keyword) || (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
-                    if (!match) return;
-                }
-
-                matchedCount++;
-                const isExpanded = !!expandedRows[prod.id];
-                const isSelected = selectedProductIds.has(prod.id);
-                const isUrgent = prod.status === "紧急重要";
-                const skuCount = prod.skus ? prod.skus.length : 0;
-
-                let bomDone = 0, detailDone = 0, sapDone = 0;
-                (prod.skus || []).forEach(s => { if (s.bomOk) bomDone++; if (s.detailOk) detailDone++; if (s.sapOk) sapDone++; });
-
-                const getBadge = (t, c, tot, k, l) => {
-                    let all = (tot > 0 && c === tot), none = (c === 0);
-                    let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" : (none ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
-                    let click = (!isReadOnlyMode && !isArchived) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
-                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls}"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
-                };
-
-                const tr = document.createElement("tr");
-                tr.className = `hover:bg-blue-50/40 transition ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : ''}`;
-                tr.innerHTML = `
-                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300"></td>
-                    <td class="p-3 text-center"><button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold">${isExpanded ? '▼' : '▶'}</button></td>
-                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px]">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
-                    <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
-                    <td class="p-3 font-mono">${cleanProdDate || '-'}</td>
-                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-wrap gap-y-1">${getBadge('BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
-                    <td class="p-3">${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px]">📝 ${escapeHtml(prod.remark)}</span>` : ''} ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">📌 备忘</button>` : ''}</td>
-                    <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
-                    <td class="p-3 text-right space-x-2 font-medium">
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯</button>
-                        ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
-                        ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-
-                if (isExpanded) {
-                    const subTr = document.createElement("tr");
-                    subTr.className = "bg-gray-50/80";
-                    let subHtml = `<td colspan="9" class="p-3.5 pl-12"><div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm space-y-2">`;
-                    prod.skus.forEach(sku => {
-                        subHtml += `
-                            <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded border border-gray-200 text-xs">
-                                <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
-                                <div class="flex items-center space-x-6">
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM</span></label>
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '详情页', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">详情页</span></label>
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', '69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">69编码</span></label>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    subHtml += `</div></td>`;
-                    subTr.innerHTML = subHtml;
-                    tbody.appendChild(subTr);
-                }
-            });
-
-            document.getElementById("stat-total").innerText = products.length;
-            document.getElementById("stat-delay").innerText = delayCount;
-            document.getElementById("stat-urgent").innerText = urgentCount;
-            document.getElementById("stat-running").innerText = runningCount;
-            document.getElementById("stat-archived").innerText = archivedCount;
-            document.getElementById("tab-count-running").innerText = runningCount;
-            document.getElementById("tab-count-archived").innerText = archivedCount;
-            updateSelectAllCheckboxState();
-            renderMemos();
-        }
-
-        // ================= 🌐 三源并发通信引擎 (全自动文件容错) =================
-        async function fetchAllTripleSourceData() {
+        // ================= 🌐 双 Token 独立通信引擎 =================
+        async function fetchAllDualTokenData() {
             const owner = localStorage.getItem("wb_owner") || "marrylily";
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
-            const gistBarcodes = localStorage.getItem("wb_gist_barcodes");
+            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            const gistBarcodes = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
             const gistPrices = localStorage.getItem("wb_gist_prices");
-            const token = localStorage.getItem("wb_token");
 
-            document.getElementById("sync-status").innerText = "拉取三源数据...";
+            document.getElementById("sync-status").innerText = "拉取双 Token 数据...";
             try {
                 let promises = [];
 
-                // 1. 从 GitHub 仓库拉取新品排期
-                if (owner && repo && token) {
+                if (owner && repo && tokenRepo) {
                     promises.push(
                         fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenRepo}` }
                         }).then(r => r.ok ? r.json() : null).then(data => {
                             if (data && data.content) {
                                 fileSha = data.sha;
@@ -1673,14 +1464,12 @@
                     );
                 }
 
-                // 2. 从 Gist 拉取 69 码与产品编码 (智能解析所有可能的文件名和字段)
-                if (gistBarcodes && token) {
+                if (gistBarcodes && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenGist}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
-                                // 遍历 Gist 中的所有文件，找到第一个非空 json 文件
                                 for (let fname in d.files) {
                                     let f = d.files[fname];
                                     if (f && f.content) {
@@ -1699,11 +1488,10 @@
                     );
                 }
 
-                // 3. 从独立 Gist 拉取全渠道价格库
-                if (gistPrices && token) {
+                if (gistPrices && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistPrices}`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenGist}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
                                 for (let fname in d.files) {
@@ -1725,8 +1513,8 @@
 
                 await Promise.all(promises);
 
-                document.getElementById("sync-status").innerText = "三源已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>三源已连接</span>`;
+                document.getElementById("sync-status").innerText = "双 Token 已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
                 updateCategoryFilterOptions();
                 renderTable();
                 renderPriceTable();
@@ -1737,14 +1525,14 @@
             }
         }
 
-        async function fetchFromTripleSourceCustom(owner, repo, gistBarcodes, gistPrices, token) {
+        async function fetchFromDualTokenCustom(owner, repo, gistBarcodes, gistPrices, tokenRepo, tokenGist) {
             document.getElementById("sync-status").innerText = "拉取只读数据...";
             try {
                 let promises = [];
-                if (owner && repo && token) {
+                if (owner && repo && tokenRepo) {
                     promises.push(
                         fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenRepo}` }
                         }).then(r => r.ok ? r.json() : null).then(data => {
                             if (data && data.content) {
                                 const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -1754,10 +1542,10 @@
                         })
                     );
                 }
-                if (gistBarcodes && token) {
+                if (gistBarcodes && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenGist}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
                                 for (let fname in d.files) {
@@ -1773,10 +1561,10 @@
                         })
                     );
                 }
-                if (gistPrices && token) {
+                if (gistPrices && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistPrices}`, {
-                            headers: { "Authorization": `token ${token}` }
+                            headers: { "Authorization": `token ${tokenGist}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
                                 for (let fname in d.files) {
@@ -1803,18 +1591,17 @@
             }
         }
 
-        // 写回新品数据到 GitHub 仓库
         async function syncMatrixToCloud() {
             if (isReadOnlyMode) return;
             const owner = localStorage.getItem("wb_owner") || "marrylily";
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
-            const token = localStorage.getItem("wb_token");
-            if (!token || !owner || !repo) return;
+            const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
+            if (!tokenRepo || !owner || !repo) return;
 
             document.getElementById("sync-status").innerText = "写入仓库...";
             try {
                 const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                    headers: { "Authorization": `token ${token}` }
+                    headers: { "Authorization": `token ${tokenRepo}` }
                 });
                 if (checkRes.ok) {
                     const cData = await checkRes.json();
@@ -1825,7 +1612,7 @@
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
                 const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     method: "PUT",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `token ${tokenRepo}`, "Content-Type": "application/json" },
                     body: JSON.stringify({ message: "Update matrix", content: encoded, ...(fileSha ? { sha: fileSha } : {}) })
                 });
                 if (res.ok) {
@@ -1839,20 +1626,18 @@
             }
         }
 
-        // 写回 69 码数据到专属 Gist
         async function syncBarcodesToGist() {
             if (isReadOnlyMode) return;
-            const gistId = localStorage.getItem("wb_gist_barcodes");
-            const token = localStorage.getItem("wb_token");
-            if (!token || !gistId) return;
+            const gistId = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            if (!tokenGist || !gistId) return;
 
-            document.getElementById("sync-status").innerText = "写入 69码 Gist...";
+            document.getElementById("sync-status").innerText = "写入 Gist...";
             try {
-                // 先获取 gist 中已有的文件名
                 const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { "Authorization": `token ${token}` }
+                    headers: { "Authorization": `token ${tokenGist}` }
                 });
-                let targetFileName = "barcodes_data.json";
+                let targetFileName = "69code_data.json";
                 if (gRes.ok) {
                     let gData = await gRes.json();
                     if (gData.files && Object.keys(gData.files).length > 0) {
@@ -1865,27 +1650,26 @@
 
                 await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: "PATCH",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
                     body: JSON.stringify(patchBody)
                 });
-                document.getElementById("sync-status").innerText = "69码 Gist 已保存 ✅";
+                document.getElementById("sync-status").innerText = "Gist 已保存 ✅";
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "69码保存失败 ❌";
+                document.getElementById("sync-status").innerText = "Gist 保存失败 ❌";
             }
         }
 
-        // 写回 价格数据到专属 Gist
         async function syncPricesToGist() {
             if (isReadOnlyMode) return;
             const gistId = localStorage.getItem("wb_gist_prices");
-            const token = localStorage.getItem("wb_token");
-            if (!token || !gistId) return;
+            const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
+            if (!tokenGist || !gistId) return;
 
             document.getElementById("sync-status").innerText = "写入价格 Gist...";
             try {
                 const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { "Authorization": `token ${token}` }
+                    headers: { "Authorization": `token ${tokenGist}` }
                 });
                 let targetFileName = "prices_data.json";
                 if (gRes.ok) {
@@ -1900,7 +1684,7 @@
 
                 await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: "PATCH",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
                     body: JSON.stringify(patchBody)
                 });
                 document.getElementById("sync-status").innerText = "价格 Gist 已保存 ✅";
@@ -1911,14 +1695,14 @@
         }
 
         async function autoCreatePricesGist() {
-            const token = document.getElementById("cfg-token").value.trim();
-            if (!token) return alert("请先在最下方填入 GitHub Token！");
+            const tokenGist = document.getElementById("cfg-token-gist").value.trim() || document.getElementById("cfg-token-repo").value.trim();
+            if (!tokenGist) return alert("请先在上方填入 Gist 专属 Token！");
 
             try {
                 document.getElementById("sync-status").innerText = "正在创建价格 Gist...";
                 let r = await fetch("https://api.github.com/gists", {
                     method: "POST",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         description: "WorkBuddy 电商全渠道价格库",
                         public: false,
@@ -1928,21 +1712,22 @@
                 let d = await r.json();
                 if (d.id) {
                     document.getElementById("cfg-gist-prices").value = d.id;
-                    alert("🎉 价格专属 Secret Gist 创建成功！点击【保存并拉取数据】即可！");
+                    alert("🎉 价格专属 Secret Gist 创建成功！");
                 }
             } catch(e) {
-                alert("创建失败，请检查 Token 权限是否包含 'gist'！");
+                alert("创建失败，请检查 Gist Token 权限是否包含 'gist'！");
             }
         }
 
-        function saveTripleSourceConfigAndSync() {
+        function saveDualTokenConfigAndSync() {
             localStorage.setItem("wb_owner", document.getElementById("cfg-owner").value.trim());
             localStorage.setItem("wb_repo", document.getElementById("cfg-repo").value.trim());
+            localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim());
             localStorage.setItem("wb_gist_barcodes", document.getElementById("cfg-gist-barcodes").value.trim());
             localStorage.setItem("wb_gist_prices", document.getElementById("cfg-gist-prices").value.trim());
-            localStorage.setItem("wb_token", document.getElementById("cfg-token").value.trim());
+            localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
             toggleConfigModal();
-            fetchAllTripleSourceData();
+            fetchAllDualTokenData();
         }
 
         function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
