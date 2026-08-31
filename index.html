@@ -55,7 +55,7 @@
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
-                    <span>状态检测中</span>
+                    <span id="auth-tag-text">状态检测中</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
@@ -64,7 +64,7 @@
                     <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition">
                         🔗 只读链接
                     </button>
-                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 双Token配置</button>
+                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 多源配置</button>
                 </div>
             </div>
         </header>
@@ -73,6 +73,7 @@
         <nav class="flex items-center space-x-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-xs overflow-x-auto custom-scroll">
             <button onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap">
                 <span>📊 新品排期推进矩阵</span>
+                <span id="nav-count-matrix" class="bg-blue-800 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
             <button onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap">
                 <span>🏷️ 69码与编码库 (Gist)</span>
@@ -590,6 +591,21 @@
         let currentEditingBarcodeIdx = null;
 
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
+
+        // 统一的安全 UTF-8 Base64 解码器
+        function safeBase64Decode(str) {
+            try {
+                return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));
+            } catch (e) {
+                try {
+                    return decodeURIComponent(atob(str.replace(/\s/g, '')).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                } catch (e2) {
+                    return atob(str.replace(/\s/g, ''));
+                }
+            }
+        }
 
         function normalizeMatrixData(raw) {
             let pList = [], mList = [], pData = [];
@@ -1471,158 +1487,273 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 🌐 绝对独立的双 Token 通信引擎 =================
+        function renderTable() {
+            const tbody = document.getElementById("product-table-body");
+            const mobileContainer = document.getElementById("mobile-cards-container");
+            tbody.innerHTML = "";
+            mobileContainer.innerHTML = "";
+
+            const keyword = (document.getElementById("search-input") ? document.getElementById("search-input").value.trim().toLowerCase() : "");
+            const filterCat = (document.getElementById("filter-category") ? document.getElementById("filter-category").value : "ALL");
+            const filterHealth = (document.getElementById("filter-health") ? document.getElementById("filter-health").value : "ALL");
+            const filterBigNote = (document.getElementById("filter-bignote") ? document.getElementById("filter-bignote").value : "ALL");
+            const today = new Date().toISOString().split('T')[0];
+
+            let delayCount = 0, urgentCount = 0, runningCount = 0, archivedCount = 0, matchedCount = 0;
+
+            products.forEach(prod => {
+                const isArchived = (prod.status === "已归档");
+                if (isArchived) archivedCount++;
+                else {
+                    runningCount++;
+                    if (prod.status === "紧急重要") urgentCount++;
+                }
+
+                if (currentTab === 'RUNNING' && isArchived) return;
+                if (currentTab === 'ARCHIVED' && !isArchived) return;
+
+                const cleanProdDate = normalizeDate(prod.prodDate);
+                const diffDays = cleanProdDate ? Math.ceil((new Date(cleanProdDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                const isDelayed = (!isArchived && cleanProdDate && diffDays < 0);
+                if (isDelayed) delayCount++;
+
+                if (filterCat !== "ALL" && (prod.category || "").trim() !== filterCat) return;
+                if (currentTab === 'RUNNING') {
+                    if (filterHealth === "DELAY" && !isDelayed) return;
+                    if (filterHealth === "URGENT_DAYS" && (isDelayed || diffDays < 0 || diffDays > 7)) return;
+                    if (filterHealth === "NORMAL" && (isDelayed || (diffDays >= 0 && diffDays <= 7))) return;
+                }
+                if (filterBigNote === "HAS_NOTE" && (!prod.bigNote || !prod.bigNote.trim())) return;
+                if (filterBigNote === "NO_NOTE" && (prod.bigNote && prod.bigNote.trim())) return;
+
+                if (keyword) {
+                    const match = (prod.name || "").toLowerCase().includes(keyword) || (prod.category || "").toLowerCase().includes(keyword) || (prod.skus || []).some(s => (s.name || "").toLowerCase().includes(keyword));
+                    if (!match) return;
+                }
+
+                matchedCount++;
+                const isExpanded = !!expandedRows[prod.id];
+                const isSelected = selectedProductIds.has(prod.id);
+                const isUrgent = prod.status === "紧急重要";
+                const skuCount = prod.skus ? prod.skus.length : 0;
+
+                let bomDone = 0, detailDone = 0, sapDone = 0;
+                (prod.skus || []).forEach(s => { if (s.bomOk) bomDone++; if (s.detailOk) detailDone++; if (s.sapOk) sapDone++; });
+
+                const getBadge = (t, c, tot, k, l) => {
+                    let all = (tot > 0 && c === tot), none = (c === 0);
+                    let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" : (none ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
+                    let click = (!isReadOnlyMode && !isArchived) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
+                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls}"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
+                };
+
+                const tr = document.createElement("tr");
+                tr.className = `hover:bg-blue-50/40 transition ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300"></td>
+                    <td class="p-3 text-center"><button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold">${isExpanded ? '▼' : '▶'}</button></td>
+                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px]">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
+                    <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
+                    <td class="p-3 font-mono">${cleanProdDate || '-'}</td>
+                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-wrap gap-y-1">${getBadge('BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
+                    <td class="p-3">${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px]">📝 ${escapeHtml(prod.remark)}</span>` : ''} ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">📌 备忘</button>` : ''}</td>
+                    <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
+                    <td class="p-3 text-right space-x-2 font-medium">
+                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                        <button onclick="openLogsModal('${prod.id}')" class="text-gray-600 hover:underline">追溯</button>
+                        ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
+                        ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                if (isExpanded) {
+                    const subTr = document.createElement("tr");
+                    subTr.className = "bg-gray-50/80";
+                    let subHtml = `<td colspan="9" class="p-3.5 pl-12"><div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm space-y-2">`;
+                    prod.skus.forEach(sku => {
+                        subHtml += `
+                            <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded border border-gray-200 text-xs">
+                                <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
+                                <div class="flex items-center space-x-6">
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM</span></label>
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '详情页', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">详情页</span></label>
+                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', '69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">69编码</span></label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    subHtml += `</div></td>`;
+                    subTr.innerHTML = subHtml;
+                    tbody.appendChild(subTr);
+                }
+            });
+
+            document.getElementById("stat-total").innerText = products.length;
+            document.getElementById("stat-delay").innerText = delayCount;
+            document.getElementById("stat-urgent").innerText = urgentCount;
+            document.getElementById("stat-running").innerText = runningCount;
+            document.getElementById("stat-archived").innerText = archivedCount;
+            document.getElementById("tab-count-running").innerText = runningCount;
+            document.getElementById("tab-count-archived").innerText = archivedCount;
+            document.getElementById("nav-count-matrix").innerText = products.length;
+            updateSelectAllCheckboxState();
+            renderMemos();
+        }
+
+        // ================= 🌐 隔离且容错的双 Token 通信引擎 =================
         async function fetchAllDualTokenData() {
             const owner = localStorage.getItem("wb_owner") || "marrylily";
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
-            // 仓库专属 Token，若没单独配则退回通用 Token
             const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
-            // Gist 专属 Token，若没单独配则退回通用 Token
             const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
             const gistBarcodes = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
             const gistPrices = localStorage.getItem("wb_gist_prices");
 
             document.getElementById("sync-status").innerText = "拉取多源数据...";
-            try {
-                let promises = [];
+            let repoSuccess = false, gistSuccess = false;
 
-                // 1. 独立拉取仓库新品矩阵 (使用仓库 Token)
-                if (owner && repo && tokenRepo) {
-                    promises.push(
-                        fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                            headers: { "Authorization": `token ${tokenRepo}` }
-                        }).then(r => r.ok ? r.json() : null).then(data => {
-                            if (data && data.content) {
-                                fileSha = data.sha;
-                                const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                                let normalizedMatrix = normalizeMatrixData(parsed);
-                                products = normalizedMatrix.products;
-                                globalMemos = normalizedMatrix.memos;
-                            }
-                        }).catch(err => console.error("Repo fetch error:", err))
-                    );
+            // 1. 独立拉取仓库新品矩阵 (使用仓库 Token)
+            if (owner && repo && tokenRepo) {
+                try {
+                    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                        headers: { "Authorization": `token ${tokenRepo}` }
+                    });
+                    if (r.ok) {
+                        const data = await r.json();
+                        if (data && data.content) {
+                            fileSha = data.sha;
+                            const textContent = safeBase64Decode(data.content);
+                            const parsed = JSON.parse(textContent);
+                            let normalizedMatrix = normalizeMatrixData(parsed);
+                            products = normalizedMatrix.products;
+                            globalMemos = normalizedMatrix.memos;
+                            repoSuccess = true;
+                        }
+                    } else {
+                        console.warn("Repo fetch returned non-ok status:", r.status);
+                    }
+                } catch (err) {
+                    console.error("Repo fetch error:", err);
                 }
+            }
 
-                // 2. 独立拉取 69 码 Gist (使用 Gist Token)
-                if (gistBarcodes && tokenGist) {
-                    promises.push(
-                        fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                            headers: { "Authorization": `token ${tokenGist}` }
-                        }).then(r => r.ok ? r.json() : null).then(d => {
-                            if (d && d.files) {
-                                for (let fname in d.files) {
-                                    let f = d.files[fname];
-                                    if (f && f.content) {
-                                        try {
-                                            let parsed = JSON.parse(f.content);
-                                            let normalized = normalizeBarcodesData(parsed);
-                                            if (normalized.length > 0 || Array.isArray(parsed)) {
-                                                globalBarcodes = normalized;
-                                                break;
-                                            }
-                                        } catch(e) {}
-                                    }
+            // 2. 独立拉取 69 码 Gist (使用 Gist Token)
+            if (gistBarcodes && tokenGist) {
+                try {
+                    const g = await fetch(`https://api.github.com/gists/${gistBarcodes}`, {
+                        headers: { "Authorization": `token ${tokenGist}` }
+                    });
+                    if (g.ok) {
+                        const d = await g.json();
+                        if (d && d.files) {
+                            for (let fname in d.files) {
+                                let f = d.files[fname];
+                                if (f && f.content) {
+                                    try {
+                                        let parsed = JSON.parse(f.content);
+                                        let normalized = normalizeBarcodesData(parsed);
+                                        if (normalized.length > 0 || Array.isArray(parsed)) {
+                                            globalBarcodes = normalized;
+                                            gistSuccess = true;
+                                            break;
+                                        }
+                                    } catch(e) {}
                                 }
                             }
-                        }).catch(err => console.error("Gist barcodes fetch error:", err))
-                    );
+                        }
+                    }
+                } catch (err) {
+                    console.error("Gist barcodes fetch error:", err);
                 }
+            }
 
-                // 3. 独立拉取价格 Gist (使用 Gist Token)
-                if (gistPrices && tokenGist) {
-                    promises.push(
-                        fetch(`https://api.github.com/gists/${gistPrices}`, {
-                            headers: { "Authorization": `token ${tokenGist}` }
-                        }).then(r => r.ok ? r.json() : null).then(d => {
-                            if (d && d.files) {
-                                for (let fname in d.files) {
-                                    let f = d.files[fname];
-                                    if (f && f.content) {
-                                        try {
-                                            let parsed = JSON.parse(f.content);
-                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                globalPrices = parsed;
-                                                break;
-                                            }
-                                        } catch(e) {}
-                                    }
+            // 3. 独立拉取价格 Gist (使用 Gist Token)
+            if (gistPrices && tokenGist) {
+                try {
+                    const gp = await fetch(`https://api.github.com/gists/${gistPrices}`, {
+                        headers: { "Authorization": `token ${tokenGist}` }
+                    });
+                    if (gp.ok) {
+                        const d = await gp.json();
+                        if (d && d.files) {
+                            for (let fname in d.files) {
+                                let f = d.files[fname];
+                                if (f && f.content) {
+                                    try {
+                                        let parsed = JSON.parse(f.content);
+                                        if (Array.isArray(parsed) && parsed.length > 0) {
+                                            globalPrices = parsed;
+                                            break;
+                                        }
+                                    } catch(e) {}
                                 }
                             }
-                        }).catch(err => console.error("Gist prices fetch error:", err))
-                    );
+                        }
+                    }
+                } catch (err) {
+                    console.error("Gist prices fetch error:", err);
                 }
+            }
 
-                await Promise.all(promises);
-
+            // 状态指示器
+            if (repoSuccess && gistSuccess) {
                 document.getElementById("sync-status").innerText = "三源已同步 ✅";
                 document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
-                updateCategoryFilterOptions();
-                renderTable();
-                renderPriceTable();
-                renderBarcodeTable();
-            } catch(e) {
-                console.error(e);
-                document.getElementById("sync-status").innerText = "同步异常";
+            } else if (repoSuccess) {
+                document.getElementById("sync-status").innerText = "新品仓库已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span><span>仅仓库连接</span>`;
+            } else if (gistSuccess) {
+                document.getElementById("sync-status").innerText = "69码 Gist 已同步 ✅";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span><span>仅 Gist 连接</span>`;
+            } else {
+                document.getElementById("sync-status").innerText = "同步异常 ❌";
+                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span><span>鉴权未通过</span>`;
             }
+
+            updateCategoryFilterOptions();
+            renderTable();
+            renderPriceTable();
+            renderBarcodeTable();
         }
 
         async function fetchFromDualTokenCustom(owner, repo, gistBarcodes, gistPrices, tokenRepo, tokenGist) {
             document.getElementById("sync-status").innerText = "拉取只读数据...";
             try {
-                let promises = [];
                 if (owner && repo && tokenRepo) {
-                    promises.push(
-                        fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                            headers: { "Authorization": `token ${tokenRepo}` }
-                        }).then(r => r.ok ? r.json() : null).then(data => {
-                            if (data && data.content) {
-                                const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                                let normalizedMatrix = normalizeMatrixData(parsed);
-                                products = normalizedMatrix.products;
-                                globalMemos = normalizedMatrix.memos;
-                            }
-                        })
-                    );
+                    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                        headers: { "Authorization": `token ${tokenRepo}` }
+                    });
+                    if (r.ok) {
+                        const data = await r.json();
+                        if (data && data.content) {
+                            const textContent = safeBase64Decode(data.content);
+                            const parsed = JSON.parse(textContent);
+                            let normalizedMatrix = normalizeMatrixData(parsed);
+                            products = normalizedMatrix.products;
+                            globalMemos = normalizedMatrix.memos;
+                        }
+                    }
                 }
                 if (gistBarcodes && tokenGist) {
-                    promises.push(
-                        fetch(`https://api.github.com/gists/${gistBarcodes}`, {
-                            headers: { "Authorization": `token ${tokenGist}` }
-                        }).then(r => r.ok ? r.json() : null).then(d => {
-                            if (d && d.files) {
-                                for (let fname in d.files) {
-                                    let f = d.files[fname];
-                                    if (f && f.content) {
-                                        try {
-                                            globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
-                                            break;
-                                        } catch(e) {}
-                                    }
+                    const g = await fetch(`https://api.github.com/gists/${gistBarcodes}`, {
+                        headers: { "Authorization": `token ${tokenGist}` }
+                    });
+                    if (g.ok) {
+                        const d = await g.json();
+                        if (d && d.files) {
+                            for (let fname in d.files) {
+                                let f = d.files[fname];
+                                if (f && f.content) {
+                                    try {
+                                        globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
+                                        break;
+                                    } catch(e) {}
                                 }
                             }
-                        })
-                    );
+                        }
+                    }
                 }
-                if (gistPrices && tokenGist) {
-                    promises.push(
-                        fetch(`https://api.github.com/gists/${gistPrices}`, {
-                            headers: { "Authorization": `token ${tokenGist}` }
-                        }).then(r => r.ok ? r.json() : null).then(d => {
-                            if (d && d.files) {
-                                for (let fname in d.files) {
-                                    let f = d.files[fname];
-                                    if (f && f.content) {
-                                        try {
-                                            globalPrices = JSON.parse(f.content);
-                                            break;
-                                        } catch(e) {}
-                                    }
-                                }
-                            }
-                        })
-                    );
-                }
-                await Promise.all(promises);
                 document.getElementById("sync-status").innerText = "已加载 ✅";
                 updateCategoryFilterOptions();
                 renderTable();
