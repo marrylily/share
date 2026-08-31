@@ -61,8 +61,7 @@
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
                         <span>🤖 WorkBuddy 助手</span>
                     </button>
-                    <!-- 确保 onclick 直接且独立触发 -->
-                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink(); event.stopPropagation();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
+                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
                     <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 云端配置</button>
@@ -1961,6 +1960,247 @@
                 syncMatrixToCloud();
             }
         }
+
+        // ================= 🤖 AI 助手 =================
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
+            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
+            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
+            submitUserDemandToAI();
+        }
+
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const demandText = input.value.trim();
+            if (!demandText) return;
+
+            appendChatMessage('USER', escapeHtml(demandText));
+            input.value = "";
+
+            const today = new Date().toISOString().split('T')[0];
+            let runningList = products.filter(p => p.status !== '已归档');
+            let delayedList = [];
+            let nearDaysList = [];
+
+            runningList.forEach(p => {
+                const cleanDate = normalizeDate(p.prodDate);
+                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
+                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
+            });
+
+            setTimeout(() => {
+                let replyHtml = "";
+                if (demandText.includes("诊断") || demandText.includes("卡点")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
+                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
+                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
+                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
+                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
+                    `;
+                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
+                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
+                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
+                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
+                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
+                        </div>
+                    `;
+                } else {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
+                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
+                    `;
+                }
+                appendChatMessage('BOT', replyHtml);
+            }, 300);
+        }
+
+        function toggleAIChatDrawer() {
+            const drawer = document.getElementById("ai-chat-drawer");
+            if (drawer) {
+                drawer.classList.toggle("hidden");
+                lockBodyScroll(!drawer.classList.contains("hidden"));
+            }
+        }
+
+        function clearAIChatHistory() {
+            const container = document.getElementById("ai-chat-messages");
+            if (!container) return;
+            container.innerHTML = `
+                <div class="flex items-start space-x-2">
+                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                    <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">
+                        已清空历史对话。请输入您新的运营需求～
+                    </div>
+                </div>
+            `;
+        }
+
+        function appendChatMessage(sender, textHtml) {
+            const container = document.getElementById("ai-chat-messages");
+            if (!container) return;
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `flex items-start space-x-2 ${sender === 'USER' ? 'justify-end' : 'justify-start'}`;
+
+            if (sender === 'USER') {
+                msgDiv.innerHTML = `
+                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-xs break-words">${textHtml}</div>
+                    <div class="w-6 h-6 rounded-md bg-gray-800 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">我</div>
+                `;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                    <div class="ai-chat-bubble-bot p-3.5 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs break-words space-y-2">${textHtml}</div>
+                `;
+            }
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleMemoPanel() {
+            isMemoPanelOpen = !isMemoPanelOpen;
+            const body = document.getElementById("memo-panel-body");
+            const btn = document.getElementById("memo-toggle-btn");
+            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
+            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
+        }
+
+        function addMemoItem() {
+            if (isReadOnlyMode) return;
+            const input = document.getElementById("memo-input");
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return alert("请输入备忘内容！");
+            globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) });
+            input.value = "";
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function toggleMemoStatus(id) {
+            if (isReadOnlyMode) return;
+            const m = globalMemos.find(item => item.id === id);
+            if (m) { m.done = !m.done; renderMemos(); syncMatrixToCloud(); }
+        }
+
+        function removeMemo(id) {
+            if (isReadOnlyMode) return;
+            globalMemos = globalMemos.filter(item => item.id !== id);
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function clearDoneMemos() {
+            if (isReadOnlyMode) return;
+            if (confirm("确定清理已完成事项吗？")) {
+                globalMemos = globalMemos.filter(m => !m.done);
+                renderMemos();
+                syncMatrixToCloud();
+            }
+        }
+
+        function renderMemos() {
+            const container = document.getElementById("memo-list-container");
+            if (!container) return;
+            container.innerHTML = "";
+            const pending = globalMemos.filter(m => !m.done).length;
+            const memoTag = document.getElementById("memo-count-tag");
+            if (memoTag) memoTag.innerText = `${pending} 项待办 (共 ${globalMemos.length})`;
+            if (globalMemos.length === 0) {
+                container.innerHTML = `<div class="text-gray-400 text-center py-4 text-xs">暂无备忘事项~</div>`;
+                return;
+            }
+            globalMemos.forEach(memo => {
+                let badgeClass = memo.priority.includes("紧急") ? "bg-red-50 text-red-700 border-red-200 font-bold" : (memo.priority.includes("常规") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200");
+                const item = document.createElement("div");
+                item.className = `flex items-center justify-between p-2.5 rounded-lg border ${memo.done ? 'bg-gray-50/70 border-gray-200 text-gray-400' : 'bg-white border-gray-200'}`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
+                        <input type="checkbox" onchange="toggleMemoStatus('${memo.id}')" ${memo.done ? 'checked' : ''} class="w-4 h-4 rounded text-amber-600 border-gray-300">
+                        <span class="border px-1 py-0.2 rounded text-[10px] ${badgeClass}">${escapeHtml(memo.priority)}</span>
+                        <span class="text-xs break-words ${memo.done ? 'line-through text-gray-400' : 'text-gray-800'}">${escapeHtml(memo.text)}</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
+                        <span>${memo.createdAt || ''}</span>
+                        ${!isReadOnlyMode ? `<button onclick="removeMemo('${memo.id}')" class="text-gray-400 hover:text-red-600">🗑️</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            if (confirm(`确定恢复【${p.name}】吗？`)) {
+                p.status = "进行中";
+                p.archivedAt = null;
+                renderTable();
+                syncMatrixToCloud();
+            }
+        }
+
+        function updateCategoryFilterOptions() {
+            const selectEl = document.getElementById("filter-category");
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            let categories = new Set();
+            products.forEach(p => { if (p.category && p.category.trim()) categories.add(p.category.trim()); });
+            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
+            Array.from(categories).sort().forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === currentVal) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
+        }
+
+        function lockBodyScroll(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
+        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
+
+        function getNowString() {
+            const now = new Date();
+            return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0') + " " + String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+        }
+
+        function normalizeDate(str) {
+            if (!str) return "";
+            let s = String(str).trim().replace(/\//g, "-");
+            let match = s.match(/\d{4}-\d{1,2}-\d{1,2}/);
+            return match ? match[0] : (s.length >= 10 ? s.substring(0, 10) : s);
+        }
+
+        function extractCommonPrefix(arr) {
+            if (!arr || arr.length === 0) return "";
+            if (arr.length === 1) return arr[0].replace(/[\u4e00-\u9fa5].*$/, '').replace(/[-_]$/, '') || arr[0];
+            let sorted = arr.concat().sort();
+            let a1 = sorted[0], a2 = sorted[sorted.length - 1], L = a1.length, i = 0;
+            while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
+            return a1.substring(0, i).replace(/[-_]$/, '') || arr[0].substring(0, 8);
+        }
+
+        function renderFormattedText(text) {
+            if (!text) return '<span class="text-gray-400">暂无大备注内容</span>';
+            let safe = escapeHtml(text);
+            safe = safe.replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/(https?:\/\/[^\s\n\r]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline font-medium">$1</a>');
+            return safe;
+        }
+
+        function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
     </script>
 </body>
 </html>
