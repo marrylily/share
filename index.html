@@ -61,7 +61,7 @@
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
                         <span>🤖 WorkBuddy 助手</span>
                     </button>
-                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition">
+                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
                     <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 云端配置</button>
@@ -876,58 +876,6 @@
             updateCategoryFilterOptions();
             renderTable();
             renderBarcodeTable();
-        }
-
-        async function fetchFromDualTokenCustom(owner, repo, gistBarcodes, tokenRepo, tokenGist) {
-            document.getElementById("sync-status").innerText = "拉取只读数据...";
-            try {
-                let fetchTasks = [];
-                if (owner && repo && tokenRepo) {
-                    fetchTasks.push(
-                        fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
-                            headers: { "Authorization": `token ${tokenRepo}` }
-                        }, 5000)
-                        .then(r => r.ok ? r.json() : null)
-                        .then(data => {
-                            if (data && data.content) {
-                                const textContent = safeBase64Decode(data.content);
-                                const parsed = JSON.parse(textContent);
-                                let normalizedMatrix = normalizeMatrixData(parsed);
-                                products = normalizedMatrix.products;
-                                globalMemos = normalizedMatrix.memos;
-                            }
-                        }).catch(() => {})
-                    );
-                }
-                if (gistBarcodes && tokenGist) {
-                    fetchTasks.push(
-                        fetchWithTimeout(`https://api.github.com/gists/${gistBarcodes}`, {
-                            headers: { "Authorization": `token ${tokenGist}` }
-                        }, 5000)
-                        .then(g => g.ok ? g.json() : null)
-                        .then(d => {
-                            if (d && d.files) {
-                                for (let fname in d.files) {
-                                    let f = d.files[fname];
-                                    if (f && f.content) {
-                                        try {
-                                            globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
-                                            break;
-                                        } catch(e) {}
-                                    }
-                                }
-                            }
-                        }).catch(() => {})
-                    );
-                }
-                await Promise.allSettled(fetchTasks);
-                document.getElementById("sync-status").innerText = "已加载只读数据 ✅";
-                updateCategoryFilterOptions();
-                renderTable();
-                renderBarcodeTable();
-            } catch(err) {
-                console.error(err);
-            }
         }
 
         async function syncMatrixToCloud() {
@@ -2073,12 +2021,15 @@
 
         function toggleAIChatDrawer() {
             const drawer = document.getElementById("ai-chat-drawer");
-            drawer.classList.toggle("hidden");
-            lockBodyScroll(!drawer.classList.contains("hidden"));
+            if (drawer) {
+                drawer.classList.toggle("hidden");
+                lockBodyScroll(!drawer.classList.contains("hidden"));
+            }
         }
 
         function clearAIChatHistory() {
             const container = document.getElementById("ai-chat-messages");
+            if (!container) return;
             container.innerHTML = `
                 <div class="flex items-start space-x-2">
                     <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
@@ -2091,6 +2042,7 @@
 
         function appendChatMessage(sender, textHtml) {
             const container = document.getElementById("ai-chat-messages");
+            if (!container) return;
             const msgDiv = document.createElement("div");
             msgDiv.className = `flex items-start space-x-2 ${sender === 'USER' ? 'justify-end' : 'justify-start'}`;
 
@@ -2111,13 +2063,16 @@
 
         function toggleMemoPanel() {
             isMemoPanelOpen = !isMemoPanelOpen;
-            document.getElementById("memo-panel-body").style.display = isMemoPanelOpen ? "block" : "none";
-            document.getElementById("memo-toggle-btn").innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
+            const body = document.getElementById("memo-panel-body");
+            const btn = document.getElementById("memo-toggle-btn");
+            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
+            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
         }
 
         function addMemoItem() {
             if (isReadOnlyMode) return;
             const input = document.getElementById("memo-input");
+            if (!input) return;
             const text = input.value.trim();
             if (!text) return alert("请输入备忘内容！");
             globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) });
@@ -2215,7 +2170,7 @@
         }
 
         function lockBodyScroll(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
-        function toggleConfigModal() { const m = document.getElementById("config-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
+        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
 
         function getNowString() {
             const now = new Date();
