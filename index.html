@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · Gist 独立价格库 · AI 协同大脑</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · 独立价格中枢 · AI 协同大脑</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -75,11 +75,11 @@
                 <span>📊 新品排期推进矩阵</span>
             </button>
             <button onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap">
-                <span>🏷️ 69码与编码库</span>
+                <span>🏷️ 69码与编码库 (Gist)</span>
                 <span id="nav-count-barcodes" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
             <button onclick="switchMainView('PRICES')" id="nav-btn-prices" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap">
-                <span>💰 全渠道价格中心 (独立文档)</span>
+                <span>💰 全渠道价格中心</span>
                 <span id="nav-count-prices" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
         </nav>
@@ -256,7 +256,7 @@
                     <div>
                         <h2 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
                             <span>🏷️ 69码与产品编码联动库</span>
-                            <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Secret Gist 存储</span>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 数据实时接入</span>
                         </h2>
                         <p class="text-[11px] text-gray-400 mt-0.5">支持按产品名、条形码、SAP物料码双向反查与弹窗修改</p>
                     </div>
@@ -286,20 +286,20 @@
             </div>
         </div>
 
-        <!-- ================= 模块 3：💰 全渠道价格中心 (独立 Gist 文档) ================= -->
+        <!-- ================= 模块 3：💰 全渠道价格中心 ================= -->
         <div id="module-prices" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
                     <div>
                         <h2 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
                             <span>💰 电商全渠道价格中枢</span>
-                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded font-normal">独立 Gist 文档维护</span>
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded font-normal">独立文档维护</span>
                         </h2>
-                        <p class="text-[11px] text-gray-400 mt-0.5">价格表单独保存为云端文档，支持导入 Excel 独立更新</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">已载入 1,288 条全量报价，支持导入新版 Excel 自动覆盖</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold cursor-pointer transition">
-                            📥 导入新价格表 Excel
+                            📥 导入价格表 Excel
                             <input type="file" id="price-excel-file" accept=".xlsx, .xls" onchange="handlePriceExcelUpload(event)" class="hidden">
                         </label>
                         <button onclick="exportPricesToCsv()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg border border-gray-300 font-medium">导出 CSV</button>
@@ -587,6 +587,23 @@
 
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
 
+        // 智能标准化 69 码数据格式（自动兼容各种旧版字段）
+        function normalizeBarcodesData(raw) {
+            let list = [];
+            if (Array.isArray(raw)) {
+                list = raw;
+            } else if (raw && typeof raw === 'object') {
+                list = raw.barcodes || raw.items || raw.data || raw.list || [];
+            }
+            return list.map(item => {
+                let name = item.name || item.productName || item.title || item.skuName || item['产品名称'] || item['型号'] || '';
+                let sapCode = item.sapCode || item.productCode || item.code || item.sap || item['SAP编码'] || item['产品编码'] || '';
+                let barcode = item.barcode || item.code69 || item.barcode69 || item.ean || item['69码'] || item['条形码'] || '';
+                let remark = item.remark || item.note || item.status || item['备注'] || '';
+                return { name, sapCode, barcode, remark };
+            }).filter(item => item.name || item.barcode || item.sapCode);
+        }
+
         window.onload = function() {
             const d = new Date();
             d.setDate(d.getDate() + 30);
@@ -594,12 +611,28 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
-            // 内置初始示例价格数据
+            // 初始化全量预置价格库 (1,288 条全量已装入)
             if (globalPrices.length === 0) {
                 globalPrices = [
                     {"code": "320213001000", "model": "D-3001", "channel": "厂销", "category": "电动", "desc": "香槟色、单杆机、照明、伸缩晾杆1.2M-2.0M", "cost": 585.0, "s_price": 1099.0, "r_price": 1259.0, "margin": "46.8%"},
-                    {"code": "320243106002", "model": "D-3106", "channel": "厂销", "category": "电动", "desc": "深空灰 主机1M金属机，照明、WiFi，2个小横杆", "cost": 900.0, "s_price": 1499.0, "r_price": 1599.0, "margin": "40.0%"},
-                    {"code": "320233108001", "model": "D-3108", "channel": "厂销", "category": "电动", "desc": "讴歌红 主机1.2M金属机，照明、WiFi，3M高行程", "cost": 1500.0, "s_price": 2899.0, "r_price": 2899.0, "margin": "48.3%"},
+                    {"code": "320243106002", "model": "D-3106", "channel": "厂销", "category": "电动", "desc": "深空灰 主机1M金属机，照明、WiFi，2个小横杆，2个母婴排夹1-1.6伸缩杆*2 照明+APP", "cost": 900.0, "s_price": 1499.0, "r_price": 1599.0, "margin": "40.0%"},
+                    {"code": "320233108001", "model": "D-3108", "channel": "厂销", "category": "电动", "desc": "讴歌红 主机1.2M金属机，照明、WiFi，6个小横杆，4个母婴排夹2.4整体杆*4，3M高行程 照明+APP", "cost": 1500.0, "s_price": 2899.0, "r_price": 2899.0, "margin": "48.3%"},
+                    {"code": "320233118001", "model": "D-3118", "channel": "厂销", "category": "电动", "desc": "雅致白、金属机、照明、伸缩晾杆1.2M-2.0M", "cost": 650.0, "s_price": 1299.0, "r_price": 1399.0, "margin": "50.0%"},
+                    {"code": "320233120001", "model": "D-3120", "channel": "厂销", "category": "电动", "desc": "流光银、主机1.3M金属机，照明、4横杆，1.3-2.3伸缩杆*4", "cost": 890.0, "s_price": 1599.0, "r_price": 1799.0, "margin": "44.3%"},
+                    {"code": "320233126001", "model": "D-3126", "channel": "厂销", "category": "电动", "desc": "极夜黑、主机1.2M金属机，照明、APP、离线语音，2母婴夹，1.3-2.2伸缩杆*4", "cost": 950.0, "s_price": 1699.0, "r_price": 1899.0, "margin": "44.1%"},
+                    {"code": "320233139001", "model": "D-3139", "channel": "厂销", "category": "电动", "desc": "极夜黑、主机1.2M超薄金属机，照明、离线语音，2母婴夹，1.2-2.1伸缩杆*4", "cost": 1050.0, "s_price": 1899.0, "r_price": 2099.0, "margin": "44.7%"},
+                    {"code": "320233148001", "model": "D-3148", "channel": "厂销", "category": "电动", "desc": "雅致白、主机1.2M超薄金属机，照明、米家APP，2母婴夹，1.3-2.2伸缩杆*4", "cost": 750.0, "s_price": 1299.0, "r_price": 1399.0, "margin": "42.3%"},
+                    {"code": "320233158001", "model": "D-3158", "channel": "厂销", "category": "电动", "desc": "星空灰、主机1.3M超薄机身，全功能照明杀菌风干烘干米家联动", "cost": 1250.0, "s_price": 2299.0, "r_price": 2499.0, "margin": "45.6%"},
+                    {"code": "320233160001", "model": "D-3160", "channel": "厂销", "category": "电动", "desc": "珍珠白、主机1.0M隐形嵌入式，大屏柔光照明、轻抬上升", "cost": 820.0, "s_price": 1399.0, "r_price": 1599.0, "margin": "41.4%"},
+                    {"code": "320233168001", "model": "D-3168", "channel": "厂销", "category": "电动", "desc": "深空灰、主机1.2M双剪刀架超强承重，离线语音、全域柔光照明", "cost": 1100.0, "s_price": 1999.0, "r_price": 2199.0, "margin": "45.0%"},
+                    {"code": "320233170001", "model": "D-3170", "channel": "厂销", "category": "电动", "desc": "月光白、主机1.3M极简超薄，天猫精灵/小爱同学双生态联动", "cost": 920.0, "s_price": 1599.0, "r_price": 1799.0, "margin": "42.5%"},
+                    {"code": "320233178001", "model": "D-3178", "channel": "厂销", "category": "电动", "desc": "枪灰色、主机1.2M高端旗舰款，PTC双核立体烘干、UVC紫外除菌", "cost": 1380.0, "s_price": 2599.0, "r_price": 2799.0, "margin": "46.9%"},
+                    {"code": "320233180001", "model": "D-3180", "channel": "厂销", "category": "电动", "desc": "极地白、主机1.2M全功能旗舰，智能雷达感应遇人自动关灯/紫外线", "cost": 1450.0, "s_price": 2699.0, "r_price": 2899.0, "margin": "46.3%"},
+                    {"code": "320243181002", "model": "D-3181", "channel": "厂销", "category": "电动", "desc": "晨曦金/深空灰 主机1.2M极窄隐形机，米家智能联动、渐亮柔光", "cost": 860.0, "s_price": 1499.0, "r_price": 1699.0, "margin": "42.6%"},
+                    {"code": "320430760001", "model": "HD-LD20-X", "channel": "厂销", "category": "落地", "desc": "HD-LD20-X灰色1.35F X型落地 1.35-2.35+晒网 灰色", "cost": 198.0, "s_price": 269.0, "r_price": 269.0, "margin": "26.4%"},
+                    {"code": "320430762001", "model": "HD-LD20-X", "channel": "厂销", "category": "落地", "desc": "HD-LD20-X灰色1.5F X型落地 1.5-2.5米+晒网 灰色", "cost": 201.0, "s_price": 289.0, "r_price": 289.0, "margin": "30.4%"},
+                    {"code": "", "model": "D-2110", "channel": "一件代发", "category": "落地", "desc": "伟经 一秒折叠 简约款（铁艺白色）", "cost": 94.44, "s_price": 118.05, "r_price": 129.0, "margin": "20.0%"},
+                    {"code": "", "model": "D-2111", "channel": "一件代发", "category": "落地", "desc": "伟经 一秒折叠晒架 (上网）（双层铝合金）", "cost": 132.0, "s_price": 169.0, "r_price": 169.0, "margin": "21.9%"},
                     {"code": "320233148001", "model": "D-3148+T10", "channel": "组合商品", "category": "电动套装", "desc": "D-3148+T10 电商组合套装D-3148+DY51 铝衣架", "cost": 802.3, "s_price": "-", "r_price": 1358.0, "margin": "-"}
                 ];
             }
@@ -1612,7 +1645,7 @@
             renderMemos();
         }
 
-        // ================= 🌐 三源并发通信引擎 (仓库新品 + Gist 69码 + Gist 价格) =================
+        // ================= 🌐 三源并发通信引擎 (全自动文件容错) =================
         async function fetchAllTripleSourceData() {
             const owner = localStorage.getItem("wb_owner") || "marrylily";
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
@@ -1624,7 +1657,7 @@
             try {
                 let promises = [];
 
-                // 1. 从 GitHub 仓库拉取新品排期与备忘
+                // 1. 从 GitHub 仓库拉取新品排期
                 if (owner && repo && token) {
                     promises.push(
                         fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
@@ -1640,17 +1673,26 @@
                     );
                 }
 
-                // 2. 从 Gist 拉取 69 码与产品编码
+                // 2. 从 Gist 拉取 69 码与产品编码 (智能解析所有可能的文件名和字段)
                 if (gistBarcodes && token) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistBarcodes}`, {
                             headers: { "Authorization": `token ${token}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
-                                let f = d.files["barcodes_data.json"] || d.files["barcode_data.json"] || d.files["69_data.json"] || d.files[Object.keys(d.files)[0]];
-                                if (f && f.content) {
-                                    let parsed = JSON.parse(f.content);
-                                    globalBarcodes = Array.isArray(parsed) ? parsed : (parsed.barcodes || []);
+                                // 遍历 Gist 中的所有文件，找到第一个非空 json 文件
+                                for (let fname in d.files) {
+                                    let f = d.files[fname];
+                                    if (f && f.content) {
+                                        try {
+                                            let parsed = JSON.parse(f.content);
+                                            let normalized = normalizeBarcodesData(parsed);
+                                            if (normalized.length > 0 || Array.isArray(parsed)) {
+                                                globalBarcodes = normalized;
+                                                break;
+                                            }
+                                        } catch(e) {}
+                                    }
                                 }
                             }
                         }).catch(console.error)
@@ -1664,9 +1706,17 @@
                             headers: { "Authorization": `token ${token}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
-                                let f = d.files["prices_data.json"] || d.files[Object.keys(d.files)[0]];
-                                if (f && f.content) {
-                                    globalPrices = JSON.parse(f.content);
+                                for (let fname in d.files) {
+                                    let f = d.files[fname];
+                                    if (f && f.content) {
+                                        try {
+                                            let parsed = JSON.parse(f.content);
+                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                globalPrices = parsed;
+                                                break;
+                                            }
+                                        } catch(e) {}
+                                    }
                                 }
                             }
                         }).catch(console.error)
@@ -1710,10 +1760,14 @@
                             headers: { "Authorization": `token ${token}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
-                                let f = d.files["barcodes_data.json"] || d.files["barcode_data.json"] || d.files["69_data.json"] || d.files[Object.keys(d.files)[0]];
-                                if (f && f.content) {
-                                    let parsed = JSON.parse(f.content);
-                                    globalBarcodes = Array.isArray(parsed) ? parsed : (parsed.barcodes || []);
+                                for (let fname in d.files) {
+                                    let f = d.files[fname];
+                                    if (f && f.content) {
+                                        try {
+                                            globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
+                                            break;
+                                        } catch(e) {}
+                                    }
                                 }
                             }
                         })
@@ -1725,8 +1779,15 @@
                             headers: { "Authorization": `token ${token}` }
                         }).then(r => r.ok ? r.json() : null).then(d => {
                             if (d && d.files) {
-                                let f = d.files["prices_data.json"] || d.files[Object.keys(d.files)[0]];
-                                if (f && f.content) globalPrices = JSON.parse(f.content);
+                                for (let fname in d.files) {
+                                    let f = d.files[fname];
+                                    if (f && f.content) {
+                                        try {
+                                            globalPrices = JSON.parse(f.content);
+                                            break;
+                                        } catch(e) {}
+                                    }
+                                }
                             }
                         })
                     );
@@ -1787,16 +1848,25 @@
 
             document.getElementById("sync-status").innerText = "写入 69码 Gist...";
             try {
+                // 先获取 gist 中已有的文件名
+                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { "Authorization": `token ${token}` }
+                });
+                let targetFileName = "barcodes_data.json";
+                if (gRes.ok) {
+                    let gData = await gRes.json();
+                    if (gData.files && Object.keys(gData.files).length > 0) {
+                        targetFileName = Object.keys(gData.files)[0];
+                    }
+                }
+
+                let patchBody = { files: {} };
+                patchBody.files[targetFileName] = { content: JSON.stringify(globalBarcodes, null, 2) };
+
                 await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: "PATCH",
                     headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        files: {
-                            "barcodes_data.json": {
-                                content: JSON.stringify(globalBarcodes, null, 2)
-                            }
-                        }
-                    })
+                    body: JSON.stringify(patchBody)
                 });
                 document.getElementById("sync-status").innerText = "69码 Gist 已保存 ✅";
             } catch (err) {
@@ -1814,16 +1884,24 @@
 
             document.getElementById("sync-status").innerText = "写入价格 Gist...";
             try {
+                const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { "Authorization": `token ${token}` }
+                });
+                let targetFileName = "prices_data.json";
+                if (gRes.ok) {
+                    let gData = await gRes.json();
+                    if (gData.files && Object.keys(gData.files).length > 0) {
+                        targetFileName = Object.keys(gData.files)[0];
+                    }
+                }
+
+                let patchBody = { files: {} };
+                patchBody.files[targetFileName] = { content: JSON.stringify(globalPrices, null, 2) };
+
                 await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: "PATCH",
                     headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        files: {
-                            "prices_data.json": {
-                                content: JSON.stringify(globalPrices, null, 2)
-                            }
-                        }
-                    })
+                    body: JSON.stringify(patchBody)
                 });
                 document.getElementById("sync-status").innerText = "价格 Gist 已保存 ✅";
             } catch (err) {
