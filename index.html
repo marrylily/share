@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码Excel一键刷入 · 双Token独立鉴权 · 0秒极速响应</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码与SKU编码智能联动 · 双Token独立鉴权 · 0秒极速响应</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -246,7 +246,7 @@
             </div>
         </div>
 
-        <!-- ================= 模块 2：🏷️ 69码与编码库 (支持Excel整表一键导入覆盖/追加) ================= -->
+        <!-- ================= 模块 2：🏷️ 69码与编码库 (已全面改名 SKU 产品编码) ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
@@ -274,12 +274,12 @@
                     <div class="flex justify-between items-center">
                         <label class="font-bold text-indigo-900 flex items-center space-x-1">
                             <span>🔍 批量核对 / 查缺补漏查询</span>
-                            <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或空格隔开的多个 69码/物料码)</span>
+                            <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或空格隔开的多个 69码/SKU编码)</span>
                         </label>
                         <button onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline">清空核对</button>
                     </div>
                     <div class="flex gap-2">
-                        <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SAP 编码，如:&#10;6941123400012&#10;320243181002" class="flex-1 bg-white border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"></textarea>
+                        <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码，如:&#10;6941123400012&#10;320243181002" class="flex-1 bg-white border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"></textarea>
                         <button onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition text-xs flex-shrink-0 self-end">⚡ 开始核对</button>
                     </div>
 
@@ -297,7 +297,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="单条快速过滤：输入 69码 / 产品名称 / 物料编码..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="单条快速过滤：输入 69码 / 产品名称 / SKU产品编码..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                     <div class="text-right text-gray-400 self-center text-[11px]" id="barcode-table-count">共 0 条编码映射</div>
                 </div>
             </div>
@@ -308,7 +308,7 @@
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
                                 <th class="p-3 min-w-[160px]">产品名称 / 规格型号</th>
-                                <th class="p-3 min-w-[140px]">SAP 产品编码</th>
+                                <th class="p-3 min-w-[140px]">SKU 产品编码</th>
                                 <th class="p-3 min-w-[140px]">69 商品条形码</th>
                                 <th class="p-3 min-w-[150px]">备注说明 / 状态</th>
                                 <th class="p-3 text-right min-w-[110px]">操作</th>
@@ -328,7 +328,7 @@
                 <span>📋 批量粘贴导入 69 码 (内置防重检测)</span>
                 <button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg">✕</button>
             </h2>
-            <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SAP编码 \t 69码 \t 备注】</p>
+            <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SKU产品编码 \t 69码 \t 备注】</p>
             
             <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" placeholder="支持直接从表格整列复制粘贴，例如：&#10;D-3181 晨曦金1.2M&#9;320243181001&#9;6941123400012&#9;主推款&#10;D-3181 深空灰1.2M&#9;320243181002&#9;6941123400029&#9;加长款" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono leading-relaxed"></textarea>
 
@@ -352,7 +352,7 @@
     <div id="barcode-edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeBarcodeEditModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-3.5 flex items-center justify-between">
-                <span>✏️ 修改 69 码与产品编码</span>
+                <span>✏️ 修改 69 码与 SKU 产品编码</span>
                 <span id="edit-barcode-idx" class="text-[10px] text-gray-400 font-mono"></span>
             </h2>
             <div class="space-y-2.5">
@@ -361,7 +361,7 @@
                     <input type="text" id="edit-bar-name" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">SAP 产品编码</label>
+                    <label class="block text-gray-600 font-medium mb-1">SKU 产品编码</label>
                     <input type="text" id="edit-bar-sap" class="w-full border border-gray-300 rounded p-2 text-gray-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
@@ -436,7 +436,7 @@
         <span>🤖</span>
     </button>
 
-    <!-- 系列大备注弹窗 (彻底修复点击无响应，采用直观传参) -->
+    <!-- 系列大备注弹窗 -->
     <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 85vh; max-height: 650px;">
             <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -673,7 +673,7 @@
             }
             return list.map(item => {
                 let name = item.name || item.productName || item.title || item.skuName || item['产品名称'] || item['型号'] || item['规格型号'] || '';
-                let sapCode = item.sapCode || item.productCode || item.code || item.sap || item['SAP编码'] || item['产品编码'] || item['物料号'] || item['商品编码'] || '';
+                let sapCode = item.sapCode || item.skuCode || item.productCode || item.code || item.sap || item['SKU产品编码'] || item['SKU编码'] || item['产品编码'] || item['SAP编码'] || item['物料号'] || item['商品编码'] || '';
                 let barcode = item.barcode || item.code69 || item.barcode69 || item.ean || item['69码'] || item['条形码'] || item['条码'] || '';
                 let remark = item.remark || item.note || item.status || item['备注'] || '';
                 return { 
@@ -699,7 +699,6 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
-            // 优先读取本地缓存
             try {
                 const cachedMatrix = localStorage.getItem("wb_local_matrix");
                 if (cachedMatrix) {
@@ -716,14 +715,12 @@
             renderTable();
             renderBarcodeTable();
 
-            // 填充配置面板
             document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
             document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
             document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
             document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
             document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
 
-            // 异步同步云端
             if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
                 fetchAllDualTokenData();
             }
@@ -742,10 +739,19 @@
             });
         }
 
+        // ================= 顶层工作区切换 (彻底修复切换回新品推进看板) =================
         function switchMainView(view) {
             currentMainView = view;
-            document.getElementById("module-matrix").classList.toggle("hidden", view !== 'MATRIX');
-            document.getElementById("module-barcodes").classList.toggle("hidden", view !== 'BARCODES');
+            const matrixModule = document.getElementById("module-matrix");
+            const barcodesModule = document.getElementById("module-barcodes");
+
+            if (view === 'MATRIX') {
+                matrixModule.classList.remove("hidden");
+                barcodesModule.classList.add("hidden");
+            } else {
+                matrixModule.classList.add("hidden");
+                barcodesModule.classList.remove("hidden");
+            }
 
             const btnM = document.getElementById("nav-btn-matrix");
             const btnB = document.getElementById("nav-btn-barcodes");
@@ -756,6 +762,7 @@
             btnM.className = (view === 'MATRIX') ? activeCls : inactiveCls;
             btnB.className = (view === 'BARCODES') ? activeCls : inactiveCls;
 
+            if (view === 'MATRIX') renderTable();
             if (view === 'BARCODES') renderBarcodeTable();
         }
 
@@ -938,7 +945,7 @@
 
                                 if (k.includes("名称") || k.includes("型号") || k.includes("规格") || k.includes("产品")) {
                                     if (!name) name = v;
-                                } else if (k.includes("sap") || k.includes("物料") || k.includes("商品编码") || (k.includes("编码") && !k.includes("69"))) {
+                                } else if (k.includes("sku") || k.includes("sap") || k.includes("物料") || k.includes("商品编码") || (k.includes("编码") && !k.includes("69"))) {
                                     if (!sapCode) sapCode = v;
                                 } else if (k.includes("69") || k.includes("条码") || k.includes("条形码") || k.includes("barcode")) {
                                     if (!barcode) barcode = v;
@@ -947,7 +954,6 @@
                                 }
                             }
 
-                            // 如果没匹配到表头，按列索引兜底
                             if (!barcode) {
                                 const vals = Object.values(row).map(x => String(x).trim());
                                 vals.forEach(val => {
@@ -972,7 +978,6 @@
                     if (isOverwrite) {
                         globalBarcodes = parsedList;
                     } else {
-                        // 追加合并去重
                         const existingMap = new Set(globalBarcodes.map(b => (b.barcode || '').toLowerCase()));
                         let added = 0;
                         parsedList.forEach(item => {
@@ -993,12 +998,12 @@
                 }
             };
             reader.readAsArrayBuffer(file);
-            e.target.value = ""; // 重置 input 允许重复选择同名文件
+            e.target.value = "";
         }
 
         function exportBarcodesToCsv() {
             if (globalBarcodes.length === 0) return alert("暂无数据可导出！");
-            let csvRows = ["产品名称/规格型号,SAP产品编码,69商品条形码,备注说明"];
+            let csvRows = ["产品名称/规格型号,SKU产品编码,69商品条形码,备注说明"];
             globalBarcodes.forEach(b => {
                 csvRows.push(`"${(b.name||'').replace(/"/g, '""')}","${b.sapCode||''}","${b.barcode||''}","${(b.remark||'').replace(/"/g, '""')}"`);
             });
@@ -1006,7 +1011,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `69码与产品编码库_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `69码与SKU产品编码库_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -1213,7 +1218,7 @@
 
         function generateMissingUrgeMessage() {
             if (!barcodeMissingList || barcodeMissingList.length === 0) return alert("没有缺失项需要催办！");
-            const msg = `Hi 产品同事，在排查新品建品排期时，以下 ${barcodeMissingList.length} 款货品暂未在 69 码库中检索到有效条码/SAP编码，急需协助补充维护以推进后续排产建单：\n\n` +
+            const msg = `Hi 产品同事，在排查新品建品排期时，以下 ${barcodeMissingList.length} 款货品暂未在 69 码库中检索到有效条码/SKU编码，急需协助补充维护以推进后续排产建单：\n\n` +
                 barcodeMissingList.map((m, idx) => `${idx + 1}. ${m}`).join('\n') +
                 `\n\n麻烦查验后同步我们电商运营，辛苦啦！🤝`;
             
@@ -1226,7 +1231,7 @@
             if (isReadOnlyMode) return alert("只读模式无法录入！");
             const name = prompt("请输入产品名称/型号规格 (如: D-3181 黑色1.3):");
             if (!name) return;
-            const sap = prompt("请输入 SAP 产品编码 (选填):") || "";
+            const sap = prompt("请输入 SKU 产品编码 (选填):") || "";
             const code69 = prompt("请输入 69 商品条形码 (必填):");
             if (!code69) return alert("条形码不能为空！");
 
@@ -1413,7 +1418,7 @@
 
                 matchedCount++;
                 const isExpanded = !!expandedRows[prod.id];
-                const isSelected = selectedProductIds.has(prod.id);
+                const isSelected = selectedProductIds.has(String(prod.id));
                 const isUrgent = prod.status === "紧急重要";
                 const skuCount = prod.skus ? prod.skus.length : 0;
 
@@ -1505,7 +1510,7 @@
             renderMemos();
         }
 
-        // ================= 大备注操作 (彻底修复点击无响应问题) =================
+        // ================= 大备注操作 =================
         function insertStrikeThrough() {
             const ta = document.getElementById("big-note-textarea");
             const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
@@ -1918,6 +1923,64 @@
             let safe = escapeHtml(text);
             safe = safe.replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/(https?:\/\/[^\s\n\r]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline font-medium">$1</a>');
             return safe;
+        }
+
+        // ================= 🤖 AI 助手 =================
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
+            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
+            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
+            submitUserDemandToAI();
+        }
+
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const demandText = input.value.trim();
+            if (!demandText) return;
+
+            appendChatMessage('USER', escapeHtml(demandText));
+            input.value = "";
+
+            const today = new Date().toISOString().split('T')[0];
+            let runningList = products.filter(p => p.status !== '已归档');
+            let delayedList = [];
+            let nearDaysList = [];
+
+            runningList.forEach(p => {
+                const cleanDate = normalizeDate(p.prodDate);
+                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
+                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
+            });
+
+            setTimeout(() => {
+                let replyHtml = "";
+                if (demandText.includes("诊断") || demandText.includes("卡点")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
+                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
+                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
+                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
+                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
+                    `;
+                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
+                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
+                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
+                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
+                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
+                        </div>
+                    `;
+                } else {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
+                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
+                    `;
+                }
+                appendChatMessage('BOT', replyHtml);
+            }, 300);
         }
 
         function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
