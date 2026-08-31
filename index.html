@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码智能联动 · 双Token独立鉴权 · 0秒极速响应</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码Excel一键刷入 · 双Token独立鉴权 · 0秒极速响应</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -246,7 +246,7 @@
             </div>
         </div>
 
-        <!-- ================= 模块 2：🏷️ 69码与编码库 ================= -->
+        <!-- ================= 模块 2：🏷️ 69码与编码库 (支持Excel整表一键导入覆盖/追加) ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
@@ -255,10 +255,16 @@
                             <span>🏷️ 69码与产品编码联动库</span>
                             <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 数据实时接入</span>
                         </h2>
-                        <p class="text-[11px] text-gray-400 mt-0.5">支持批量导入防重检测、多条码精准匹配与“未匹配缺失项”一键查缺补漏</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">支持直接上传 Excel 表格重刷全量数据、批量文本导入防重与“未匹配缺失项”微信催办</p>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition">📋 批量导入/粘贴</button>
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <!-- Excel 文件直接导入按钮 -->
+                        <label class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer transition shadow-xs flex items-center space-x-1">
+                            <span>📥 导入 Excel 表格</span>
+                            <input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
+                        </label>
+                        <button onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition">📋 粘贴批量文本</button>
+                        <button onclick="exportBarcodesToCsv()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 font-medium">导出 CSV</button>
                         <button onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition">+ 单条录入</button>
                     </div>
                 </div>
@@ -315,11 +321,11 @@
         </div>
     </div>
 
-    <!-- 🏷️ 69码批量导入与智能防重弹窗 -->
+    <!-- 🏷️ 69码批量文本导入与智能防重弹窗 -->
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh]">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
-                <span>📋 批量导入 69 码与产品编码 (内置防重检测)</span>
+                <span>📋 批量粘贴导入 69 码 (内置防重检测)</span>
                 <button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg">✕</button>
             </h2>
             <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SAP编码 \t 69码 \t 备注】</p>
@@ -430,7 +436,7 @@
         <span>🤖</span>
     </button>
 
-    <!-- 系列大备注弹窗 (简洁清爽工具栏) -->
+    <!-- 系列大备注弹窗 (彻底修复点击无响应，采用直观传参) -->
     <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 85vh; max-height: 650px;">
             <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -439,7 +445,7 @@
                         <span>📝 系列大备注 & 文件备忘</span>
                         <span id="big-note-prod-name" class="text-blue-600 font-semibold truncate max-w-[150px] sm:max-w-none"></span>
                     </h2>
-                    <p class="text-[10px] text-gray-400 mt-0.5">支持删除线、文件网盘外链与滑动预览</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">支持删除线、文件网盘外链与实时滑动预览</p>
                 </div>
                 <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition">✕</button>
             </div>
@@ -635,7 +641,7 @@
             }
             return {
                 products: pList.map(item => ({
-                    id: item.id || "P_" + Math.random(),
+                    id: String(item.id || "P_" + Math.random()),
                     name: item.name || item.title || "未命名系列",
                     category: item.category || "常规新品",
                     prodDate: item.prodDate || item.date || "",
@@ -646,7 +652,7 @@
                     createdAt: item.createdAt || "",
                     historyLogs: item.historyLogs || [],
                     skus: (item.skus || item.variants || []).map((s, idx) => ({
-                        id: s.id || "S_" + idx,
+                        id: String(s.id || "S_" + idx),
                         name: s.name || s.skuName || "标配",
                         bomOk: !!s.bomOk,
                         detailOk: !!s.detailOk,
@@ -666,11 +672,16 @@
                 list = raw.barcodes || raw.items || raw.data || raw.list || raw.products || [];
             }
             return list.map(item => {
-                let name = item.name || item.productName || item.title || item.skuName || item['产品名称'] || item['型号'] || '';
-                let sapCode = item.sapCode || item.productCode || item.code || item.sap || item['SAP编码'] || item['产品编码'] || '';
-                let barcode = item.barcode || item.code69 || item.barcode69 || item.ean || item['69码'] || item['条形码'] || '';
+                let name = item.name || item.productName || item.title || item.skuName || item['产品名称'] || item['型号'] || item['规格型号'] || '';
+                let sapCode = item.sapCode || item.productCode || item.code || item.sap || item['SAP编码'] || item['产品编码'] || item['物料号'] || item['商品编码'] || '';
+                let barcode = item.barcode || item.code69 || item.barcode69 || item.ean || item['69码'] || item['条形码'] || item['条码'] || '';
                 let remark = item.remark || item.note || item.status || item['备注'] || '';
-                return { name, sapCode, barcode, remark };
+                return { 
+                    name: String(name).trim(), 
+                    sapCode: String(sapCode).trim(), 
+                    barcode: String(barcode).trim(), 
+                    remark: String(remark).trim() 
+                };
             }).filter(item => item.name || item.barcode || item.sapCode);
         }
 
@@ -688,6 +699,7 @@
                 document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
             }
 
+            // 优先读取本地缓存
             try {
                 const cachedMatrix = localStorage.getItem("wb_local_matrix");
                 if (cachedMatrix) {
@@ -704,12 +716,14 @@
             renderTable();
             renderBarcodeTable();
 
+            // 填充配置面板
             document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
             document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
             document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
             document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
             document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
 
+            // 异步同步云端
             if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
                 fetchAllDualTokenData();
             }
@@ -745,6 +759,7 @@
             if (view === 'BARCODES') renderBarcodeTable();
         }
 
+        // ================= 🌐 并发通信引擎 =================
         async function fetchAllDualTokenData() {
             const owner = cleanConfigString(localStorage.getItem("wb_owner") || "marrylily");
             const repo = cleanConfigString(localStorage.getItem("wb_repo") || "my-tasks");
@@ -897,6 +912,106 @@
             }
         }
 
+        // ================= 📥 69码 Excel 表格文件直接导入与刷写 =================
+        function handleBarcodeExcelUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    let parsedList = [];
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                        
+                        json.forEach(row => {
+                            let name = "", sapCode = "", barcode = "", remark = "";
+                            
+                            for (let key in row) {
+                                let k = String(key).trim().toLowerCase();
+                                let v = String(row[key]).trim();
+                                if (!v) continue;
+
+                                if (k.includes("名称") || k.includes("型号") || k.includes("规格") || k.includes("产品")) {
+                                    if (!name) name = v;
+                                } else if (k.includes("sap") || k.includes("物料") || k.includes("商品编码") || (k.includes("编码") && !k.includes("69"))) {
+                                    if (!sapCode) sapCode = v;
+                                } else if (k.includes("69") || k.includes("条码") || k.includes("条形码") || k.includes("barcode")) {
+                                    if (!barcode) barcode = v;
+                                } else if (k.includes("备注") || k.includes("说明") || k.includes("状态")) {
+                                    if (!remark) remark = v;
+                                }
+                            }
+
+                            // 如果没匹配到表头，按列索引兜底
+                            if (!barcode) {
+                                const vals = Object.values(row).map(x => String(x).trim());
+                                vals.forEach(val => {
+                                    if (/^\d{12,14}$/.test(val) && !barcode) barcode = val;
+                                    else if (/^3\d{11}$/.test(val) && !sapCode) sapCode = val;
+                                });
+                                if (!name && vals.length > 0) name = vals[0];
+                            }
+
+                            if (name || barcode || sapCode) {
+                                parsedList.push({ name, sapCode, barcode, remark: remark || sheetName });
+                            }
+                        });
+                    });
+
+                    if (parsedList.length === 0) {
+                        return alert("未能从该 Excel 中解析出有效 69 码数据，请检查表格格式！");
+                    }
+
+                    const isOverwrite = confirm(`📊 成功解析出 ${parsedList.length} 条编码数据！\n\n【确定】：全量覆盖现有数据（重新刷入最新完整版）\n【取消】：追加合并到现有数据`);
+                    
+                    if (isOverwrite) {
+                        globalBarcodes = parsedList;
+                    } else {
+                        // 追加合并去重
+                        const existingMap = new Set(globalBarcodes.map(b => (b.barcode || '').toLowerCase()));
+                        let added = 0;
+                        parsedList.forEach(item => {
+                            if (!existingMap.has(item.barcode.toLowerCase())) {
+                                globalBarcodes.push(item);
+                                added++;
+                            }
+                        });
+                        alert(`已合并，成功新增 ${added} 条不重复数据！`);
+                    }
+
+                    renderBarcodeTable();
+                    renderTable();
+                    syncBarcodesToGist();
+                    alert(`🎉 69 码库已更新完毕（当前共 ${globalBarcodes.length} 条），并已同步至 Gist 云端！`);
+                } catch(err) {
+                    alert("解析 Excel 失败: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = ""; // 重置 input 允许重复选择同名文件
+        }
+
+        function exportBarcodesToCsv() {
+            if (globalBarcodes.length === 0) return alert("暂无数据可导出！");
+            let csvRows = ["产品名称/规格型号,SAP产品编码,69商品条形码,备注说明"];
+            globalBarcodes.forEach(b => {
+                csvRows.push(`"${(b.name||'').replace(/"/g, '""')}","${b.sapCode||''}","${b.barcode||''}","${(b.remark||'').replace(/"/g, '""')}"`);
+            });
+            const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `69码与产品编码库_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ================= 📦 本地数据快照防丢备份与还原 =================
         function exportLocalBackupSnapshot() {
             const backupData = {
                 version: "2026.1",
@@ -1242,8 +1357,8 @@
         }
 
         function quickApplyMatchedBarcode(prodId, skuId) {
-            const p = products.find(item => item.id === prodId);
-            const sku = p ? p.skus.find(s => s.id === skuId) : null;
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
             if (!sku) return;
             sku.sapOk = true;
             if (!sku.nodeRecords) sku.nodeRecords = {};
@@ -1390,6 +1505,55 @@
             renderMemos();
         }
 
+        // ================= 大备注操作 (彻底修复点击无响应问题) =================
+        function insertStrikeThrough() {
+            const ta = document.getElementById("big-note-textarea");
+            const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+            ta.value = (s !== e) ? v.substring(0, s) + `~~${v.substring(s, e)}~~` + v.substring(e) : v.substring(0, s) + `~~作废内容~~` + v.substring(e);
+            updateBigNoteLivePreview();
+        }
+
+        function insertFileLinkPrompt() {
+            const link = prompt("请输入网盘/文档链接:");
+            if (link) { const ta = document.getElementById("big-note-textarea"); ta.value += ` 🔗资料链接: ${link.trim()} `; updateBigNoteLivePreview(); }
+        }
+
+        function insertTimestamp() {
+            const ta = document.getElementById("big-note-textarea");
+            ta.value += ` [${getNowString().substring(5, 16)}] `;
+            updateBigNoteLivePreview();
+        }
+
+        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML = renderFormattedText(document.getElementById("big-note-textarea").value); }
+        
+        function openBigNoteModal(prodId) {
+            currentBigNoteProdId = String(prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`;
+            document.getElementById("big-note-textarea").value = p.bigNote || "";
+            updateBigNoteLivePreview();
+            document.getElementById("big-note-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+        
+        function closeBigNoteModal() { 
+            document.getElementById("big-note-modal").classList.add("hidden"); 
+            lockBodyScroll(false); 
+        }
+        
+        function saveBigNoteChanges() {
+            const p = products.find(item => String(item.id) === String(currentBigNoteProdId));
+            if (p) {
+                p.bigNote = document.getElementById("big-note-textarea").value.trim();
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新了大备注资料" });
+                closeBigNoteModal();
+                renderTable();
+                syncMatrixToCloud();
+            }
+        }
+
         // ================= 基础操作与审计 =================
         function addProductWithBatchSkus() {
             if (isReadOnlyMode) return;
@@ -1439,7 +1603,7 @@
         }
 
         function quickEditSeriesName(prodId) {
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
             const newName = prompt("修改系列名:", p.name);
             if (newName && newName.trim() !== p.name) {
@@ -1451,8 +1615,8 @@
         }
 
         function openEditModal(prodId) {
-            currentEditingId = prodId;
-            const p = products.find(item => item.id === prodId);
+            currentEditingId = String(prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
             document.getElementById("edit-prod-id").innerText = p.id;
             document.getElementById("edit-name").value = p.name || "";
@@ -1464,7 +1628,7 @@
         }
         function closeEditModal() { document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveEditChanges() {
-            const p = products.find(item => item.id === currentEditingId);
+            const p = products.find(item => String(item.id) === String(currentEditingId));
             if (!p) return;
             p.name = document.getElementById("edit-name").value.trim();
             p.category = document.getElementById("edit-category").value.trim();
@@ -1480,8 +1644,8 @@
 
         function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
             if (isReadOnlyMode) { checkboxEl.checked = !checkboxEl.checked; return; }
-            const p = products.find(item => item.id === prodId);
-            const sku = p ? p.skus.find(s => s.id === skuId) : null;
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
             if (!sku) return;
             const targetVal = checkboxEl.checked;
             checkboxEl.checked = !targetVal;
@@ -1497,7 +1661,7 @@
 
         function triggerBatchColumnCheck(prodId, key, label) {
             if (isReadOnlyMode) return;
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p || !p.skus || p.skus.length === 0) return;
             const isAll = p.skus.every(s => !!s[key]);
             pendingCheck = { prodId, skuIds: p.skus.map(s => s.id), key, label, targetVal: !isAll };
@@ -1512,13 +1676,13 @@
         function closeCheckModal() { document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
         function confirmNodeCheckChange() {
             const { prodId, skuIds, key, label, targetVal } = pendingCheck;
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
             const remark = document.getElementById("check-remark-input").value.trim();
             const nowTime = getNowString();
 
             p.skus.forEach(sku => {
-                if (skuIds.includes(sku.id)) {
+                if (skuIds.map(String).includes(String(sku.id))) {
                     sku[key] = targetVal;
                     if (!sku.nodeRecords) sku.nodeRecords = {};
                     sku.nodeRecords[key] = { status: targetVal, time: nowTime, remark: remark };
@@ -1534,7 +1698,7 @@
 
         function changeProdStatus(prodId, val) {
             if (isReadOnlyMode) return;
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p || p.status === val) return;
             p.status = val;
             p.archivedAt = (val === "已归档") ? getNowString() : null;
@@ -1545,7 +1709,7 @@
         }
 
         function openLogsModal(prodId) {
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
             document.getElementById("logs-title").innerText = `【${p.name}】`;
             const container = document.getElementById("logs-container");
@@ -1567,12 +1731,12 @@
         }
         function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
 
-        function toggleProductSelect(prodId, checked) { checked ? selectedProductIds.add(prodId) : selectedProductIds.delete(prodId); updateSelectAllCheckboxState(); }
+        function toggleProductSelect(prodId, checked) { checked ? selectedProductIds.add(String(prodId)) : selectedProductIds.delete(String(prodId)); updateSelectAllCheckboxState(); }
         function toggleSelectAll(checked) {
             products.forEach(p => {
                 const isArchived = (p.status === "已归档");
                 if ((currentTab === 'RUNNING' && !isArchived) || (currentTab === 'ARCHIVED' && isArchived)) {
-                    checked ? selectedProductIds.add(p.id) : selectedProductIds.delete(p.id);
+                    checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id));
                 }
             });
             renderTable();
@@ -1580,7 +1744,7 @@
 
         function updateSelectAllCheckboxState() {
             const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
-            const selectedCount = currentTabProducts.filter(p => selectedProductIds.has(p.id)).length;
+            const selectedCount = currentTabProducts.filter(p => selectedProductIds.has(String(p.id))).length;
             const isAll = (currentTabProducts.length > 0 && selectedCount === currentTabProducts.length);
             const isInd = (selectedCount > 0 && selectedCount < currentTabProducts.length);
 
@@ -1594,7 +1758,7 @@
 
         function exportSelectedToExcel() {
             const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
-            let targetProducts = selectedProductIds.size > 0 ? currentTabProducts.filter(p => selectedProductIds.has(p.id)) : currentTabProducts;
+            let targetProducts = selectedProductIds.size > 0 ? currentTabProducts.filter(p => selectedProductIds.has(String(p.id))) : currentTabProducts;
             if (targetProducts.length === 0) return alert("当前视图无数据可导出！");
 
             let csvRows = ["产品系列,子变体SKU,品类,量产时间,状态,财务BOM,详情页,69编码,备注,大备注"];
@@ -1615,7 +1779,7 @@
         function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
         function removeProduct(prodId) {
             if (confirm("确定彻底删除该产品系列吗？")) {
-                products = products.filter(p => p.id !== prodId);
+                products = products.filter(p => String(p.id) !== String(prodId));
                 updateCategoryFilterOptions();
                 renderTable();
                 syncMatrixToCloud();
@@ -1691,7 +1855,7 @@
 
         function restoreProductFromArchive(prodId) {
             if (isReadOnlyMode) return;
-            const p = products.find(item => item.id === prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
             if (confirm(`确定恢复【${p.name}】吗？`)) {
                 p.status = "进行中";
