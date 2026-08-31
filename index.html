@@ -246,7 +246,7 @@
             </div>
         </div>
 
-        <!-- ================= 模块 2：🏷️ 69码与编码库 (已全面改名 SKU 产品编码) ================= -->
+        <!-- ================= 模块 2：🏷️ 69码与编码库 ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
@@ -258,7 +258,6 @@
                         <p class="text-[11px] text-gray-400 mt-0.5">支持直接上传 Excel 表格重刷全量数据、批量文本导入防重与“未匹配缺失项”微信催办</p>
                     </div>
                     <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <!-- Excel 文件直接导入按钮 -->
                         <label class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer transition shadow-xs flex items-center space-x-1">
                             <span>📥 导入 Excel 表格</span>
                             <input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
@@ -739,7 +738,7 @@
             });
         }
 
-        // ================= 顶层工作区切换 (彻底修复切换回新品推进看板) =================
+        // ================= 顶层工作区切换 =================
         function switchMainView(view) {
             currentMainView = view;
             const matrixModule = document.getElementById("module-matrix");
@@ -764,6 +763,28 @@
 
             if (view === 'MATRIX') renderTable();
             if (view === 'BARCODES') renderBarcodeTable();
+        }
+
+        // ================= Tab 切换（进行中 vs 已归档） =================
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnRunning = document.getElementById("tab-btn-running");
+            const btnArchived = document.getElementById("tab-btn-archived");
+            const filterHealthBox = document.getElementById("filter-health-box");
+            const btnExportLabel = document.getElementById("btn-export-label");
+
+            if (tab === 'RUNNING') {
+                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (filterHealthBox) filterHealthBox.style.display = "block";
+                if (btnExportLabel) btnExportLabel.innerText = "📥 导出进行中系列至 Excel";
+            } else {
+                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (filterHealthBox) filterHealthBox.style.display = "none";
+                if (btnExportLabel) btnExportLabel.innerText = "📥 导出已归档系列至 Excel";
+            }
+            renderTable();
         }
 
         // ================= 🌐 并发通信引擎 =================
@@ -1510,285 +1531,144 @@
             renderMemos();
         }
 
-        // ================= 大备注操作 =================
-        function insertStrikeThrough() {
-            const ta = document.getElementById("big-note-textarea");
-            const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
-            ta.value = (s !== e) ? v.substring(0, s) + `~~${v.substring(s, e)}~~` + v.substring(e) : v.substring(0, s) + `~~作废内容~~` + v.substring(e);
-            updateBigNoteLivePreview();
+        // ================= 🤖 AI 助手 =================
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
+            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
+            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
+            submitUserDemandToAI();
         }
 
-        function insertFileLinkPrompt() {
-            const link = prompt("请输入网盘/文档链接:");
-            if (link) { const ta = document.getElementById("big-note-textarea"); ta.value += ` 🔗资料链接: ${link.trim()} `; updateBigNoteLivePreview(); }
-        }
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const demandText = input.value.trim();
+            if (!demandText) return;
 
-        function insertTimestamp() {
-            const ta = document.getElementById("big-note-textarea");
-            ta.value += ` [${getNowString().substring(5, 16)}] `;
-            updateBigNoteLivePreview();
-        }
+            appendChatMessage('USER', escapeHtml(demandText));
+            input.value = "";
 
-        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML = renderFormattedText(document.getElementById("big-note-textarea").value); }
-        
-        function openBigNoteModal(prodId) {
-            currentBigNoteProdId = String(prodId);
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`;
-            document.getElementById("big-note-textarea").value = p.bigNote || "";
-            updateBigNoteLivePreview();
-            document.getElementById("big-note-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-        
-        function closeBigNoteModal() { 
-            document.getElementById("big-note-modal").classList.add("hidden"); 
-            lockBodyScroll(false); 
-        }
-        
-        function saveBigNoteChanges() {
-            const p = products.find(item => String(item.id) === String(currentBigNoteProdId));
-            if (p) {
-                p.bigNote = document.getElementById("big-note-textarea").value.trim();
-                if (!p.historyLogs) p.historyLogs = [];
-                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新了大备注资料" });
-                closeBigNoteModal();
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
+            const today = new Date().toISOString().split('T')[0];
+            let runningList = products.filter(p => p.status !== '已归档');
+            let delayedList = [];
+            let nearDaysList = [];
 
-        // ================= 基础操作与审计 =================
-        function addProductWithBatchSkus() {
-            if (isReadOnlyMode) return;
-            const batchText = document.getElementById("p-skus-batch").value.trim();
-            const prodDate = document.getElementById("p-prod-date").value;
-            const category = document.getElementById("p-category").value.trim() || "常规新品";
-            if (!batchText && !document.getElementById("p-name").value.trim()) return alert("请粘贴 SKU 列表！");
-
-            let rawLines = batchText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            let uniqueInputSkus = Array.from(new Set(rawLines));
-
-            let existingSkuMap = {};
-            products.forEach(p => (p.skus || []).forEach(s => existingSkuMap[s.name.trim().toLowerCase()] = p.name));
-
-            let validSkus = uniqueInputSkus.filter(s => !existingSkuMap[s.toLowerCase()]);
-            if (validSkus.length === 0 && uniqueInputSkus.length > 0) return alert("所有 SKU 均已存在，请勿重复创建！");
-
-            let manualName = document.getElementById("p-name").value.trim();
-            let seriesName = manualName || (validSkus.length > 0 ? extractCommonPrefix(validSkus) : "新品系列");
-
-            let skusList = validSkus.map((skuLine, i) => ({ id: "S_" + Date.now() + "_" + i, name: skuLine, bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }));
-            if (skusList.length === 0) skusList = [{ id: "S_" + Date.now(), name: seriesName + " (标配)", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }];
-
-            const nowTime = getNowString();
-            const newProd = {
-                id: "P_" + Date.now(),
-                name: seriesName,
-                category: category,
-                prodDate: normalizeDate(prodDate),
-                remark: "",
-                bigNote: "",
-                status: "进行中",
-                archivedAt: null,
-                createdAt: nowTime,
-                historyLogs: [{ time: nowTime, type: "CREATE", desc: `初始化创建系列【${seriesName}】` }],
-                skus: skusList
-            };
-
-            products.unshift(newProd);
-            expandedRows[newProd.id] = true;
-            document.getElementById("p-name").value = "";
-            document.getElementById("p-skus-batch").value = "";
-            switchTab('RUNNING');
-            updateCategoryFilterOptions();
-            renderTable();
-            syncMatrixToCloud();
-        }
-
-        function quickEditSeriesName(prodId) {
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            const newName = prompt("修改系列名:", p.name);
-            if (newName && newName.trim() !== p.name) {
-                p.name = newName.trim();
-                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `系列名变更为【${p.name}】` });
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function openEditModal(prodId) {
-            currentEditingId = String(prodId);
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            document.getElementById("edit-prod-id").innerText = p.id;
-            document.getElementById("edit-name").value = p.name || "";
-            document.getElementById("edit-category").value = p.category || "";
-            document.getElementById("edit-prod-date").value = normalizeDate(p.prodDate) || "";
-            document.getElementById("edit-reason").value = p.remark || "";
-            document.getElementById("edit-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-        function closeEditModal() { document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveEditChanges() {
-            const p = products.find(item => String(item.id) === String(currentEditingId));
-            if (!p) return;
-            p.name = document.getElementById("edit-name").value.trim();
-            p.category = document.getElementById("edit-category").value.trim();
-            p.prodDate = normalizeDate(document.getElementById("edit-prod-date").value);
-            p.remark = document.getElementById("edit-reason").value.trim();
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `更新了产品基础信息/排期` });
-            closeEditModal();
-            updateCategoryFilterOptions();
-            renderTable();
-            syncMatrixToCloud();
-        }
-
-        function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
-            if (isReadOnlyMode) { checkboxEl.checked = !checkboxEl.checked; return; }
-            const p = products.find(item => String(item.id) === String(prodId));
-            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
-            if (!sku) return;
-            const targetVal = checkboxEl.checked;
-            checkboxEl.checked = !targetVal;
-
-            pendingCheck = { prodId, skuIds: [skuId], key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️";
-            document.getElementById("check-modal-title").innerText = targetVal ? `确认完成【${label}】` : `取消【${label}】`;
-            document.getElementById("check-modal-subtitle").innerText = `规格: ${sku.name}`;
-            document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-
-        function triggerBatchColumnCheck(prodId, key, label) {
-            if (isReadOnlyMode) return;
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p || !p.skus || p.skus.length === 0) return;
-            const isAll = p.skus.every(s => !!s[key]);
-            pendingCheck = { prodId, skuIds: p.skus.map(s => s.id), key, label, targetVal: !isAll };
-            document.getElementById("check-action-icon").innerText = !isAll ? "⚡" : "↩️";
-            document.getElementById("check-modal-title").innerText = !isAll ? `批量标记【${label}】完成` : `批量取消【${label}】`;
-            document.getElementById("check-modal-subtitle").innerText = `应用至全部 ${p.skus.length} 个 SKU`;
-            document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-
-        function closeCheckModal() { document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmNodeCheckChange() {
-            const { prodId, skuIds, key, label, targetVal } = pendingCheck;
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            const remark = document.getElementById("check-remark-input").value.trim();
-            const nowTime = getNowString();
-
-            p.skus.forEach(sku => {
-                if (skuIds.map(String).includes(String(sku.id))) {
-                    sku[key] = targetVal;
-                    if (!sku.nodeRecords) sku.nodeRecords = {};
-                    sku.nodeRecords[key] = { status: targetVal, time: nowTime, remark: remark };
-                }
+            runningList.forEach(p => {
+                const cleanDate = normalizeDate(p.prodDate);
+                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
+                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
             });
 
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({ time: nowTime, type: targetVal ? "NODE_DONE" : "NODE_CANCEL", desc: `【${label}】${targetVal ? '标记完成' : '取消完成'}${remark ? ' (' + remark + ')' : ''}` });
-            closeCheckModal();
-            renderTable();
-            syncMatrixToCloud();
+            setTimeout(() => {
+                let replyHtml = "";
+                if (demandText.includes("诊断") || demandText.includes("卡点")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
+                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
+                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
+                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
+                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
+                    `;
+                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
+                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
+                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
+                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
+                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
+                        </div>
+                    `;
+                } else {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
+                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
+                    `;
+                }
+                appendChatMessage('BOT', replyHtml);
+            }, 300);
         }
 
-        function changeProdStatus(prodId, val) {
-            if (isReadOnlyMode) return;
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p || p.status === val) return;
-            p.status = val;
-            p.archivedAt = (val === "已归档") ? getNowString() : null;
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({ time: getNowString(), type: (val === "已归档" ? "ARCHIVE" : "STATUS_CHANGE"), desc: `状态变更为【${val}】` });
-            renderTable();
-            syncMatrixToCloud();
+        function toggleAIChatDrawer() {
+            const drawer = document.getElementById("ai-chat-drawer");
+            drawer.classList.toggle("hidden");
+            lockBodyScroll(!drawer.classList.contains("hidden"));
         }
 
-        function openLogsModal(prodId) {
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            document.getElementById("logs-title").innerText = `【${p.name}】`;
-            const container = document.getElementById("logs-container");
-            container.innerHTML = "";
-            (p.historyLogs || []).forEach(log => {
-                const item = document.createElement("div");
-                item.className = "bg-white p-3 rounded-xl border border-gray-200 flex items-start space-x-2.5";
-                item.innerHTML = `
-                    <span class="border px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 mt-0.5">流转</span>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-gray-800 text-xs">${escapeHtml(log.desc)}</div>
-                        <div class="text-[10px] text-gray-400 font-mono mt-0.5">${log.time}</div>
+        function clearAIChatHistory() {
+            const container = document.getElementById("ai-chat-messages");
+            container.innerHTML = `
+                <div class="flex items-start space-x-2">
+                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                    <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">
+                        已清空历史对话。请输入您新的运营需求～
                     </div>
+                </div>
+            `;
+        }
+
+        function appendChatMessage(sender, textHtml) {
+            const container = document.getElementById("ai-chat-messages");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `flex items-start space-x-2 ${sender === 'USER' ? 'justify-end' : 'justify-start'}`;
+
+            if (sender === 'USER') {
+                msgDiv.innerHTML = `
+                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-xs break-words">${textHtml}</div>
+                    <div class="w-6 h-6 rounded-md bg-gray-800 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">我</div>
                 `;
-                container.appendChild(item);
-            });
-            document.getElementById("logs-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-        function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
-
-        function toggleProductSelect(prodId, checked) { checked ? selectedProductIds.add(String(prodId)) : selectedProductIds.delete(String(prodId)); updateSelectAllCheckboxState(); }
-        function toggleSelectAll(checked) {
-            products.forEach(p => {
-                const isArchived = (p.status === "已归档");
-                if ((currentTab === 'RUNNING' && !isArchived) || (currentTab === 'ARCHIVED' && isArchived)) {
-                    checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id));
-                }
-            });
-            renderTable();
-        }
-
-        function updateSelectAllCheckboxState() {
-            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
-            const selectedCount = currentTabProducts.filter(p => selectedProductIds.has(String(p.id))).length;
-            const isAll = (currentTabProducts.length > 0 && selectedCount === currentTabProducts.length);
-            const isInd = (selectedCount > 0 && selectedCount < currentTabProducts.length);
-
-            const sEl = document.getElementById("select-all-checkbox");
-            const msEl = document.getElementById("mobile-select-all");
-            if (sEl) { sEl.checked = isAll; sEl.indeterminate = isInd; }
-            if (msEl) { msEl.checked = isAll; msEl.indeterminate = isInd; }
-            const mcEl = document.getElementById("mobile-selected-count");
-            if (mcEl) mcEl.innerText = `已选 ${selectedCount} 项`;
-        }
-
-        function exportSelectedToExcel() {
-            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
-            let targetProducts = selectedProductIds.size > 0 ? currentTabProducts.filter(p => selectedProductIds.has(String(p.id))) : currentTabProducts;
-            if (targetProducts.length === 0) return alert("当前视图无数据可导出！");
-
-            let csvRows = ["产品系列,子变体SKU,品类,量产时间,状态,财务BOM,详情页,69编码,备注,大备注"];
-            targetProducts.forEach(prod => {
-                (prod.skus || []).forEach(sku => {
-                    csvRows.push(`"${prod.name}","${sku.name}","${prod.category}","${normalizeDate(prod.prodDate)}","${prod.status}","${sku.bomOk ? '已完成' : '未完成'}","${sku.detailOk ? '已完成' : '未完成'}","${sku.sapOk ? '已完成' : '未完成'}","${prod.remark || ''}","${(prod.bigNote || '').replace(/"/g, '""')}"`);
-                });
-            });
-            const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `新品推进矩阵_${currentTab === 'RUNNING' ? '进行中' : '已归档'}_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
-        function removeProduct(prodId) {
-            if (confirm("确定彻底删除该产品系列吗？")) {
-                products = products.filter(p => String(p.id) !== String(prodId));
-                updateCategoryFilterOptions();
-                renderTable();
-                syncMatrixToCloud();
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                    <div class="ai-chat-bubble-bot p-3.5 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs break-words space-y-2">${textHtml}</div>
+                `;
             }
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ================= 辅助小工具 =================
+        function applyReadOnlyUI() {
+            document.getElementById("role-badge").innerText = "👀 访客只读";
+            document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
+            if (document.getElementById("admin-create-panel")) document.getElementById("admin-create-panel").style.display = "none";
+            if (document.getElementById("btn-share-readonly")) document.getElementById("btn-share-readonly").style.display = "none";
+            if (document.getElementById("btn-config")) document.getElementById("btn-config").style.display = "none";
+        }
+
+        function copyReadOnlyShareLink() {
+            const owner = cleanConfigString(localStorage.getItem("wb_owner") || "marrylily");
+            const repo = cleanConfigString(localStorage.getItem("wb_repo") || "my-tasks");
+            const gBar = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || "");
+            const tRepo = (localStorage.getItem("wb_token_repo") || "").trim();
+            const tGist = (localStorage.getItem("wb_token_gist") || "").trim();
+
+            const shareUrl = `${window.location.origin + window.location.pathname}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&gist_bar=${encodeURIComponent(gBar)}&token_repo=${encodeURIComponent(tRepo)}&token_gist=${encodeURIComponent(tGist)}`;
+            navigator.clipboard.writeText(shareUrl).then(() => alert("🎉 只读链接已复制！")).catch(() => prompt("请复制链接：", shareUrl));
+        }
+
+        function updateCategoryFilterOptions() {
+            const selectEl = document.getElementById("filter-category");
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            let categories = new Set();
+            products.forEach(p => { if (p.category && p.category.trim()) categories.add(p.category.trim()); });
+            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
+            Array.from(categories).sort().forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === currentVal) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
         }
 
         function toggleMemoPanel() {
@@ -1870,30 +1750,6 @@
             }
         }
 
-        function updateCategoryFilterOptions() {
-            const selectEl = document.getElementById("filter-category");
-            if (!selectEl) return;
-            const currentVal = selectEl.value;
-            let categories = new Set();
-            products.forEach(p => { if (p.category && p.category.trim()) categories.add(p.category.trim()); });
-            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
-            Array.from(categories).sort().forEach(cat => {
-                const opt = document.createElement("option");
-                opt.value = cat;
-                opt.innerText = cat;
-                if (cat === currentVal) opt.selected = true;
-                selectEl.appendChild(opt);
-            });
-        }
-
-        function resetAllFilters() {
-            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
-            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
-            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
-            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
-            renderTable();
-        }
-
         function lockBodyScroll(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
         function toggleConfigModal() { const m = document.getElementById("config-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
 
@@ -1925,62 +1781,14 @@
             return safe;
         }
 
-        // ================= 🤖 AI 助手 =================
-        function applyQuickPrompt(type) {
-            const input = document.getElementById("ai-user-prompt");
-            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
-            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
-            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
-            submitUserDemandToAI();
-        }
-
-        function submitUserDemandToAI() {
-            const input = document.getElementById("ai-user-prompt");
-            const demandText = input.value.trim();
-            if (!demandText) return;
-
-            appendChatMessage('USER', escapeHtml(demandText));
-            input.value = "";
-
-            const today = new Date().toISOString().split('T')[0];
-            let runningList = products.filter(p => p.status !== '已归档');
-            let delayedList = [];
-            let nearDaysList = [];
-
-            runningList.forEach(p => {
-                const cleanDate = normalizeDate(p.prodDate);
-                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
-                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
-                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
-            });
-
-            setTimeout(() => {
-                let replyHtml = "";
-                if (demandText.includes("诊断") || demandText.includes("卡点")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
-                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
-                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
-                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
-                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
-                    `;
-                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
-                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
-                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
-                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
-                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
-                        </div>
-                    `;
-                } else {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
-                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
-                    `;
-                }
-                appendChatMessage('BOT', replyHtml);
-            }, 300);
+        function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
+        function removeProduct(prodId) {
+            if (confirm("确定彻底删除该产品系列吗？")) {
+                products = products.filter(p => String(p.id) !== String(prodId));
+                updateCategoryFilterOptions();
+                renderTable();
+                syncMatrixToCloud();
+            }
         }
 
         function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
