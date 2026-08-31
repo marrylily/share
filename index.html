@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 节点批量留痕追溯 · 69码与SKU编码联动 · 双Token独立鉴权</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 智能多选节点分发留痕 · 69码联动 · 双Token独立鉴权</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -179,7 +179,7 @@
                 </div>
             </div>
 
-            <!-- 桌面表格视图 (加宽各关键列，确保同行规整单行显示) -->
+            <!-- 桌面表格视图 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1100px]">
@@ -195,7 +195,7 @@
                                 <th class="p-3 min-w-[280px]">三大核心节点总进度 (点亮留痕)</th>
                                 <th class="p-3 min-w-[190px] whitespace-nowrap">排期/变动说明/大备注</th>
                                 <th class="p-3 min-w-[90px]">状态</th>
-                                <th class="p-3 text-right min-w-[220px] whitespace-nowrap">操作与审计</th>
+                                <th class="p-3 text-right min-w-[230px] whitespace-nowrap">操作与审计</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
@@ -379,7 +379,7 @@
         </div>
     </div>
 
-    <!-- ⚡ 节点点击/批量点亮 确认与备注留痕弹窗 -->
+    <!-- ⚡ 单个节点点击确认与备注留痕弹窗 -->
     <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
@@ -398,52 +398,78 @@
         </div>
     </div>
 
-    <!-- ⚡ 系列全量节点多选批量快捷更新弹窗 (支持同天全套提供一次性打勾) -->
+    <!-- ⚡ 综合批量节点维护弹窗（支持全量/仅未完成/自由多选SKU + 多节点组合 + 一次性备注） -->
     <div id="series-batch-nodes-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeSeriesBatchNodesModal()">
-        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
-            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
-                <span>⚡ 系列全量节点批量快捷维护</span>
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-lg shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-2 mb-3">
+                <h2 class="text-sm font-bold text-gray-900 flex items-center space-x-1.5">
+                    <span>⚡ 批量多选节点点亮与备注分发</span>
+                    <span id="series-batch-prod-badge" class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-mono"></span>
+                </h2>
                 <button onclick="closeSeriesBatchNodesModal()" class="text-gray-400 hover:text-gray-700">✕</button>
-            </h2>
-            <p class="text-gray-500 mb-3 text-[11px]" id="series-batch-subtitle"></p>
+            </div>
             
-            <div class="space-y-3 bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3">
-                <div class="font-bold text-gray-700">选择要同时变更的节点（支持多选/全选）：</div>
-                <div class="flex items-center space-x-4">
-                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                        <input type="checkbox" id="series-batch-bom" checked class="w-4 h-4 rounded text-blue-600">
-                        <span class="font-semibold text-gray-700">财务BOM</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                        <input type="checkbox" id="series-batch-detail" checked class="w-4 h-4 rounded text-blue-600">
-                        <span class="font-semibold text-gray-700">详情页</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer">
-                        <input type="checkbox" id="series-batch-sap" checked class="w-4 h-4 rounded text-blue-600">
-                        <span class="font-semibold text-gray-700">69编码</span>
-                    </label>
+            <div class="space-y-3 log-scroll flex-1 pr-1">
+                <!-- 1. 选择应用目标 SKU 范围 -->
+                <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100 space-y-2">
+                    <div class="font-bold text-blue-900 flex justify-between items-center">
+                        <span>1. 选择要更新的目标规格（范围）：</span>
+                        <div class="space-x-2 text-[11px] font-normal">
+                            <button onclick="setBatchSkuSelectionMode('ALL')" class="text-blue-600 hover:underline">全选规格</button>
+                            <span class="text-gray-300">|</span>
+                            <button onclick="setBatchSkuSelectionMode('UNFINISHED')" class="text-blue-600 hover:underline">⚡ 仅未完成的规格</button>
+                            <span class="text-gray-300">|</span>
+                            <button onclick="setBatchSkuSelectionMode('NONE')" class="text-gray-400 hover:underline">清空</button>
+                        </div>
+                    </div>
+                    <div id="series-batch-sku-list" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 log-scroll bg-white p-2 rounded-lg border border-gray-200">
+                        <!-- 动态渲染规格复选框 -->
+                    </div>
                 </div>
-                <div class="flex items-center space-x-3 pt-2 border-t border-gray-200">
-                    <span class="text-gray-500">变更为：</span>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="radio" name="series-target-val" value="true" checked class="text-blue-600">
-                        <span class="text-green-700 font-bold">✅ 标记全部完成</span>
-                    </label>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="radio" name="series-target-val" value="false" class="text-gray-600">
-                        <span class="text-gray-500">⚪ 标记全部未完成</span>
-                    </label>
+
+                <!-- 2. 选择要同时变更的节点 -->
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                    <div class="font-bold text-gray-700">2. 选择要同时更新的节点（支持多选组合）：</div>
+                    <div class="flex items-center space-x-5">
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="series-batch-bom" checked class="w-4 h-4 rounded text-blue-600">
+                            <span class="font-semibold text-gray-800">财务BOM</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="series-batch-detail" checked class="w-4 h-4 rounded text-blue-600">
+                            <span class="font-semibold text-gray-800">详情页</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="series-batch-sap" checked class="w-4 h-4 rounded text-blue-600">
+                            <span class="font-semibold text-gray-800">69编码</span>
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-4 pt-1 text-[11px]">
+                        <span class="text-gray-500">变更为：</span>
+                        <label class="flex items-center space-x-1 cursor-pointer">
+                            <input type="radio" name="series-target-val" value="true" checked class="text-blue-600">
+                            <span class="text-green-700 font-bold">✅ 标记完成</span>
+                        </label>
+                        <label class="flex items-center space-x-1 cursor-pointer">
+                            <input type="radio" name="series-target-val" value="false" class="text-gray-600">
+                            <span class="text-gray-500">⚪ 标记未完成</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 3. 本次批量说明/备注 -->
+                <div>
+                    <label class="block text-gray-700 font-bold mb-1">3. 本次变动说明 / 审核备注 <span class="text-gray-400 font-normal">(一次输入，自动分发留痕)</span></label>
+                    <input type="text" id="series-batch-remark" placeholder="如: 产品今日提供前3款物料编码与BOM、视觉终版验收..." class="w-full border border-gray-300 rounded-lg p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-1">审核备注 / 说明 <span class="text-gray-400 font-normal">(将记入追溯审计)</span></label>
-                <input type="text" id="series-batch-remark" placeholder="如: 产品今日全量提供BOM与69码资料..." class="w-full border border-gray-300 rounded-lg p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeSeriesBatchNodesModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">取消</button>
-                <button onclick="confirmSeriesBatchNodesChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm">🚀 确认一键应用</button>
+            <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-2">
+                <span id="series-batch-selected-count-tip" class="text-gray-500 text-[11px]">已选 0 个规格</span>
+                <div class="space-x-2">
+                    <button onclick="closeSeriesBatchNodesModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">取消</button>
+                    <button onclick="confirmSeriesBatchNodesChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm">🚀 确认批量应用并留痕</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1253,7 +1279,7 @@
             }
         }
 
-        // ================= 📊 子变体 SKU 操作与弹窗留痕追溯 =================
+        // ================= 📊 子变体 SKU 操作与留痕 =================
         function quickEditSkuName(prodId, skuId) {
             const p = products.find(item => String(item.id) === String(prodId));
             const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
@@ -1403,21 +1429,63 @@
             syncMatrixToCloud();
         }
 
-        // ================= ⚡ 系列全量节点多选快捷更新 (同天全套资料一次性点亮) =================
+        // ================= ⚡ 全能选控批量节点维护 (支持全量/仅未完成/自由勾选SKU + 多节点组合 + 一次性备注) =================
         function openSeriesBatchNodesModal(prodId) {
             if (isReadOnlyMode) return;
             pendingSeriesBatchProdId = String(prodId);
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
 
-            document.getElementById("series-batch-subtitle").innerText = `系列: 【${p.name}】（共 ${p.skus.length} 个规格）`;
+            document.getElementById("series-batch-prod-badge").innerText = p.name;
+            
+            // 渲染 SKU 勾选列表
+            const container = document.getElementById("series-batch-sku-list");
+            container.innerHTML = "";
+            p.skus.forEach(s => {
+                const isAllDone = (s.bomOk && s.detailOk && s.sapOk);
+                const div = document.createElement("div");
+                div.className = "flex items-center justify-between p-1.5 rounded hover:bg-blue-50/50 border border-gray-100 text-xs";
+                div.innerHTML = `
+                    <label class="flex items-center space-x-1.5 cursor-pointer flex-1 min-w-0 pr-1">
+                        <input type="checkbox" name="batch-sku-item" value="${s.id}" ${!isAllDone ? 'checked' : ''} onchange="updateBatchSkuSelectedTip()" class="w-3.5 h-3.5 rounded text-blue-600">
+                        <span class="truncate font-medium text-gray-800" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+                    </label>
+                    <span class="text-[10px] font-mono px-1 rounded ${isAllDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}">${isAllDone ? '已全齐' : '缺资料'}</span>
+                `;
+                container.appendChild(div);
+            });
+
             document.getElementById("series-batch-bom").checked = true;
             document.getElementById("series-batch-detail").checked = true;
             document.getElementById("series-batch-sap").checked = true;
             document.getElementById("series-batch-remark").value = "";
 
+            updateBatchSkuSelectedTip();
             document.getElementById("series-batch-nodes-modal").classList.remove("hidden");
             lockBodyScroll(true);
+        }
+
+        function setBatchSkuSelectionMode(mode) {
+            const p = products.find(item => String(item.id) === String(pendingSeriesBatchProdId));
+            if (!p) return;
+            const checkboxes = document.querySelectorAll('input[name="batch-sku-item"]');
+            checkboxes.forEach(cb => {
+                const s = p.skus.find(x => String(x.id) === String(cb.value));
+                if (mode === 'ALL') {
+                    cb.checked = true;
+                } else if (mode === 'NONE') {
+                    cb.checked = false;
+                } else if (mode === 'UNFINISHED') {
+                    cb.checked = s ? !(s.bomOk && s.detailOk && s.sapOk) : true;
+                }
+            });
+            updateBatchSkuSelectedTip();
+        }
+
+        function updateBatchSkuSelectedTip() {
+            const checkedCount = document.querySelectorAll('input[name="batch-sku-item"]:checked').length;
+            const tip = document.getElementById("series-batch-selected-count-tip");
+            if (tip) tip.innerText = `已勾选 ${checkedCount} 个规格将执行本次批量变动`;
         }
 
         function closeSeriesBatchNodesModal() {
@@ -1432,6 +1500,14 @@
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
 
+            // 获取选中的 SKU 列表
+            const selectedSkuCheckboxes = document.querySelectorAll('input[name="batch-sku-item"]:checked');
+            const targetSkuIds = Array.from(selectedSkuCheckboxes).map(cb => String(cb.value));
+
+            if (targetSkuIds.length === 0) {
+                return alert("请至少勾选一个需要应用的目标规格！");
+            }
+
             const chkBOM = document.getElementById("series-batch-bom").checked;
             const chkDetail = document.getElementById("series-batch-detail").checked;
             const chkSAP = document.getElementById("series-batch-sap").checked;
@@ -1439,7 +1515,7 @@
             const remark = document.getElementById("series-batch-remark").value.trim();
 
             if (!chkBOM && !chkDetail && !chkSAP) {
-                return alert("请至少勾选一个需要更新的节点！");
+                return alert("请至少勾选一个需要更新的节点（财务BOM/详情页/69编码）！");
             }
 
             const nowTime = getNowString();
@@ -1449,18 +1525,20 @@
             if (chkSAP) changedLabels.push("69编码");
 
             p.skus.forEach(sku => {
-                if (!sku.nodeRecords) sku.nodeRecords = {};
-                if (chkBOM) {
-                    sku.bomOk = targetVal;
-                    sku.nodeRecords.bomOk = { status: targetVal, time: nowTime, remark: remark };
-                }
-                if (chkDetail) {
-                    sku.detailOk = targetVal;
-                    sku.nodeRecords.detailOk = { status: targetVal, time: nowTime, remark: remark };
-                }
-                if (chkSAP) {
-                    sku.sapOk = targetVal;
-                    sku.nodeRecords.sapOk = { status: targetVal, time: nowTime, remark: remark };
+                if (targetSkuIds.includes(String(sku.id))) {
+                    if (!sku.nodeRecords) sku.nodeRecords = {};
+                    if (chkBOM) {
+                        sku.bomOk = targetVal;
+                        sku.nodeRecords.bomOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
+                    if (chkDetail) {
+                        sku.detailOk = targetVal;
+                        sku.nodeRecords.detailOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
+                    if (chkSAP) {
+                        sku.sapOk = targetVal;
+                        sku.nodeRecords.sapOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
                 }
             });
 
@@ -1468,7 +1546,7 @@
             p.historyLogs.unshift({
                 time: nowTime,
                 type: "SERIES_BATCH_NODE",
-                desc: `批量更新[${changedLabels.join('/')}]为【${targetVal ? '完成' : '未完成'}】(${p.skus.length}个规格)${remark ? ' ｜ 备注: ' + remark : ''}`
+                desc: `批量更新[${changedLabels.join('/')}]为【${targetVal ? '完成' : '未完成'}】(${targetSkuIds.length}个规格)${remark ? ' ｜ 备注: ' + remark : ''}`
             });
 
             closeSeriesBatchNodesModal();
@@ -1512,7 +1590,7 @@
             lockBodyScroll(false); 
         }
 
-        // ================= 页面主表格渲染 (优化同排不折断排版) =================
+        // ================= 页面主表格渲染 =================
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
@@ -1573,7 +1651,6 @@
                     return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
                 };
 
-                // 量产截点健康度标签
                 let healthBadge = `<span class="text-gray-400 font-mono">-</span>`;
                 if (cleanProdDate) {
                     if (isArchived) {
@@ -1610,11 +1687,11 @@
                             <button onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline">📜 追溯</button>
                             <span class="text-gray-300">|</span>
                             ${!isReadOnlyMode && !isArchived ? `
-                                <button onclick="openSeriesBatchNodesModal('${prod.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded text-[11px] font-bold transition">⚡ 批量节点</button>
+                                <button onclick="openSeriesBatchNodesModal('${prod.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-bold transition">⚡ 批量节点</button>
                                 <span class="text-gray-300">|</span>
                             ` : ''}
                             ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
-                            ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-500 hover:underline">删除</button>` : ''}
+                            ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
                         </div>
                     </td>
                 `;
@@ -1631,12 +1708,12 @@
                                 <div class="flex justify-between items-center pb-2 border-b border-gray-100 flex-wrap gap-2 text-xs">
                                     <div class="flex items-center space-x-2">
                                         <span class="font-bold text-gray-700">子变体规格列表</span>
-                                        <span class="text-gray-400 text-[11px]">(共 ${prod.skus.length} 个规格 ｜ 点击复选框弹窗录入审核备注)</span>
+                                        <span class="text-gray-400 text-[11px]">(共 ${prod.skus.length} 个规格 ｜ 点击复选框单条留痕，或点右侧按钮批量分发)</span>
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         ${!isReadOnlyMode && !isArchived ? `
                                             <button onclick="openSeriesBatchNodesModal('${prod.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow-xs transition">
-                                                ⚡ 该系列全量节点一键多选点亮
+                                                ⚡ 批量多选节点点亮与备注
                                             </button>
                                             <button onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded text-[11px] font-bold transition">
                                                 + 添加新规格
@@ -1666,7 +1743,7 @@
                         };
 
                         subHtml += `
-                            <div class="flex items-center justify-between bg-gray-50/80 p-2 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
+                            <div class="flex items-center justify-between bg-gray-50/80 p-2.5 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
                                     ${!isReadOnlyMode && !isArchived ? `
