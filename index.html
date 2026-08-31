@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码与SKU编码智能联动 · 双Token独立鉴权 · 0秒极速响应</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码与SKU编码智能联动 · 多选节点备注弹窗 · 双Token独立鉴权</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -282,7 +282,6 @@
                         <button onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition text-xs flex-shrink-0 self-end">⚡ 开始核对</button>
                     </div>
 
-                    <!-- 缺失/未匹配提示看板 -->
                     <div id="barcode-missing-box" class="hidden bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs space-y-1.5">
                         <div class="flex justify-between items-center text-amber-800 font-bold flex-wrap gap-1">
                             <span id="barcode-missing-summary">📊 查询结果</span>
@@ -375,6 +374,70 @@
             <div class="flex justify-end space-x-2 mt-4">
                 <button onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
                 <button onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚡ 节点多选批量勾选与说明弹窗 -->
+    <div id="batch-node-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeBatchNodeModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
+                <span>📝 批量勾选节点与审核说明</span>
+                <button onclick="closeBatchNodeModal()" class="text-gray-400 hover:text-gray-700">✕</button>
+            </h2>
+            <p class="text-gray-500 mb-3 text-[11px]" id="batch-node-subtitle">已选择 0 个规格</p>
+            
+            <div class="space-y-3 bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3">
+                <div class="font-bold text-gray-700">选择要同时变更的节点：</div>
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="batch-check-bom" class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-medium text-gray-700">财务BOM</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="batch-check-detail" class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-medium text-gray-700">详情页</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="batch-check-sap" class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-medium text-gray-700">69编码</span>
+                    </label>
+                </div>
+                <div class="flex items-center space-x-3 pt-2 border-t border-gray-200">
+                    <span class="text-gray-500">变更为：</span>
+                    <label class="flex items-center space-x-1 cursor-pointer">
+                        <input type="radio" name="batch-target-val" value="true" checked class="text-blue-600">
+                        <span class="text-green-700 font-bold">✅ 标记完成</span>
+                    </label>
+                    <label class="flex items-center space-x-1 cursor-pointer">
+                        <input type="radio" name="batch-target-val" value="false" class="text-gray-600">
+                        <span class="text-gray-500">↩️ 取消完成</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-1">审核备注 / 说明 (方便后期追踪查找)</label>
+                <input type="text" id="batch-node-remark" placeholder="如: 财务已过审第2版、视觉终版已验收..." class="w-full border border-gray-300 rounded-lg p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeBatchNodeModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">取消</button>
+                <button onclick="confirmBatchNodeChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm">确认更新</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 节点单条快捷备注查看弹窗 -->
+    <div id="node-detail-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeNodeDetailModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
+                <span>💬 节点审核详细记录</span>
+                <button onclick="closeNodeDetailModal()" class="text-gray-400 hover:text-gray-700">✕</button>
+            </h2>
+            <div id="node-detail-content" class="space-y-2 py-2 text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-200 font-sans leading-relaxed"></div>
+            <div class="flex justify-end mt-3">
+                <button onclick="closeNodeDetailModal()" class="px-4 py-1.5 bg-gray-900 text-white rounded-lg font-bold">关闭</button>
             </div>
         </div>
     </div>
@@ -502,25 +565,6 @@
         </div>
     </div>
 
-    <!-- 节点勾选留痕弹窗 -->
-    <div id="check-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeCheckModal()">
-        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs">
-            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5">
-                <span id="check-action-icon">📝</span>
-                <span id="check-modal-title">节点变动记录</span>
-            </h2>
-            <p class="text-gray-500 mb-3 text-[11px]" id="check-modal-subtitle"></p>
-            <div class="mb-4">
-                <label class="block text-gray-600 font-medium mb-1">说明 / 审核备注 (选填)</label>
-                <input type="text" id="check-remark-input" placeholder="如: 财务已全过审、第2版确认..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeCheckModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="confirmNodeCheckChange()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">确认一键更新</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 追溯记录弹窗 -->
     <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 600px;">
@@ -595,6 +639,7 @@
         let fileSha = "";
         let expandedRows = {};
         let selectedProductIds = new Set();
+        let selectedSkuIdsMap = {}; // 存储按产品分组选中的 SKU 集合 { [prodId]: Set(skuId) }
         let currentEditingId = null;
         let currentBigNoteProdId = null;
         let isReadOnlyMode = false;
@@ -606,8 +651,7 @@
         let barcodeBatchQueryList = [];
         let barcodeMissingList = [];
         let pendingImportBarcodes = [];
-
-        let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
+        let pendingBatchProdId = null;
 
         function cleanConfigString(str) {
             if (!str) return "";
@@ -729,7 +773,8 @@
                     closeBigNoteModal();
                     closeLogsModal();
                     closeEditModal();
-                    closeCheckModal();
+                    closeBatchNodeModal();
+                    closeNodeDetailModal();
                     closeBarcodeEditModal();
                     if (!document.getElementById("barcode-batch-import-modal").classList.contains("hidden")) toggleBarcodeBatchImportModal();
                     if (!document.getElementById("config-modal").classList.contains("hidden")) toggleConfigModal();
@@ -738,7 +783,6 @@
             });
         }
 
-        // ================= 顶层工作区切换 =================
         function switchMainView(view) {
             currentMainView = view;
             const matrixModule = document.getElementById("module-matrix");
@@ -765,7 +809,6 @@
             if (view === 'BARCODES') renderBarcodeTable();
         }
 
-        // ================= Tab 切换（进行中 vs 已归档） =================
         function switchTab(tab) {
             currentTab = tab;
             const btnRunning = document.getElementById("tab-btn-running");
@@ -774,13 +817,13 @@
             const btnExportLabel = document.getElementById("btn-export-label");
 
             if (tab === 'RUNNING') {
-                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5";
-                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
                 if (filterHealthBox) filterHealthBox.style.display = "block";
                 if (btnExportLabel) btnExportLabel.innerText = "📥 导出进行中系列至 Excel";
             } else {
-                btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5";
-                btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5";
+                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
                 if (filterHealthBox) filterHealthBox.style.display = "none";
                 if (btnExportLabel) btnExportLabel.innerText = "📥 导出已归档系列至 Excel";
             }
@@ -940,7 +983,7 @@
             }
         }
 
-        // ================= 📥 69码 Excel 表格文件直接导入与刷写 =================
+        // ================= 📥 69码 Excel 表格文件导入 =================
         function handleBarcodeExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1037,7 +1080,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 📦 本地数据快照防丢备份与还原 =================
         function exportLocalBackupSnapshot() {
             const backupData = {
                 version: "2026.1",
@@ -1327,52 +1369,187 @@
             }
         }
 
-        function renderBarcodeTable() {
-            const tbody = document.getElementById("barcode-table-body");
-            tbody.innerHTML = "";
-            const keyword = (document.getElementById("barcode-search-input") ? document.getElementById("barcode-search-input").value.trim().toLowerCase() : "");
-
-            let matched = 0;
-            globalBarcodes.forEach((b, idx) => {
-                if (barcodeBatchQueryList.length > 0) {
-                    const matchBatch = barcodeBatchQueryList.some(q => 
-                        (b.barcode && b.barcode.toLowerCase().includes(q.toLowerCase())) ||
-                        (b.sapCode && b.sapCode.toLowerCase().includes(q.toLowerCase())) ||
-                        (b.name && b.name.toLowerCase().includes(q.toLowerCase()))
-                    );
-                    if (!matchBatch) return;
-                }
-
-                if (keyword) {
-                    const matchName = (b.name || "").toLowerCase().includes(keyword);
-                    const matchSap = (b.sapCode || "").toLowerCase().includes(keyword);
-                    const matchBar = (b.barcode || "").toLowerCase().includes(keyword);
-                    if (!matchName && !matchSap && !matchBar) return;
-                }
-                matched++;
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-indigo-50/40 transition";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-900">${escapeHtml(b.name)}</td>
-                    <td class="p-3 font-mono text-gray-700">${escapeHtml(b.sapCode || '-')}</td>
-                    <td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode)}</td>
-                    <td class="p-3 text-gray-500">${escapeHtml(b.remark || '-')}</td>
-                    <td class="p-3 text-right space-x-2 font-medium">
-                        ${!isReadOnlyMode ? `
-                            <button onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline">修改</button>
-                            <button onclick="removeBarcode(${idx})" class="text-red-500 hover:underline">删除</button>
-                        ` : '-'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById("barcode-table-count").innerText = `筛选出 ${matched} 条 / 共 ${globalBarcodes.length} 条`;
-            document.getElementById("nav-count-barcodes").innerText = globalBarcodes.length;
+        // ================= 📊 子变体 SKU 操作与多选批量节点更新 =================
+        function toggleSkuSelect(prodId, skuId, checked) {
+            if (!selectedSkuIdsMap[prodId]) selectedSkuIdsMap[prodId] = new Set();
+            checked ? selectedSkuIdsMap[prodId].add(String(skuId)) : selectedSkuIdsMap[prodId].delete(String(skuId));
+            updateSkuActionUI(prodId);
         }
 
-        // ================= 📊 新品矩阵渲染与联动 =================
+        function toggleAllSkusInProd(prodId, checked) {
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            if (!selectedSkuIdsMap[prodId]) selectedSkuIdsMap[prodId] = new Set();
+            if (checked) {
+                p.skus.forEach(s => selectedSkuIdsMap[prodId].add(String(s.id)));
+            } else {
+                selectedSkuIdsMap[prodId].clear();
+            }
+            renderTable();
+        }
+
+        function updateSkuActionUI(prodId) {
+            const set = selectedSkuIdsMap[prodId] || new Set();
+            const btn = document.getElementById(`btn-batch-sku-${prodId}`);
+            if (btn) {
+                btn.innerText = `📝 批量勾选节点与备注 (${set.size})`;
+                btn.disabled = (set.size === 0);
+                btn.className = (set.size > 0) ? "bg-blue-600 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow-xs hover:bg-blue-700 transition" : "bg-gray-200 text-gray-400 px-2.5 py-1 rounded text-[11px] font-medium cursor-not-allowed";
+            }
+        }
+
+        function openBatchNodeModal(prodId) {
+            if (isReadOnlyMode) return;
+            pendingBatchProdId = String(prodId);
+            const set = selectedSkuIdsMap[prodId] || new Set();
+            if (set.size === 0) return alert("请先在下方勾选至少一个规格 SKU！");
+
+            document.getElementById("batch-node-subtitle").innerText = `已选择 ${set.size} 个规格 SKU 进行批量状态与备注维护`;
+            document.getElementById("batch-check-bom").checked = false;
+            document.getElementById("batch-check-detail").checked = false;
+            document.getElementById("batch-check-sap").checked = false;
+            document.getElementById("batch-node-remark").value = "";
+
+            document.getElementById("batch-node-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeBatchNodeModal() {
+            document.getElementById("batch-node-modal").classList.add("hidden");
+            pendingBatchProdId = null;
+            lockBodyScroll(false);
+        }
+
+        function confirmBatchNodeChange() {
+            if (!pendingBatchProdId) return;
+            const prodId = pendingBatchProdId;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+
+            const chkBOM = document.getElementById("batch-check-bom").checked;
+            const chkDetail = document.getElementById("batch-check-detail").checked;
+            const chkSAP = document.getElementById("batch-check-sap").checked;
+            const targetVal = (document.querySelector('input[name="batch-target-val"]:checked').value === "true");
+            const remark = document.getElementById("batch-node-remark").value.trim();
+
+            if (!chkBOM && !chkDetail && !chkSAP) {
+                return alert("请勾选至少一个需要变更的节点（财务BOM/详情页/69编码）！");
+            }
+
+            const targetSkuIds = Array.from(selectedSkuIdsMap[prodId] || []);
+            const nowTime = getNowString();
+            let changedNodes = [];
+
+            p.skus.forEach(sku => {
+                if (targetSkuIds.includes(String(sku.id))) {
+                    if (!sku.nodeRecords) sku.nodeRecords = {};
+                    if (chkBOM) {
+                        sku.bomOk = targetVal;
+                        sku.nodeRecords.bomOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
+                    if (chkDetail) {
+                        sku.detailOk = targetVal;
+                        sku.nodeRecords.detailOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
+                    if (chkSAP) {
+                        sku.sapOk = targetVal;
+                        sku.nodeRecords.sapOk = { status: targetVal, time: nowTime, remark: remark };
+                    }
+                }
+            });
+
+            if (chkBOM) changedNodes.push("财务BOM");
+            if (chkDetail) changedNodes.push("详情页");
+            if (chkSAP) changedNodes.push("69编码");
+
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: "BATCH_NODE",
+                desc: `批量更新[${changedNodes.join('/')}]为【${targetVal ? '完成' : '取消'}】(${targetSkuIds.length}个SKU)${remark ? ' 备注: ' + remark : ''}`
+            });
+
+            closeBatchNodeModal();
+            renderTable();
+            syncMatrixToCloud();
+        }
+
+        function showNodeDetailModal(prodId, skuId, key, label) {
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
+            if (!sku) return;
+
+            const record = (sku.nodeRecords && sku.nodeRecords[key]) ? sku.nodeRecords[key] : null;
+            const contentEl = document.getElementById("node-detail-content");
+
+            contentEl.innerHTML = `
+                <div>• <strong>所属系列</strong>: ${escapeHtml(p.name)}</div>
+                <div>• <strong>规格名称</strong>: ${escapeHtml(sku.name)}</div>
+                <div>• <strong>当前节点</strong>: <span class="font-bold text-blue-700">${label}</span></div>
+                <div>• <strong>节点状态</strong>: ${sku[key] ? '<span class="text-green-700 font-bold">✅ 已完成</span>' : '<span class="text-gray-400">⚪ 未完成</span>'}</div>
+                <div>• <strong>记录时间</strong>: ${record ? record.time : '无'}</div>
+                <div class="pt-1 border-t border-gray-200 mt-1">• <strong>审核备注说明</strong>: <span class="text-indigo-800 font-medium">${record && record.remark ? escapeHtml(record.remark) : '<span class="text-gray-400 font-normal">暂无说明备注</span>'}</span></div>
+            `;
+
+            document.getElementById("node-detail-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeNodeDetailModal() {
+            document.getElementById("node-detail-modal").classList.add("hidden");
+            lockBodyScroll(false);
+        }
+
+        function quickEditSkuName(prodId, skuId) {
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
+            if (!sku) return;
+            const newName = prompt("修改子变体 / SKU 名称:", sku.name);
+            if (newName && newName.trim() !== sku.name) {
+                const oldName = sku.name;
+                sku.name = newName.trim();
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `规格【${oldName}】更名为【${sku.name}】` });
+                renderTable();
+                syncMatrixToCloud();
+            }
+        }
+
+        function addNewSkuToProd(prodId) {
+            if (isReadOnlyMode) return;
+            const name = prompt("请输入新增的子规格名称:");
+            if (!name || !name.trim()) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+
+            p.skus.push({
+                id: "S_" + Date.now(),
+                name: name.trim(),
+                bomOk: false,
+                detailOk: false,
+                sapOk: false,
+                nodeRecords: {}
+            });
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: `新增规格【${name.trim()}】` });
+            expandedRows[p.id] = true;
+            renderTable();
+            syncMatrixToCloud();
+        }
+
+        function removeSku(prodId, skuId) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            if (confirm("确定删除该规格变体吗？")) {
+                p.skus = p.skus.filter(s => String(s.id) !== String(skuId));
+                if (!p.historyLogs) p.historyLogs = [];
+                p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "删除了规格变体" });
+                renderTable();
+                syncMatrixToCloud();
+            }
+        }
+
         function findMatchedBarcode(skuName) {
             if (!skuName || globalBarcodes.length === 0) return null;
             const sClean = skuName.replace(/[\s-_米]/g, '').toLowerCase();
@@ -1486,34 +1663,84 @@
                 `;
                 tbody.appendChild(tr);
 
+                // 展开渲染子变体列表
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
-                    subTr.className = "bg-gray-50/80";
-                    let subHtml = `<td colspan="9" class="p-3.5 pl-12"><div class="bg-white rounded-lg p-3.5 border border-gray-200 shadow-sm space-y-2">`;
+                    subTr.className = "bg-gray-50/90";
+                    const currentSelectedSkuSet = selectedSkuIdsMap[prod.id] || new Set();
+                    const isAllSkusChecked = (prod.skus.length > 0 && currentSelectedSkuSet.size === prod.skus.length);
+
+                    let subHtml = `
+                        <td colspan="9" class="p-3.5 pl-10">
+                            <div class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm space-y-2.5">
+                                <div class="flex justify-between items-center pb-2 border-b border-gray-100 flex-wrap gap-2 text-xs">
+                                    <div class="flex items-center space-x-3">
+                                        <label class="flex items-center space-x-1.5 cursor-pointer font-bold text-gray-700">
+                                            <input type="checkbox" onchange="toggleAllSkusInProd('${prod.id}', this.checked)" ${isAllSkusChecked ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                            <span>全选规格变体</span>
+                                        </label>
+                                        <span class="text-gray-400 text-[11px]">共 ${prod.skus.length} 个规格</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        ${!isReadOnlyMode && !isArchived ? `
+                                            <button id="btn-batch-sku-${prod.id}" onclick="openBatchNodeModal('${prod.id}')" class="${currentSelectedSkuSet.size > 0 ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'} px-2.5 py-1 rounded text-[11px] font-bold shadow-xs transition">
+                                                📝 批量勾选节点与备注 (${currentSelectedSkuSet.size})
+                                            </button>
+                                            <button onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-1 rounded text-[11px] font-bold transition">
+                                                + 添加新规格
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                    `;
+
                     prod.skus.forEach(sku => {
+                        const isSkuChecked = currentSelectedSkuSet.has(String(sku.id));
                         const matchedBar = findMatchedBarcode(sku.name);
+                        
                         let autoLinkTag = "";
-                        if (matchedBar && !sku.sapOk && !isReadOnlyMode) {
-                            autoLinkTag = `<button onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold transition">🏷️ 发现 69 码: ${matchedBar.barcode} (点击点亮)</button>`;
+                        if (matchedBar && !sku.sapOk && !isReadOnlyMode && !isArchived) {
+                            autoLinkTag = `<button onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-1.5 py-0.2 rounded text-[10px] font-bold transition">🏷️ 匹配69码: ${matchedBar.barcode} (点亮)</button>`;
                         } else if (matchedBar) {
                             autoLinkTag = `<span class="text-gray-400 font-mono text-[10px]">🏷️ ${matchedBar.barcode}</span>`;
                         }
 
+                        // 生成节点标签与备注提示
+                        const renderNodeBadge = (key, label, isOk) => {
+                            const hasRecord = (sku.nodeRecords && sku.nodeRecords[key] && sku.nodeRecords[key].remark);
+                            return `
+                                <div class="flex items-center space-x-1">
+                                    <label class="flex items-center space-x-1 cursor-pointer">
+                                        <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', '${key}', '${label}', this)"`} ${isOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">
+                                        <span class="${isOk ? 'text-green-700 font-bold' : 'text-gray-500'} text-xs">${label}</span>
+                                    </label>
+                                    ${hasRecord ? `<button onclick="showNodeDetailModal('${prod.id}', '${sku.id}', '${key}', '${label}')" class="text-indigo-600 hover:text-indigo-800 text-[11px]" title="点击查看审核说明">💬</button>` : ''}
+                                </div>
+                            `;
+                        };
+
                         subHtml += `
-                            <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded border border-gray-200 text-xs flex-wrap gap-2">
+                            <div class="flex items-center justify-between bg-gray-50/80 p-2 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
                                 <div class="flex items-center space-x-2">
+                                    ${!isReadOnlyMode && !isArchived ? `<input type="checkbox" onchange="toggleSkuSelect('${prod.id}', '${sku.id}', this.checked)" ${isSkuChecked ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600">` : ''}
                                     <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
+                                    ${!isReadOnlyMode && !isArchived ? `
+                                        <button onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[10px]" title="修改规格名称">✏️</button>
+                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[10px]" title="删除规格">🗑️</button>
+                                    ` : ''}
                                     ${autoLinkTag}
                                 </div>
-                                <div class="flex items-center space-x-6">
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'bomOk', '财务BOM', this)"`} ${sku.bomOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.bomOk ? 'text-green-700 font-bold' : 'text-gray-500'}">财务BOM</span></label>
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'detailOk', '详情页', this)"`} ${sku.detailOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.detailOk ? 'text-green-700 font-bold' : 'text-gray-500'}">详情页</span></label>
-                                    <label class="flex items-center space-x-1.5"><input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', 'sapOk', '69编码', this)"`} ${sku.sapOk ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600"><span class="${sku.sapOk ? 'text-green-700 font-bold' : 'text-gray-500'}">69编码</span></label>
+                                <div class="flex items-center space-x-5">
+                                    ${renderNodeBadge('bomOk', '财务BOM', sku.bomOk)}
+                                    ${renderNodeBadge('detailOk', '详情页', sku.detailOk)}
+                                    ${renderNodeBadge('sapOk', '69编码', sku.sapOk)}
                                 </div>
                             </div>
                         `;
                     });
-                    subHtml += `</div></td>`;
+
+                    subHtml += `</div></div></td>`;
                     subTr.innerHTML = subHtml;
                     tbody.appendChild(subTr);
                 }
@@ -1531,103 +1758,55 @@
             renderMemos();
         }
 
-        // ================= 🤖 AI 助手 =================
-        function applyQuickPrompt(type) {
-            const input = document.getElementById("ai-user-prompt");
-            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
-            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
-            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
-            submitUserDemandToAI();
-        }
+        function triggerSkuNodeCheck(prodId, skuId, key, label, checkboxEl) {
+            if (isReadOnlyMode) { checkboxEl.checked = !checkboxEl.checked; return; }
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
+            if (!sku) return;
+            const targetVal = checkboxEl.checked;
+            
+            // 简单更新并记录时间戳
+            sku[key] = targetVal;
+            if (!sku.nodeRecords) sku.nodeRecords = {};
+            sku.nodeRecords[key] = { status: targetVal, time: getNowString(), remark: sku.nodeRecords[key] ? sku.nodeRecords[key].remark : "" };
 
-        function submitUserDemandToAI() {
-            const input = document.getElementById("ai-user-prompt");
-            const demandText = input.value.trim();
-            if (!demandText) return;
-
-            appendChatMessage('USER', escapeHtml(demandText));
-            input.value = "";
-
-            const today = new Date().toISOString().split('T')[0];
-            let runningList = products.filter(p => p.status !== '已归档');
-            let delayedList = [];
-            let nearDaysList = [];
-
-            runningList.forEach(p => {
-                const cleanDate = normalizeDate(p.prodDate);
-                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
-                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
-                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: getNowString(),
+                type: "NODE_UPDATE",
+                desc: `规格【${sku.name}】的节点【${label}】更新为【${targetVal ? '完成' : '未完成'}】`
             });
 
-            setTimeout(() => {
-                let replyHtml = "";
-                if (demandText.includes("诊断") || demandText.includes("卡点")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
-                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
-                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
-                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
-                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
-                    `;
-                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
-                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
-                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
-                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
-                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
-                        </div>
-                    `;
-                } else {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
-                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
-                    `;
-                }
-                appendChatMessage('BOT', replyHtml);
-            }, 300);
+            renderTable();
+            syncMatrixToCloud();
         }
 
-        function toggleAIChatDrawer() {
-            const drawer = document.getElementById("ai-chat-drawer");
-            drawer.classList.toggle("hidden");
-            lockBodyScroll(!drawer.classList.contains("hidden"));
+        function triggerBatchColumnCheck(prodId, key, label) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p || !p.skus || p.skus.length === 0) return;
+            const isAll = p.skus.every(s => !!s[key]);
+            const targetVal = !isAll;
+            const nowTime = getNowString();
+
+            p.skus.forEach(sku => {
+                sku[key] = targetVal;
+                if (!sku.nodeRecords) sku.nodeRecords = {};
+                sku.nodeRecords[key] = { status: targetVal, time: nowTime, remark: "表头批量一键切换" };
+            });
+
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: "BATCH_COLUMN",
+                desc: `表头一键将全部规格的【${label}】变更为【${targetVal ? '完成' : '取消'}】`
+            });
+
+            renderTable();
+            syncMatrixToCloud();
         }
 
-        function clearAIChatHistory() {
-            const container = document.getElementById("ai-chat-messages");
-            container.innerHTML = `
-                <div class="flex items-start space-x-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                    <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">
-                        已清空历史对话。请输入您新的运营需求～
-                    </div>
-                </div>
-            `;
-        }
-
-        function appendChatMessage(sender, textHtml) {
-            const container = document.getElementById("ai-chat-messages");
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `flex items-start space-x-2 ${sender === 'USER' ? 'justify-end' : 'justify-start'}`;
-
-            if (sender === 'USER') {
-                msgDiv.innerHTML = `
-                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-xs break-words">${textHtml}</div>
-                    <div class="w-6 h-6 rounded-md bg-gray-800 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">我</div>
-                `;
-            } else {
-                msgDiv.innerHTML = `
-                    <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                    <div class="ai-chat-bubble-bot p-3.5 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs break-words space-y-2">${textHtml}</div>
-                `;
-            }
-            container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // ================= 辅助小工具 =================
+        // ================= 基础小工具 =================
         function applyReadOnlyUI() {
             document.getElementById("role-badge").innerText = "👀 访客只读";
             document.getElementById("role-badge").className = "text-[10px] sm:text-xs bg-gray-100 text-gray-700 border border-gray-300 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
@@ -1750,6 +1929,30 @@
             }
         }
 
+        function updateCategoryFilterOptions() {
+            const selectEl = document.getElementById("filter-category");
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            let categories = new Set();
+            products.forEach(p => { if (p.category && p.category.trim()) categories.add(p.category.trim()); });
+            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
+            Array.from(categories).sort().forEach(cat => {
+                const opt = document.createElement("option");
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === currentVal) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
+        }
+
         function lockBodyScroll(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
         function toggleConfigModal() { const m = document.getElementById("config-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
 
@@ -1781,6 +1984,51 @@
             return safe;
         }
 
+        function toggleProductSelect(prodId, checked) { checked ? selectedProductIds.add(String(prodId)) : selectedProductIds.delete(String(prodId)); updateSelectAllCheckboxState(); }
+        function toggleSelectAll(checked) {
+            products.forEach(p => {
+                const isArchived = (p.status === "已归档");
+                if ((currentTab === 'RUNNING' && !isArchived) || (currentTab === 'ARCHIVED' && isArchived)) {
+                    checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id));
+                }
+            });
+            renderTable();
+        }
+
+        function updateSelectAllCheckboxState() {
+            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
+            const selectedCount = currentTabProducts.filter(p => selectedProductIds.has(String(p.id))).length;
+            const isAll = (currentTabProducts.length > 0 && selectedCount === currentTabProducts.length);
+            const isInd = (selectedCount > 0 && selectedCount < currentTabProducts.length);
+
+            const sEl = document.getElementById("select-all-checkbox");
+            const msEl = document.getElementById("mobile-select-all");
+            if (sEl) { sEl.checked = isAll; sEl.indeterminate = isInd; }
+            if (msEl) { msEl.checked = isAll; msEl.indeterminate = isInd; }
+            const mcEl = document.getElementById("mobile-selected-count");
+            if (mcEl) mcEl.innerText = `已选 ${selectedCount} 项`;
+        }
+
+        function exportSelectedToExcel() {
+            const currentTabProducts = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档');
+            let targetProducts = selectedProductIds.size > 0 ? currentTabProducts.filter(p => selectedProductIds.has(String(p.id))) : currentTabProducts;
+            if (targetProducts.length === 0) return alert("当前视图无数据可导出！");
+
+            let csvRows = ["产品系列,子变体SKU,品类,量产时间,状态,财务BOM,详情页,69编码,备注,大备注"];
+            targetProducts.forEach(prod => {
+                (prod.skus || []).forEach(sku => {
+                    csvRows.push(`"${prod.name}","${sku.name}","${prod.category}","${normalizeDate(prod.prodDate)}","${prod.status}","${sku.bomOk ? '已完成' : '未完成'}","${sku.detailOk ? '已完成' : '未完成'}","${sku.sapOk ? '已完成' : '未完成'}","${prod.remark || ''}","${(prod.bigNote || '').replace(/"/g, '""')}"`);
+                });
+            });
+            const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `新品推进矩阵_${currentTab === 'RUNNING' ? '进行中' : '已归档'}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
         function removeProduct(prodId) {
             if (confirm("确定彻底删除该产品系列吗？")) {
@@ -1789,6 +2037,63 @@
                 renderTable();
                 syncMatrixToCloud();
             }
+        }
+
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
+            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
+            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
+            submitUserDemandToAI();
+        }
+
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const demandText = input.value.trim();
+            if (!demandText) return;
+
+            appendChatMessage('USER', escapeHtml(demandText));
+            input.value = "";
+
+            const today = new Date().toISOString().split('T')[0];
+            let runningList = products.filter(p => p.status !== '已归档');
+            let delayedList = [];
+            let nearDaysList = [];
+
+            runningList.forEach(p => {
+                const cleanDate = normalizeDate(p.prodDate);
+                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
+                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
+                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
+            });
+
+            setTimeout(() => {
+                let replyHtml = "";
+                if (demandText.includes("诊断") || demandText.includes("卡点")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
+                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
+                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
+                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
+                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
+                    `;
+                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
+                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
+                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
+                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
+                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
+                        </div>
+                    `;
+                } else {
+                    replyHtml = `
+                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
+                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
+                    `;
+                }
+                appendChatMessage('BOT', replyHtml);
+            }, 300);
         }
 
         function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
