@@ -50,7 +50,7 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 节点留痕追溯 · 69码与SKU编码联动 · 双Token独立鉴权</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 节点批量留痕追溯 · 69码与SKU编码联动 · 双Token独立鉴权</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
@@ -179,23 +179,23 @@
                 </div>
             </div>
 
-            <!-- 桌面表格视图 -->
+            <!-- 桌面表格视图 (加宽各关键列，确保同行规整单行显示) -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
-                    <table class="w-full text-left text-xs text-gray-700 min-w-[980px]">
+                    <table class="w-full text-left text-xs text-gray-700 min-w-[1100px]">
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
                                 <th class="p-3 w-8 text-center">
                                     <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
                                 </th>
                                 <th class="p-3 w-10 text-center">展开</th>
-                                <th class="p-3 min-w-[180px]">产品型号 / 系列</th>
-                                <th class="p-3 min-w-[80px]">品类</th>
-                                <th class="p-3 min-w-[140px]">量产大货截点 (健康度)</th>
-                                <th class="p-3 min-w-[270px]">三大核心节点总进度 (点击弹窗全选点亮)</th>
-                                <th class="p-3 min-w-[180px]">排期/变动说明/大备注</th>
-                                <th class="p-3 min-w-[100px]">状态</th>
-                                <th class="p-3 text-right min-w-[170px]">操作与审计</th>
+                                <th class="p-3 min-w-[170px]">产品型号 / 系列</th>
+                                <th class="p-3 min-w-[70px]">品类</th>
+                                <th class="p-3 min-w-[150px] whitespace-nowrap">量产大货截点 (健康度)</th>
+                                <th class="p-3 min-w-[280px]">三大核心节点总进度 (点亮留痕)</th>
+                                <th class="p-3 min-w-[190px] whitespace-nowrap">排期/变动说明/大备注</th>
+                                <th class="p-3 min-w-[90px]">状态</th>
+                                <th class="p-3 text-right min-w-[220px] whitespace-nowrap">操作与审计</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
@@ -398,7 +398,57 @@
         </div>
     </div>
 
-    <!-- 📜 生命周期变更追溯弹窗 (彻底修复点击无响应) -->
+    <!-- ⚡ 系列全量节点多选批量快捷更新弹窗 (支持同天全套提供一次性打勾) -->
+    <div id="series-batch-nodes-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeSeriesBatchNodesModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
+                <span>⚡ 系列全量节点批量快捷维护</span>
+                <button onclick="closeSeriesBatchNodesModal()" class="text-gray-400 hover:text-gray-700">✕</button>
+            </h2>
+            <p class="text-gray-500 mb-3 text-[11px]" id="series-batch-subtitle"></p>
+            
+            <div class="space-y-3 bg-gray-50 p-3 rounded-xl border border-gray-200 mb-3">
+                <div class="font-bold text-gray-700">选择要同时变更的节点（支持多选/全选）：</div>
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="series-batch-bom" checked class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-semibold text-gray-700">财务BOM</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="series-batch-detail" checked class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-semibold text-gray-700">详情页</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input type="checkbox" id="series-batch-sap" checked class="w-4 h-4 rounded text-blue-600">
+                        <span class="font-semibold text-gray-700">69编码</span>
+                    </label>
+                </div>
+                <div class="flex items-center space-x-3 pt-2 border-t border-gray-200">
+                    <span class="text-gray-500">变更为：</span>
+                    <label class="flex items-center space-x-1 cursor-pointer">
+                        <input type="radio" name="series-target-val" value="true" checked class="text-blue-600">
+                        <span class="text-green-700 font-bold">✅ 标记全部完成</span>
+                    </label>
+                    <label class="flex items-center space-x-1 cursor-pointer">
+                        <input type="radio" name="series-target-val" value="false" class="text-gray-600">
+                        <span class="text-gray-500">⚪ 标记全部未完成</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-1">审核备注 / 说明 <span class="text-gray-400 font-normal">(将记入追溯审计)</span></label>
+                <input type="text" id="series-batch-remark" placeholder="如: 产品今日全量提供BOM与69码资料..." class="w-full border border-gray-300 rounded-lg p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeSeriesBatchNodesModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">取消</button>
+                <button onclick="confirmSeriesBatchNodesChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm">🚀 确认一键应用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 生命周期变更追溯弹窗 -->
     <div id="logs-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col" style="height: 82vh; max-height: 600px;">
             <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b border-gray-200 flex-shrink-0 bg-white rounded-t-2xl">
@@ -483,8 +533,8 @@
         let barcodeBatchQueryList = [];
         let barcodeMissingList = [];
         let pendingImportBarcodes = [];
+        let pendingSeriesBatchProdId = null;
 
-        // 统一节点变动暂存对象（单选或批量点亮）
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
 
         function cleanConfigString(str) {
@@ -608,6 +658,7 @@
                     closeLogsModal();
                     closeEditModal();
                     closeCheckModal();
+                    closeSeriesBatchNodesModal();
                     closeBarcodeEditModal();
                     if (!document.getElementById("barcode-batch-import-modal").classList.contains("hidden")) toggleBarcodeBatchImportModal();
                     if (!document.getElementById("config-modal").classList.contains("hidden")) toggleConfigModal();
@@ -816,7 +867,7 @@
             }
         }
 
-        // ================= 📥 69码 Excel 表格文件直接导入与刷写 =================
+        // ================= 📥 69码 Excel 表格文件导入 =================
         function handleBarcodeExcelUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -913,7 +964,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 📦 本地数据快照防丢备份与还原 =================
         function exportLocalBackupSnapshot() {
             const backupData = {
                 version: "2026.1",
@@ -1284,7 +1334,7 @@
             if (!sku) return;
             
             const targetVal = checkboxEl.checked;
-            checkboxEl.checked = !targetVal; // 暂缓DOM变动，等待确认
+            checkboxEl.checked = !targetVal;
 
             pendingCheck = { prodId: String(prodId), skuIds: [String(skuId)], key, label, targetVal };
             document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️";
@@ -1353,7 +1403,80 @@
             syncMatrixToCloud();
         }
 
-        // ================= 📜 追溯弹窗渲染 (彻底修复) =================
+        // ================= ⚡ 系列全量节点多选快捷更新 (同天全套资料一次性点亮) =================
+        function openSeriesBatchNodesModal(prodId) {
+            if (isReadOnlyMode) return;
+            pendingSeriesBatchProdId = String(prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+
+            document.getElementById("series-batch-subtitle").innerText = `系列: 【${p.name}】（共 ${p.skus.length} 个规格）`;
+            document.getElementById("series-batch-bom").checked = true;
+            document.getElementById("series-batch-detail").checked = true;
+            document.getElementById("series-batch-sap").checked = true;
+            document.getElementById("series-batch-remark").value = "";
+
+            document.getElementById("series-batch-nodes-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeSeriesBatchNodesModal() {
+            document.getElementById("series-batch-nodes-modal").classList.add("hidden");
+            pendingSeriesBatchProdId = null;
+            lockBodyScroll(false);
+        }
+
+        function confirmSeriesBatchNodesChange() {
+            if (!pendingSeriesBatchProdId) return;
+            const prodId = pendingSeriesBatchProdId;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+
+            const chkBOM = document.getElementById("series-batch-bom").checked;
+            const chkDetail = document.getElementById("series-batch-detail").checked;
+            const chkSAP = document.getElementById("series-batch-sap").checked;
+            const targetVal = (document.querySelector('input[name="series-target-val"]:checked').value === "true");
+            const remark = document.getElementById("series-batch-remark").value.trim();
+
+            if (!chkBOM && !chkDetail && !chkSAP) {
+                return alert("请至少勾选一个需要更新的节点！");
+            }
+
+            const nowTime = getNowString();
+            let changedLabels = [];
+            if (chkBOM) changedLabels.push("财务BOM");
+            if (chkDetail) changedLabels.push("详情页");
+            if (chkSAP) changedLabels.push("69编码");
+
+            p.skus.forEach(sku => {
+                if (!sku.nodeRecords) sku.nodeRecords = {};
+                if (chkBOM) {
+                    sku.bomOk = targetVal;
+                    sku.nodeRecords.bomOk = { status: targetVal, time: nowTime, remark: remark };
+                }
+                if (chkDetail) {
+                    sku.detailOk = targetVal;
+                    sku.nodeRecords.detailOk = { status: targetVal, time: nowTime, remark: remark };
+                }
+                if (chkSAP) {
+                    sku.sapOk = targetVal;
+                    sku.nodeRecords.sapOk = { status: targetVal, time: nowTime, remark: remark };
+                }
+            });
+
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: "SERIES_BATCH_NODE",
+                desc: `批量更新[${changedLabels.join('/')}]为【${targetVal ? '完成' : '未完成'}】(${p.skus.length}个规格)${remark ? ' ｜ 备注: ' + remark : ''}`
+            });
+
+            closeSeriesBatchNodesModal();
+            renderTable();
+            syncMatrixToCloud();
+        }
+
+        // ================= 📜 追溯弹窗渲染 =================
         function openLogsModal(prodId) {
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return alert("未找到该产品记录！");
@@ -1389,7 +1512,7 @@
             lockBodyScroll(false); 
         }
 
-        // ================= 页面主表格渲染 =================
+        // ================= 页面主表格渲染 (优化同排不折断排版) =================
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
@@ -1447,19 +1570,20 @@
                     let all = (tot > 0 && c === tot), none = (c === 0);
                     let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold hover:bg-emerald-100" : (none ? "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold hover:bg-amber-100");
                     let click = (!isReadOnlyMode && !isArchived) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;" title="点击弹窗全选点亮/取消"` : '';
-                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
+                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all ? '✅' : (none ? '⚪' : '⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
                 };
 
+                // 量产截点健康度标签
                 let healthBadge = `<span class="text-gray-400 font-mono">-</span>`;
                 if (cleanProdDate) {
                     if (isArchived) {
-                        healthBadge = `<span class="font-mono text-gray-400">${cleanProdDate}</span>`;
+                        healthBadge = `<span class="font-mono text-gray-400 whitespace-nowrap">${cleanProdDate}</span>`;
                     } else if (diffDays < 0) {
-                        healthBadge = `<div class="font-mono"><span class="text-red-600 font-bold">${cleanProdDate}</span> <span class="bg-red-100 text-red-700 px-1 py-0.2 rounded text-[10px] font-bold">🚨超期${Math.abs(diffDays)}天</span></div>`;
+                        healthBadge = `<div class="font-mono whitespace-nowrap"><span class="text-red-600 font-bold">${cleanProdDate}</span> <span class="bg-red-100 text-red-700 px-1 py-0.2 rounded text-[10px] font-bold">🚨超期${Math.abs(diffDays)}天</span></div>`;
                     } else if (diffDays <= 7) {
-                        healthBadge = `<div class="font-mono"><span class="text-amber-600 font-bold">${cleanProdDate}</span> <span class="bg-amber-100 text-amber-800 px-1 py-0.2 rounded text-[10px] font-bold">⚠️剩${diffDays}天</span></div>`;
+                        healthBadge = `<div class="font-mono whitespace-nowrap"><span class="text-amber-600 font-bold">${cleanProdDate}</span> <span class="bg-amber-100 text-amber-800 px-1 py-0.2 rounded text-[10px] font-bold">⚠️剩${diffDays}天</span></div>`;
                     } else {
-                        healthBadge = `<div class="font-mono text-gray-700">${cleanProdDate} <span class="text-green-600 text-[10px]">(余${diffDays}天)</span></div>`;
+                        healthBadge = `<div class="font-mono text-gray-700 whitespace-nowrap">${cleanProdDate} <span class="text-green-600 text-[10px]">(余${diffDays}天)</span></div>`;
                     }
                 }
 
@@ -1470,15 +1594,28 @@
                     <td class="p-3 text-center"><button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold">${isExpanded ? '▼' : '▶'}</button></td>
                     <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px]">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
                     <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
-                    <td class="p-3">${healthBadge}</td>
-                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-wrap gap-y-1">${getBadge('财务BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
-                    <td class="p-3">${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px]">📝 ${escapeHtml(prod.remark)}</span>` : ''} ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">📌 备忘</button>` : ''}</td>
+                    <td class="p-3 whitespace-nowrap">${healthBadge}</td>
+                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-nowrap">${getBadge('财务BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
+                    <td class="p-3 whitespace-nowrap">
+                        <div class="flex items-center space-x-1.5">
+                            ${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px] inline-flex items-center max-w-[130px] truncate" title="${escapeHtml(prod.remark)}">📝 ${escapeHtml(prod.remark)}</span>` : ''}
+                            ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px] font-bold">📌 备忘</button>` : ''}
+                        </div>
+                    </td>
                     <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
-                    <td class="p-3 text-right space-x-2 font-medium">
-                        <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
-                        <button onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline">📜 追溯</button>
-                        ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
-                        ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-600 hover:underline">删除</button>` : ''}
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end space-x-2 font-medium">
+                            <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                            <span class="text-gray-300">|</span>
+                            <button onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline">📜 追溯</button>
+                            <span class="text-gray-300">|</span>
+                            ${!isReadOnlyMode && !isArchived ? `
+                                <button onclick="openSeriesBatchNodesModal('${prod.id}')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded text-[11px] font-bold transition">⚡ 批量节点</button>
+                                <span class="text-gray-300">|</span>
+                            ` : ''}
+                            ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
+                            ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-500 hover:underline">删除</button>` : ''}
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1498,6 +1635,9 @@
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         ${!isReadOnlyMode && !isArchived ? `
+                                            <button onclick="openSeriesBatchNodesModal('${prod.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow-xs transition">
+                                                ⚡ 该系列全量节点一键多选点亮
+                                            </button>
                                             <button onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded text-[11px] font-bold transition">
                                                 + 添加新规格
                                             </button>
@@ -1526,7 +1666,7 @@
                         };
 
                         subHtml += `
-                            <div class="flex items-center justify-between bg-gray-50/80 p-2.5 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
+                            <div class="flex items-center justify-between bg-gray-50/80 p-2 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
                                 <div class="flex items-center space-x-2">
                                     <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
                                     ${!isReadOnlyMode && !isArchived ? `
