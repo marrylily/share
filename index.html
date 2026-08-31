@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>WorkBuddy 电商运营一体化协同工作台</title>
+    <title>WorkBuddy 电商运营超级工作台</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -49,12 +49,12 @@
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · 独立价格中枢 · 双 Token 自动融合</p>
+                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5" id="header-desc">仓库新品矩阵 · Gist 69码库 · 独立价格中枢 · 双 Token 独立鉴权</p>
             </div>
             <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
                 <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
-                    <span id="auth-tag-text">检测连接中...</span>
+                    <span id="auth-tag-text">状态检测中</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
                     <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
@@ -169,118 +169,4 @@
                     <span id="stat-box-running">⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
                     <span>✅ 归档库: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
                 </div>
-                <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-                    <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
-                        <span id="btn-export-label">📥 导出当前视图至 Excel</span>
-                    </button>
-                    <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">检测中...</div>
-                </div>
-            </div>
-
-            <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-x-auto custom-scroll w-full">
-                    <table class="w-full text-left text-xs text-gray-700 min-w-[980px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
-                            <tr>
-                                <th class="p-3 w-8 text-center">
-                                    <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
-                                </th>
-                                <th class="p-3 w-10 text-center">展开</th>
-                                <th class="p-3 min-w-[180px]">产品型号 / 系列</th>
-                                <th class="p-3 min-w-[80px]">品类</th>
-                                <th class="p-3 min-w-[120px]">量产大货时间</th>
-                                <th class="p-3 min-w-[270px]">三大核心节点总进度 (折叠透视)</th>
-                                <th class="p-3 min-w-[180px]">排期/变动说明/大备注</th>
-                                <th class="p-3 min-w-[100px]">状态</th>
-                                <th class="p-3 text-right min-w-[170px]">操作与审计</th>
-                            </tr>
-                        </thead>
-                        <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="mobile-card-view space-y-3">
-                <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300">
-                        <span class="font-bold text-gray-700">全选当前视图</span>
-                    </label>
-                    <span class="text-gray-400 text-[11px]" id="mobile-selected-count">已选 0 项</span>
-                </div>
-                <div id="mobile-cards-container" class="space-y-3"></div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
-                <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-base sm:text-lg">📌</span>
-                        <h2 class="text-xs sm:text-sm font-bold text-gray-900">运营重要备忘 & 琐事消息速记板</h2>
-                        <span id="memo-count-tag" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">0 项提醒</span>
-                    </div>
-                    <button onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-xs text-gray-500 hover:text-gray-800">折叠 ▲</button>
-                </div>
-                <div id="memo-panel-body" class="pt-3 space-y-3">
-                    <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
-                        <select id="memo-priority" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none">
-                            <option value="🔥 紧急重要">🔥 紧急重要</option>
-                            <option value="⚡ 常规跟进" selected>⚡ 常规跟进</option>
-                            <option value="💡 琐事记录">💡 琐事记录</option>
-                        </select>
-                        <input type="text" id="memo-input" placeholder="输入待办/琐事提醒..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <button onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
-                            + 添加备忘
-                        </button>
-                    </div>
-                    <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1"></div>
-                    <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
-                        <span>💡 点击左侧复选框标为完成（自动删除线）；随矩阵全局同步。</span>
-                        <button id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline">清理已完成事项</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="module-barcodes" class="space-y-4 hidden">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
-                <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                    <div>
-                        <h2 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
-                            <span>🏷️ 69码与产品编码联动库</span>
-                            <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 数据实时接入</span>
-                        </h2>
-                        <p class="text-[11px] text-gray-400 mt-0.5">自动同步 69code_data.json，支持反查与弹窗修改</p>
-                    </div>
-                    <button onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition">+ 录入新编码</button>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="输入 69码 / 产品名称 / 物料编码..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <div class="text-right text-gray-400 self-center text-[11px]" id="barcode-table-count">共 0 条编码映射</div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-xs">
-                <div class="overflow-x-auto custom-scroll">
-                    <table class="w-full text-left text-gray-700 min-w-[750px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
-                            <tr>
-                                <th class="p-3 min-w-[160px]">产品名称 / 规格型号</th>
-                                <th class="p-3 min-w-[140px]">SAP 产品编码</th>
-                                <th class="p-3 min-w-[140px]">69 商品条形码</th>
-                                <th class="p-3 min-w-[150px]">备注说明 / 状态</th>
-                                <th class="p-3 text-right min-w-[110px]">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="barcode-table-body" class="divide-y divide-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="module-prices" class="space-y-4 hidden">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
-                    <div>
-                        <h2 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
-                            <span>💰 电商全渠道价格中枢</span>
-                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded font-normal">独立文档维护</span>
+                <div class="flex items-center space-x-2 w-full md:w
