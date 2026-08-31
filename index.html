@@ -532,11 +532,11 @@
         </div>
     </div>
 
-    <!-- ⚙️ 云端双 Token 独立配置弹窗 -->
+    <!-- ⚙️ 云端双 Token 配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
             <h2 class="text-sm font-bold text-gray-900 mb-2">⚙️ 双 Token 与多源云端配置</h2>
-            <p class="text-[11px] text-gray-400 mb-3">新品仓库与 69码 Gist 支持配置不同的 Token</p>
+            <p class="text-[11px] text-gray-400 mb-3">新品仓库与 69码 Gist 独立鉴权，互不干扰</p>
             <div class="space-y-2.5">
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">GitHub 用户名 (新品仓库用)</label>
@@ -590,6 +590,41 @@
         let currentEditingBarcodeIdx = null;
 
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
+
+        function normalizeMatrixData(raw) {
+            let pList = [], mList = [], pData = [];
+            if (Array.isArray(raw)) {
+                pList = raw;
+            } else if (raw && typeof raw === 'object') {
+                pList = raw.products || raw.items || raw.data || [];
+                mList = raw.memos || raw.globalMemos || [];
+                pData = raw.prices || [];
+            }
+            return {
+                products: pList.map(item => ({
+                    id: item.id || "P_" + Math.random(),
+                    name: item.name || item.title || "未命名系列",
+                    category: item.category || "常规新品",
+                    prodDate: item.prodDate || item.date || "",
+                    remark: item.remark || "",
+                    bigNote: item.bigNote || "",
+                    status: item.status || "进行中",
+                    archivedAt: item.archivedAt || null,
+                    createdAt: item.createdAt || "",
+                    historyLogs: item.historyLogs || [],
+                    skus: (item.skus || item.variants || []).map((s, idx) => ({
+                        id: s.id || "S_" + idx,
+                        name: s.name || s.skuName || "标配",
+                        bomOk: !!s.bomOk,
+                        detailOk: !!s.detailOk,
+                        sapOk: !!s.sapOk,
+                        nodeRecords: s.nodeRecords || {}
+                    }))
+                })),
+                memos: mList,
+                prices: pData
+            };
+        }
 
         function normalizeBarcodesData(raw) {
             let list = [];
@@ -1436,19 +1471,22 @@
             URL.revokeObjectURL(url);
         }
 
-        // ================= 🌐 双 Token 独立通信引擎 =================
+        // ================= 🌐 绝对独立的双 Token 通信引擎 =================
         async function fetchAllDualTokenData() {
             const owner = localStorage.getItem("wb_owner") || "marrylily";
             const repo = localStorage.getItem("wb_repo") || "my-tasks";
+            // 仓库专属 Token，若没单独配则退回通用 Token
             const tokenRepo = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token");
+            // Gist 专属 Token，若没单独配则退回通用 Token
             const tokenGist = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token");
             const gistBarcodes = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
             const gistPrices = localStorage.getItem("wb_gist_prices");
 
-            document.getElementById("sync-status").innerText = "拉取双 Token 数据...";
+            document.getElementById("sync-status").innerText = "拉取多源数据...";
             try {
                 let promises = [];
 
+                // 1. 独立拉取仓库新品矩阵 (使用仓库 Token)
                 if (owner && repo && tokenRepo) {
                     promises.push(
                         fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
@@ -1457,13 +1495,15 @@
                             if (data && data.content) {
                                 fileSha = data.sha;
                                 const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                                products = parsed.products || parsed;
-                                globalMemos = parsed.memos || [];
+                                let normalizedMatrix = normalizeMatrixData(parsed);
+                                products = normalizedMatrix.products;
+                                globalMemos = normalizedMatrix.memos;
                             }
-                        }).catch(console.error)
+                        }).catch(err => console.error("Repo fetch error:", err))
                     );
                 }
 
+                // 2. 独立拉取 69 码 Gist (使用 Gist Token)
                 if (gistBarcodes && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistBarcodes}`, {
@@ -1484,10 +1524,11 @@
                                     }
                                 }
                             }
-                        }).catch(console.error)
+                        }).catch(err => console.error("Gist barcodes fetch error:", err))
                     );
                 }
 
+                // 3. 独立拉取价格 Gist (使用 Gist Token)
                 if (gistPrices && tokenGist) {
                     promises.push(
                         fetch(`https://api.github.com/gists/${gistPrices}`, {
@@ -1507,13 +1548,13 @@
                                     }
                                 }
                             }
-                        }).catch(console.error)
+                        }).catch(err => console.error("Gist prices fetch error:", err))
                     );
                 }
 
                 await Promise.all(promises);
 
-                document.getElementById("sync-status").innerText = "双 Token 已同步 ✅";
+                document.getElementById("sync-status").innerText = "三源已同步 ✅";
                 document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
                 updateCategoryFilterOptions();
                 renderTable();
@@ -1536,8 +1577,9 @@
                         }).then(r => r.ok ? r.json() : null).then(data => {
                             if (data && data.content) {
                                 const parsed = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                                products = parsed.products || parsed;
-                                globalMemos = parsed.memos || [];
+                                let normalizedMatrix = normalizeMatrixData(parsed);
+                                products = normalizedMatrix.products;
+                                globalMemos = normalizedMatrix.memos;
                             }
                         })
                     );
