@@ -2182,6 +2182,251 @@
                 syncMatrixToCloud();
             }
         }
+
+        // ================= 缺失的 UI 与工具函数补充 =================
+
+        // 1. 弹窗与滚动锁定
+        function toggleConfigModal() {
+            const modal = document.getElementById("config-modal");
+            if (modal) {
+                modal.classList.toggle("hidden");
+                lockBodyScroll(!modal.classList.contains("hidden"));
+            }
+        }
+
+        function toggleAIChatDrawer() {
+            const drawer = document.getElementById("ai-chat-drawer");
+            if (drawer) {
+                drawer.classList.toggle("hidden");
+                lockBodyScroll(!drawer.classList.contains("hidden"));
+            }
+        }
+
+        function lockBodyScroll(isLocked) {
+            document.body.style.overflow = isLocked ? 'hidden' : '';
+        }
+
+        // 2. 数据格式化与过滤
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function normalizeDate(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return "";
+                return d.toISOString().split('T')[0];
+            } catch(e) {
+                return "";
+            }
+        }
+
+        function getNowString() {
+            const d = new Date();
+            const pad = (n) => n < 10 ? '0' + n : n;
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+
+        function extractCommonPrefix(arr) {
+            if (!arr || arr.length === 0) return "";
+            let prefix = arr[0];
+            for (let i = 1; i < arr.length; i++) {
+                while (arr[i].indexOf(prefix) !== 0) {
+                    prefix = prefix.substring(0, prefix.length - 1);
+                    if (prefix === "") return "";
+                }
+            }
+            return prefix;
+        }
+
+        function renderFormattedText(text) {
+            if (!text) return "";
+            let html = escapeHtml(text);
+            html = html.replace(/~~(.*?)~~/g, '<s>$1</s>');
+            html = html.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+            return html;
+        }
+
+        function updateCategoryFilterOptions() {
+            const select = document.getElementById("filter-category");
+            if (!select) return;
+            const currentVal = select.value;
+            const categories = new Set(products.map(p => p.category).filter(c => c));
+            select.innerHTML = '<option value="ALL">全部品类</option>';
+            categories.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.innerText = c;
+                select.appendChild(opt);
+            });
+            if (categories.has(currentVal)) select.value = currentVal;
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
+        }
+
+        // 3. 归档与只读模式
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            p.status = "进行中";
+            p.archivedAt = null;
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({ time: getNowString(), type: "RESTORE", desc: "从归档库恢复为进行中" });
+            renderTable();
+            syncMatrixToCloud();
+        }
+
+        function applyReadOnlyUI() {
+            const roleBadge = document.getElementById("role-badge");
+            if (roleBadge) {
+                roleBadge.innerText = "访客只读模式";
+                roleBadge.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
+            }
+            const elementsToHide = ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "btn-save-big-note", "big-note-toolbar"];
+            elementsToHide.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+            const bigNoteTa = document.getElementById("big-note-textarea");
+            if (bigNoteTa) bigNoteTa.readOnly = true;
+        }
+
+        // 4. 全局备忘板模块
+        function renderMemos() {
+            const container = document.getElementById("memo-list-container");
+            const tag = document.getElementById("memo-count-tag");
+            if (!container) return;
+            container.innerHTML = "";
+            let activeCount = 0;
+            globalMemos.forEach(m => {
+                if (!m.done) activeCount++;
+                const div = document.createElement("div");
+                div.className = `flex items-start space-x-2 p-2 rounded-lg border ${m.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`;
+                div.innerHTML = `
+                    <input type="checkbox" onchange="toggleMemoDone('${m.id}', this.checked)" ${m.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer">
+                    <div class="flex-1 min-w-0">
+                        <div class="${m.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(m.text)}</div>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="text-[10px] ${m.done ? 'text-gray-400' : (m.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${m.priority}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">${m.createdAt}</span>
+                        </div>
+                    </div>
+                    ${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${m.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+            if (tag) tag.innerText = `${activeCount} 项提醒`;
+        }
+
+        function toggleMemoDone(id, isDone) {
+            if (isReadOnlyMode) return;
+            const m = globalMemos.find(x => x.id === id);
+            if (m) {
+                m.done = isDone;
+                renderMemos();
+                syncMatrixToCloud();
+            }
+        }
+
+        function deleteMemo(id) {
+            if (isReadOnlyMode) return;
+            globalMemos = globalMemos.filter(x => x.id !== id);
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function toggleMemoPanel() {
+            isMemoPanelOpen = !isMemoPanelOpen;
+            const body = document.getElementById("memo-panel-body");
+            const btn = document.getElementById("memo-toggle-btn");
+            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
+            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
+        }
+
+        function addMemoItem() {
+            if (isReadOnlyMode) return;
+            const input = document.getElementById("memo-input");
+            const priority = document.getElementById("memo-priority");
+            if (!input || !input.value.trim()) return;
+            globalMemos.unshift({
+                id: "M_" + Date.now(),
+                text: input.value.trim(),
+                priority: priority ? priority.value : "⚡ 常规跟进",
+                done: false,
+                createdAt: getNowString().substring(5, 16)
+            });
+            input.value = "";
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function clearDoneMemos() {
+            if (isReadOnlyMode) return;
+            const hasDone = globalMemos.some(m => m.done);
+            if (!hasDone) return alert("没有已完成的备忘！");
+            if (confirm("确定清理所有已完成的备忘吗？")) {
+                globalMemos = globalMemos.filter(m => !m.done);
+                renderMemos();
+                syncMatrixToCloud();
+            }
+        }
+
+        // 5. WorkBuddy AI 助手快捷操作
+        function clearAIChatHistory() {
+            const messages = document.getElementById("ai-chat-messages");
+            if (messages) {
+                messages.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">已为您清空上下文。</div>
+                    </div>`;
+            }
+        }
+
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (!input) return;
+            if (type === 'DIAGNOSE') input.value = "帮我诊断当前进行中项目有哪些卡点，并列出延期风险最高的 Top 3。";
+            if (type === 'SPEECH_PRODUCT') input.value = "帮我写一段话术，催促产品经理尽快提供缺少 69 码的商品资料。";
+            if (type === 'REPORT_DELAY') input.value = "根据目前已延期的项目，生成一份向总监汇报的延期说明文案，说明原因及后续推进计划。";
+        }
+
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const messages = document.getElementById("ai-chat-messages");
+            if (!input || !input.value.trim() || !messages) return;
+
+            const userText = input.value.trim();
+            input.value = "";
+            messages.innerHTML += `
+                <div class="flex items-start space-x-2 justify-end mt-3">
+                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">${escapeHtml(userText)}</div>
+                </div>`;
+            messages.scrollTop = messages.scrollHeight;
+
+            setTimeout(() => {
+                messages.innerHTML += `
+                    <div class="flex items-start space-x-2 mt-3">
+                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">收到指令: “${escapeHtml(userText)}”。<br>注: 此为前端界面，需通过云端配置绑定 API Token 后方可提供正式诊断结果。</div>
+                    </div>`;
+                messages.scrollTop = messages.scrollHeight;
+            }, 600);
+        }
     </script>
 </body>
 </html>
