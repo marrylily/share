@@ -58,13 +58,13 @@
                     <span id="auth-tag-text">就绪</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
-                    <button type="button" onclick="toggleAIChatDrawer();" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs cursor-pointer">
+                    <button type="button" onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs cursor-pointer">
                         <span>🤖 WorkBuddy 助手</span>
                     </button>
-                    <button type="button" onclick="copyReadOnlyShareLink();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
+                    <button type="button" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
-                    <button type="button" onclick="toggleConfigModal();" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">⚙️ 云端配置</button>
+                    <button type="button" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">⚙️ 云端配置</button>
                 </div>
             </div>
         </header>
@@ -583,6 +583,22 @@
         </div>
     </div>
 
+    <!-- 只读链接直接复制提示弹窗 -->
+    <div id="readonly-share-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeReadonlyModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-lg shadow-2xl text-gray-800 text-xs space-y-3">
+            <h2 class="text-sm font-bold text-gray-900 flex items-center justify-between">
+                <span>🔗 协同只读分享链接</span>
+                <button type="button" onclick="closeReadonlyModal()" class="text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
+            </h2>
+            <p class="text-[11px] text-gray-500">已自动为您生成专属只读链接，您可以直接复制发给团队其他成员：</p>
+            <textarea id="readonly-url-textarea" rows="3" readonly class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs text-gray-900 font-mono select-all focus:outline-none"></textarea>
+            <div class="flex justify-end space-x-2 pt-1">
+                <button type="button" onclick="closeReadonlyModal()" class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium cursor-pointer">关闭</button>
+                <button type="button" onclick="confirmCopyReadonlyUrl()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">📋 一键复制链接</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let products = [];
         let globalMemos = [];
@@ -601,7 +617,6 @@
         let barcodeBatchQueryList = [];
         let barcodeMissingList = [];
         let pendingImportBarcodes = [];
-
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
 
         function cleanConfigString(str) {
@@ -689,11 +704,12 @@
         window.onload = function() {
             const d = new Date();
             d.setDate(d.getDate() + 30);
-            if(document.getElementById("p-prod-date")) {
-                document.getElementById("p-prod-date").value = d.toISOString().split('T')[0];
+            const dateInput = document.getElementById("p-prod-date");
+            if(dateInput) {
+                dateInput.value = d.toISOString().split('T')[0];
             }
 
-            // 1. 优先读取本地缓存
+            // 1. 优先读取本地缓存，保证 0 秒有数据
             try {
                 const cachedMatrix = localStorage.getItem("wb_local_matrix");
                 if (cachedMatrix) {
@@ -748,9 +764,13 @@
                     closeEditModal();
                     closeCheckModal();
                     closeBarcodeEditModal();
-                    if (!document.getElementById("barcode-batch-import-modal").classList.contains("hidden")) toggleBarcodeBatchImportModal();
-                    if (!document.getElementById("config-modal").classList.contains("hidden")) toggleConfigModal();
-                    if (!document.getElementById("ai-chat-drawer").classList.contains("hidden")) toggleAIChatDrawer();
+                    closeReadonlyModal();
+                    const batchModal = document.getElementById("barcode-batch-import-modal");
+                    const cfgModal = document.getElementById("config-modal");
+                    const aiDrawer = document.getElementById("ai-chat-drawer");
+                    if (batchModal && !batchModal.classList.contains("hidden")) toggleBarcodeBatchImportModal();
+                    if (cfgModal && !cfgModal.classList.contains("hidden")) toggleConfigModal();
+                    if (aiDrawer && !aiDrawer.classList.contains("hidden")) toggleAIChatDrawer();
                 }
             });
         };
@@ -1848,6 +1868,58 @@
 
             updateSelectAllCheckboxState();
             renderMemos();
+        }
+
+        // ================= 剪贴板兼容与只读分享 =================
+        function copyTextToClipboard(text, successMsg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    openReadonlyModal(text);
+                }).catch(() => openReadonlyModal(text));
+            } else {
+                openReadonlyModal(text);
+            }
+        }
+
+        function openReadonlyModal(urlText) {
+            const modal = document.getElementById("readonly-share-modal");
+            const ta = document.getElementById("readonly-url-textarea");
+            if(ta) ta.value = urlText;
+            if(modal) {
+                modal.classList.remove("hidden");
+                lockBodyScroll(true);
+            }
+        }
+
+        function closeReadonlyModal() {
+            const modal = document.getElementById("readonly-share-modal");
+            if(modal) modal.classList.add("hidden");
+            lockBodyScroll(false);
+        }
+
+        function confirmCopyReadonlyUrl() {
+            const ta = document.getElementById("readonly-url-textarea");
+            if(ta) {
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    alert("🎉 链接已成功复制到剪贴板！");
+                } catch(e) {
+                    prompt("请手动复制下方链接：", ta.value);
+                }
+            }
+            closeReadonlyModal();
+        }
+
+        function copyReadOnlyShareLink() {
+            const owner = cleanConfigString(localStorage.getItem("wb_owner") || "marrylily");
+            const repo = cleanConfigString(localStorage.getItem("wb_repo") || "my-tasks");
+            const gBar = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || "");
+            const tRepo = (localStorage.getItem("wb_token_repo") || "").trim();
+            const tGist = (localStorage.getItem("wb_token_gist") || "").trim();
+
+            const shareUrl = `${window.location.origin + window.location.pathname}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&gist_bar=${encodeURIComponent(gBar)}&token_repo=${encodeURIComponent(tRepo)}&token_gist=${encodeURIComponent(tGist)}`;
+            copyTextToClipboard(shareUrl);
         }
 
         // ================= 大备注操作 =================
