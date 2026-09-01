@@ -58,24 +58,24 @@
                     <span id="auth-tag-text">就绪</span>
                 </span>
                 <div class="flex items-center space-x-1.5">
-                    <button onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs">
+                    <button type="button" onclick="toggleAIChatDrawer();" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs cursor-pointer">
                         <span>🤖 WorkBuddy 助手</span>
                     </button>
-                    <button id="btn-share-readonly" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
+                    <button type="button" onclick="copyReadOnlyShareLink();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
-                    <button id="btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium">⚙️ 云端配置</button>
+                    <button type="button" onclick="toggleConfigModal();" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">⚙️ 云端配置</button>
                 </div>
             </div>
         </header>
 
         <!-- 顶层主工作区切换导航 -->
         <nav class="flex items-center space-x-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-xs overflow-x-auto custom-scroll">
-            <button onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap">
+            <button type="button" onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
                 <span>📊 新品排期推进矩阵</span>
                 <span id="nav-count-matrix" class="bg-blue-800 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
-            <button onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap">
+            <button type="button" onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
                 <span>🏷️ 69码与编码库 (Gist)</span>
                 <span id="nav-count-barcodes" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
@@ -105,18 +105,18 @@
                         <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 rounded-lg font-bold shadow-sm transition text-xs">🚀 智能查重并创建</button>
+                        <button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 rounded-lg font-bold shadow-sm transition text-xs cursor-pointer">🚀 智能查重并创建</button>
                     </div>
                 </div>
             </div>
 
             <!-- 双 Tab 切换栏 -->
             <div class="flex items-center space-x-2">
-                <button onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5">
+                <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
                     <span>⚡ 进行中看板</span>
                     <span id="tab-count-running" class="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
                 </button>
-                <button onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5">
+                <button type="button" onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
                     <span>📦 已归档历史库</span>
                     <span id="tab-count-archived" class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
                 </button>
@@ -129,7 +129,7 @@
                         <span>🔍 智能筛选器</span>
                         <span id="filter-result-count" class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-normal">显示全部</span>
                     </div>
-                    <button onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline">重置筛选</button>
+                    <button type="button" onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline cursor-pointer">重置筛选</button>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <div>
@@ -172,14 +172,14 @@
                     <span>✅ 归档库: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
                 </div>
                 <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-                    <button onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
+                    <button type="button" onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
                         <span id="btn-export-label">📥 导出当前视图至 Excel</span>
                     </button>
                     <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">准备就绪</div>
                 </div>
             </div>
 
-            <!-- 桌面表格视图 (单行同行规整呈现) -->
+            <!-- 桌面表格视图 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1100px]">
@@ -223,7 +223,7 @@
                         <h2 class="text-xs sm:text-sm font-bold text-gray-900">运营重要备忘 & 琐事消息速记板</h2>
                         <span id="memo-count-tag" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">0 项提醒</span>
                     </div>
-                    <button onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-xs text-gray-500 hover:text-gray-800">折叠 ▲</button>
+                    <button type="button" onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-xs text-gray-500 hover:text-gray-800 cursor-pointer">折叠 ▲</button>
                 </div>
                 <div id="memo-panel-body" class="pt-3 space-y-3">
                     <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
@@ -233,14 +233,14 @@
                             <option value="💡 琐事记录">💡 琐事记录</option>
                         </select>
                         <input type="text" id="memo-input" placeholder="输入待办/琐事提醒..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <button onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">
+                        <button type="button" onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                             + 添加备忘
                         </button>
                     </div>
                     <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1"></div>
                     <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
                         <span>💡 点击左侧复选框标为完成（自动删除线）；随矩阵全局同步。</span>
-                        <button id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline">清理已完成事项</button>
+                        <button type="button" id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline cursor-pointer">清理已完成事项</button>
                     </div>
                 </div>
             </div>
@@ -262,9 +262,9 @@
                             <span>📥 导入 Excel 表格</span>
                             <input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
                         </label>
-                        <button onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition">📋 粘贴批量文本</button>
-                        <button onclick="exportBarcodesToCsv()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 font-medium">导出 CSV</button>
-                        <button onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition">+ 单条录入</button>
+                        <button type="button" onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition cursor-pointer">📋 粘贴批量文本</button>
+                        <button type="button" onclick="exportBarcodesToCsv()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 font-medium cursor-pointer">导出 CSV</button>
+                        <button type="button" onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition cursor-pointer">+ 单条录入</button>
                     </div>
                 </div>
 
@@ -275,11 +275,11 @@
                             <span>🔍 批量核对 / 查缺补漏查询</span>
                             <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或空格隔开的多个 69码/SKU编码)</span>
                         </label>
-                        <button onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline">清空核对</button>
+                        <button type="button" onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline cursor-pointer">清空核对</button>
                     </div>
                     <div class="flex gap-2">
                         <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码，如:&#10;6941123400012&#10;320243181002" class="flex-1 bg-white border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"></textarea>
-                        <button onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition text-xs flex-shrink-0 self-end">⚡ 开始核对</button>
+                        <button type="button" onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition text-xs flex-shrink-0 self-end cursor-pointer">⚡ 开始核对</button>
                     </div>
 
                     <!-- 缺失/未匹配提示看板 -->
@@ -287,8 +287,8 @@
                         <div class="flex justify-between items-center text-amber-800 font-bold flex-wrap gap-1">
                             <span id="barcode-missing-summary">📊 查询结果</span>
                             <div class="space-x-2">
-                                <button onclick="copyMissingBarcodes()" class="text-indigo-600 hover:underline text-[11px] font-bold">📋 复制未匹配编码</button>
-                                <button onclick="generateMissingUrgeMessage()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-bold">💬 生成催办微信话术</button>
+                                <button type="button" onclick="copyMissingBarcodes()" class="text-indigo-600 hover:underline text-[11px] font-bold cursor-pointer">📋 复制未匹配编码</button>
+                                <button type="button" onclick="generateMissingUrgeMessage()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer">💬 生成催办微信话术</button>
                             </div>
                         </div>
                         <div id="barcode-missing-list" class="font-mono text-[11px] text-red-600 flex flex-wrap gap-1.5"></div>
@@ -325,7 +325,7 @@
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh]">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
                 <span>📋 批量粘贴导入 69 码 (内置防重检测)</span>
-                <button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg">✕</button>
+                <button type="button" onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
             </h2>
             <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SKU产品编码 \t 69码 \t 备注】</p>
             
@@ -340,8 +340,8 @@
             <div class="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
                 <span class="text-[11px] text-gray-400">💡 自动过滤 69 码完全重复的数据</span>
                 <div class="space-x-2">
-                    <button onclick="toggleBarcodeBatchImportModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium">取消</button>
-                    <button id="btn-confirm-barcode-import" onclick="confirmBarcodeBatchImport()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm">🚀 确认导入并保存</button>
+                    <button type="button" onclick="toggleBarcodeBatchImportModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium cursor-pointer">取消</button>
+                    <button type="button" id="btn-confirm-barcode-import" onclick="confirmBarcodeBatchImport()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">🚀 确认导入并保存</button>
                 </div>
             </div>
         </div>
@@ -373,8 +373,8 @@
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-4">
-                <button onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium">保存修改</button>
+                <button type="button" onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium cursor-pointer">取消</button>
+                <button type="button" onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium cursor-pointer">保存修改</button>
             </div>
         </div>
     </div>
@@ -392,8 +392,8 @@
                 <input type="text" id="check-remark-input" placeholder="如: 财务已过审第2版、视觉已验收..." class="w-full border border-gray-300 rounded-lg p-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex justify-end space-x-2">
-                <button onclick="closeCheckModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="confirmNodeCheckChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm">确认更新并留痕</button>
+                <button type="button" onclick="closeCheckModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium cursor-pointer">取消</button>
+                <button type="button" onclick="confirmNodeCheckChange()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">确认更新并留痕</button>
             </div>
         </div>
     </div>
@@ -406,11 +406,11 @@
                     <span>📜 生命周期变更与备注追溯</span>
                     <span id="logs-title" class="text-blue-600 font-semibold truncate max-w-[150px]"></span>
                 </h2>
-                <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition">✕</button>
+                <button type="button" onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition cursor-pointer">✕</button>
             </div>
             <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-2.5 bg-gray-50/50" id="logs-container"></div>
             <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl">
-                <button onclick="closeLogsModal()" class="px-5 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition">返回主界面</button>
+                <button type="button" onclick="closeLogsModal()" class="px-5 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition cursor-pointer">返回主界面</button>
             </div>
         </div>
     </div>
@@ -420,7 +420,7 @@
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3">
             <div class="flex justify-between items-center border-b pb-2">
                 <h2 class="text-sm font-bold text-gray-900">⚙️ 多源云端独立配置</h2>
-                <button onclick="toggleConfigModal()" class="text-gray-400 hover:text-gray-700">✕</button>
+                <button type="button" onclick="toggleConfigModal()" class="text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
             </div>
             
             <div class="space-y-2.5">
@@ -450,7 +450,7 @@
             <div class="pt-2 border-t border-gray-100 flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px]">
                 <span class="text-gray-500 font-medium">📦 本地数据快照防丢：</span>
                 <div class="space-x-2">
-                    <button onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold">导出备份文件</button>
+                    <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold cursor-pointer">导出备份文件</button>
                     <label class="text-blue-600 hover:underline font-bold cursor-pointer">
                         恢复快照
                         <input type="file" accept=".json" onchange="importLocalBackupSnapshot(event)" class="hidden">
@@ -459,8 +459,8 @@
             </div>
 
             <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
-                <button onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 text-gray-700 rounded">取消</button>
-                <button onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded">保存并立即同步</button>
+                <button type="button" onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 text-gray-700 rounded cursor-pointer">取消</button>
+                <button type="button" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer">保存并立即同步</button>
             </div>
         </div>
     </div>
@@ -479,14 +479,14 @@
                         <p class="text-[10px] text-gray-500">跨文档联合调取排期与 69 码库</p>
                     </div>
                 </div>
-                <button onclick="toggleAIChatDrawer()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-1 rounded-lg hover:bg-white transition">✕</button>
+                <button type="button" onclick="toggleAIChatDrawer()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-1 rounded-lg hover:bg-white transition cursor-pointer">✕</button>
             </div>
 
             <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-1.5 overflow-x-auto custom-scroll flex-shrink-0">
                 <span class="text-gray-400 text-[10px] whitespace-nowrap">快捷指令:</span>
-                <button onclick="applyQuickPrompt('DIAGNOSE')" class="bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap">📊 诊断看板卡点</button>
-                <button onclick="applyQuickPrompt('SPEECH_PRODUCT')" class="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap">💬 对齐产品话术</button>
-                <button onclick="applyQuickPrompt('REPORT_DELAY')" class="bg-white hover:bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap">🚨 延期汇报文案</button>
+                <button type="button" onclick="applyQuickPrompt('DIAGNOSE')" class="bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">📊 诊断看板卡点</button>
+                <button type="button" onclick="applyQuickPrompt('SPEECH_PRODUCT')" class="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">💬 对齐产品话术</button>
+                <button type="button" onclick="applyQuickPrompt('REPORT_DELAY')" class="bg-white hover:bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">🚨 延期汇报文案</button>
             </div>
 
             <div id="ai-chat-messages" class="flex-1 p-4 space-y-3 log-scroll bg-gray-50/50">
@@ -506,8 +506,8 @@
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] text-gray-400">💡 自动结合全盘数据提供针对性方案</span>
                     <div class="flex space-x-2">
-                        <button onclick="clearAIChatHistory()" class="px-2.5 py-1 text-gray-400 hover:text-gray-600 text-[11px]">清空</button>
-                        <button onclick="submitUserDemandToAI()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">
+                        <button type="button" onclick="clearAIChatHistory()" class="px-2.5 py-1 text-gray-400 hover:text-gray-600 text-[11px] cursor-pointer">清空</button>
+                        <button type="button" onclick="submitUserDemandToAI()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
                             🚀 发送需求
                         </button>
                     </div>
@@ -527,12 +527,12 @@
                     </h2>
                     <p class="text-[10px] text-gray-400 mt-0.5">支持删除线、文件网盘外链与实时滑动预览</p>
                 </div>
-                <button onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition">✕</button>
+                <button type="button" onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-gray-100 transition cursor-pointer">✕</button>
             </div>
             <div id="big-note-toolbar" class="px-3 sm:px-6 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-2 flex-wrap gap-y-1 flex-shrink-0">
-                <button onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2.5 py-1 rounded text-[11px] font-mono">~~删除线~~</button>
-                <button onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2.5 py-1 rounded text-[11px]">🔗 网盘外链</button>
-                <button onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2.5 py-1 rounded text-[11px]">⏱️ 时间戳</button>
+                <button type="button" onclick="insertStrikeThrough()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 px-2.5 py-1 rounded text-[11px] font-mono cursor-pointer">~~删除线~~</button>
+                <button type="button" onclick="insertFileLinkPrompt()" class="bg-white hover:bg-gray-100 border border-gray-300 text-blue-600 px-2.5 py-1 rounded text-[11px] cursor-pointer">🔗 网盘外链</button>
+                <button type="button" onclick="insertTimestamp()" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-600 px-2.5 py-1 rounded text-[11px] cursor-pointer">⏱️ 时间戳</button>
             </div>
             <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-3 bg-gray-50/40">
                 <div id="big-note-edit-section">
@@ -545,8 +545,8 @@
                 </div>
             </div>
             <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl space-x-2">
-                <button onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">返回主界面</button>
-                <button id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm">保存大备注</button>
+                <button type="button" onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer">返回主界面</button>
+                <button type="button" id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">保存大备注</button>
             </div>
         </div>
     </div>
@@ -577,8 +577,8 @@
                 </div>
             </div>
             <div class="flex justify-end space-x-2 mt-4">
-                <button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium">取消</button>
-                <button onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">保存修改</button>
+                <button type="button" onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium cursor-pointer">取消</button>
+                <button type="button" onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium cursor-pointer">保存修改</button>
             </div>
         </div>
     </div>
@@ -724,11 +724,17 @@
                 applyReadOnlyUI();
                 fetchFromDualTokenCustom(paramOwner, paramRepo, paramGistBar, paramTokenRepo, paramTokenGist);
             } else {
-                document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
-                document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
-                document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
-                document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
-                document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
+                const cfgOwner = document.getElementById("cfg-owner");
+                const cfgRepo = document.getElementById("cfg-repo");
+                const cfgTokenRepo = document.getElementById("cfg-token-repo");
+                const cfgGistBarcodes = document.getElementById("cfg-gist-barcodes");
+                const cfgTokenGist = document.getElementById("cfg-token-gist");
+
+                if (cfgOwner) cfgOwner.value = localStorage.getItem("wb_owner") || "marrylily";
+                if (cfgRepo) cfgRepo.value = localStorage.getItem("wb_repo") || "my-tasks";
+                if (cfgTokenRepo) cfgTokenRepo.value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
+                if (cfgGistBarcodes) cfgGistBarcodes.value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+                if (cfgTokenGist) cfgTokenGist.value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
 
                 if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
                     fetchAllDualTokenData();
@@ -755,21 +761,21 @@
             const barcodesModule = document.getElementById("module-barcodes");
 
             if (view === 'MATRIX') {
-                matrixModule.classList.remove("hidden");
-                barcodesModule.classList.add("hidden");
+                if (matrixModule) matrixModule.classList.remove("hidden");
+                if (barcodesModule) barcodesModule.classList.add("hidden");
             } else {
-                matrixModule.classList.add("hidden");
-                barcodesModule.classList.remove("hidden");
+                if (matrixModule) matrixModule.classList.add("hidden");
+                if (barcodesModule) barcodesModule.classList.remove("hidden");
             }
 
             const btnM = document.getElementById("nav-btn-matrix");
             const btnB = document.getElementById("nav-btn-barcodes");
 
-            const activeCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap";
-            const inactiveCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap";
+            const activeCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
+            const inactiveCls = "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
 
-            btnM.className = (view === 'MATRIX') ? activeCls : inactiveCls;
-            btnB.className = (view === 'BARCODES') ? activeCls : inactiveCls;
+            if (btnM) btnM.className = (view === 'MATRIX') ? activeCls : inactiveCls;
+            if (btnB) btnB.className = (view === 'BARCODES') ? activeCls : inactiveCls;
 
             if (view === 'MATRIX') renderTable();
             if (view === 'BARCODES') renderBarcodeTable();
@@ -783,13 +789,13 @@
             const btnExportLabel = document.getElementById("btn-export-label");
 
             if (tab === 'RUNNING') {
-                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5";
-                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer";
+                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer";
                 if (filterHealthBox) filterHealthBox.style.display = "block";
                 if (btnExportLabel) btnExportLabel.innerText = "📥 导出进行中系列至 Excel";
             } else {
-                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5";
-                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5";
+                if (btnArchived) btnArchived.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer";
+                if (btnRunning) btnRunning.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer";
                 if (filterHealthBox) filterHealthBox.style.display = "none";
                 if (btnExportLabel) btnExportLabel.innerText = "📥 导出已归档系列至 Excel";
             }
@@ -804,7 +810,8 @@
             const tokenGist = (localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "").trim();
             const gistBarcodes = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507");
 
-            document.getElementById("sync-status").innerText = "拉取云端数据...";
+            const syncStatus = document.getElementById("sync-status");
+            if (syncStatus) syncStatus.innerText = "拉取云端数据...";
             let repoSuccess = false, gistSuccess = false;
             let fetchTasks = [];
 
@@ -859,18 +866,19 @@
 
             await Promise.allSettled(fetchTasks);
 
+            const authTag = document.getElementById("auth-tag");
             if (repoSuccess && gistSuccess) {
-                document.getElementById("sync-status").innerText = "双源已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
+                if (syncStatus) syncStatus.innerText = "双源已同步 ✅";
+                if (authTag) authTag.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span><span>双源已连接</span>`;
             } else if (repoSuccess) {
-                document.getElementById("sync-status").innerText = "新品仓库已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span><span>仅仓库连接</span>`;
+                if (syncStatus) syncStatus.innerText = "新品仓库已同步 ✅";
+                if (authTag) authTag.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span><span>仅仓库连接</span>`;
             } else if (gistSuccess) {
-                document.getElementById("sync-status").innerText = "69码 Gist 已同步 ✅";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span><span>仅 Gist 连接</span>`;
+                if (syncStatus) syncStatus.innerText = "69码 Gist 已同步 ✅";
+                if (authTag) authTag.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"></span><span>仅 Gist 连接</span>`;
             } else {
-                document.getElementById("sync-status").innerText = "已加载本地缓存";
-                document.getElementById("auth-tag").innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span><span>本地就绪</span>`;
+                if (syncStatus) syncStatus.innerText = "已加载本地缓存";
+                if (authTag) authTag.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span><span>本地就绪</span>`;
             }
 
             updateCategoryFilterOptions();
@@ -878,14 +886,68 @@
             renderBarcodeTable();
         }
 
+        async function fetchFromDualTokenCustom(owner, repo, gistBarcodes, tokenRepo, tokenGist) {
+            const syncStatus = document.getElementById("sync-status");
+            if (syncStatus) syncStatus.innerText = "拉取只读数据...";
+            try {
+                let fetchTasks = [];
+                if (owner && repo && tokenRepo) {
+                    fetchTasks.push(
+                        fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
+                            headers: { "Authorization": `token ${tokenRepo}` }
+                        }, 5000)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                            if (data && data.content) {
+                                const textContent = safeBase64Decode(data.content);
+                                const parsed = JSON.parse(textContent);
+                                let normalizedMatrix = normalizeMatrixData(parsed);
+                                products = normalizedMatrix.products;
+                                globalMemos = normalizedMatrix.memos;
+                            }
+                        }).catch(() => {})
+                    );
+                }
+                if (gistBarcodes && tokenGist) {
+                    fetchTasks.push(
+                        fetchWithTimeout(`https://api.github.com/gists/${gistBarcodes}`, {
+                            headers: { "Authorization": `token ${tokenGist}` }
+                        }, 5000)
+                        .then(g => g.ok ? g.json() : null)
+                        .then(d => {
+                            if (d && d.files) {
+                                for (let fname in d.files) {
+                                    let f = d.files[fname];
+                                    if (f && f.content) {
+                                        try {
+                                            globalBarcodes = normalizeBarcodesData(JSON.parse(f.content));
+                                            break;
+                                        } catch(e) {}
+                                    }
+                                }
+                            }
+                        }).catch(() => {})
+                    );
+                }
+                await Promise.allSettled(fetchTasks);
+                if (syncStatus) syncStatus.innerText = "已加载只读数据 ✅";
+                updateCategoryFilterOptions();
+                renderTable();
+                renderBarcodeTable();
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
         async function syncMatrixToCloud() {
             if (isReadOnlyMode) return;
             const owner = cleanConfigString(localStorage.getItem("wb_owner") || "marrylily");
             const repo = cleanConfigString(localStorage.getItem("wb_repo") || "my-tasks");
             const tokenRepo = (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "").trim();
+            const syncStatus = document.getElementById("sync-status");
             if (!tokenRepo || !owner || !repo) return;
 
-            document.getElementById("sync-status").innerText = "写入仓库...";
+            if (syncStatus) syncStatus.innerText = "写入仓库...";
             try {
                 const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, {
                     headers: { "Authorization": `token ${tokenRepo}` }
@@ -905,12 +967,12 @@
                 if (res.ok) {
                     const rData = await res.json();
                     fileSha = rData.content.sha;
-                    document.getElementById("sync-status").innerText = "仓库已保存 ✅";
+                    if (syncStatus) syncStatus.innerText = "仓库已保存 ✅";
                     localStorage.setItem("wb_local_matrix", JSON.stringify(payload));
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "保存失败 ❌";
+                if (syncStatus) syncStatus.innerText = "保存失败 ❌";
             }
         }
 
@@ -918,9 +980,10 @@
             if (isReadOnlyMode) return;
             const gistId = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507");
             const tokenGist = (localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "").trim();
+            const syncStatus = document.getElementById("sync-status");
             if (!tokenGist || !gistId) return;
 
-            document.getElementById("sync-status").innerText = "写入 Gist...";
+            if (syncStatus) syncStatus.innerText = "写入 Gist...";
             try {
                 const gRes = await fetch(`https://api.github.com/gists/${gistId}`, {
                     headers: { "Authorization": `token ${tokenGist}` }
@@ -941,11 +1004,11 @@
                     headers: { "Authorization": `token ${tokenGist}`, "Content-Type": "application/json" },
                     body: JSON.stringify(patchBody)
                 });
-                document.getElementById("sync-status").innerText = "Gist 已保存 ✅";
+                if (syncStatus) syncStatus.innerText = "Gist 已保存 ✅";
                 localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
             } catch (err) {
                 console.error(err);
-                document.getElementById("sync-status").innerText = "Gist 保存失败 ❌";
+                if (syncStatus) syncStatus.innerText = "Gist 保存失败 ❌";
             }
         }
 
@@ -1106,12 +1169,14 @@
         // ================= 🏷️ 69码联动与批量核对 =================
         function toggleBarcodeBatchImportModal() {
             const m = document.getElementById("barcode-batch-import-modal");
-            m.classList.toggle("hidden");
-            lockBodyScroll(!m.classList.contains("hidden"));
-            if (!m.classList.contains("hidden")) {
-                document.getElementById("barcode-batch-import-text").value = "";
-                document.getElementById("barcode-analysis-stats").innerText = "等待输入数据...";
-                document.getElementById("barcode-analysis-duplicates").innerHTML = "";
+            if(m) {
+                m.classList.toggle("hidden");
+                lockBodyScroll(!m.classList.contains("hidden"));
+                if (!m.classList.contains("hidden")) {
+                    document.getElementById("barcode-batch-import-text").value = "";
+                    document.getElementById("barcode-analysis-stats").innerText = "等待输入数据...";
+                    document.getElementById("barcode-analysis-duplicates").innerHTML = "";
+                }
             }
         }
 
@@ -1119,6 +1184,7 @@
             const text = document.getElementById("barcode-batch-import-text").value.trim();
             const statsEl = document.getElementById("barcode-analysis-stats");
             const dupEl = document.getElementById("barcode-analysis-duplicates");
+            if(!statsEl || !dupEl) return;
             dupEl.innerHTML = "";
 
             if (!text) {
@@ -1219,21 +1285,23 @@
             const summaryEl = document.getElementById("barcode-missing-summary");
             const listEl = document.getElementById("barcode-missing-list");
 
-            missingBox.classList.remove("hidden");
-            summaryEl.innerText = `📊 查询总数: ${queryItems.length} 项 ｜ 库中已匹配: ${matchedBarcodes.size} 项 ｜ 缺失/未录入: ${missing.length} 项`;
+            if(missingBox) missingBox.classList.remove("hidden");
+            if(summaryEl) summaryEl.innerText = `📊 查询总数: ${queryItems.length} 项 ｜ 库中已匹配: ${matchedBarcodes.size} 项 ｜ 缺失/未录入: ${missing.length} 项`;
 
             if (missing.length > 0) {
-                listEl.innerHTML = missing.map(m => `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200">❌ ${escapeHtml(m)}</span>`).join('');
+                if(listEl) listEl.innerHTML = missing.map(m => `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200">❌ ${escapeHtml(m)}</span>`).join('');
             } else {
-                listEl.innerHTML = `<span class="text-green-700 font-bold">🎉 全部 ${queryItems.length} 项均在编码库中找到！无缺失！</span>`;
+                if(listEl) listEl.innerHTML = `<span class="text-green-700 font-bold">🎉 全部 ${queryItems.length} 项均在编码库中找到！无缺失！</span>`;
             }
 
             renderBarcodeTable();
         }
 
         function clearBarcodeBatchSearch() {
-            document.getElementById("barcode-batch-search-input").value = "";
-            document.getElementById("barcode-missing-box").classList.add("hidden");
+            const searchInput = document.getElementById("barcode-batch-search-input");
+            const missingBox = document.getElementById("barcode-missing-box");
+            if (searchInput) searchInput.value = "";
+            if (missingBox) missingBox.classList.add("hidden");
             barcodeBatchQueryList = [];
             barcodeMissingList = [];
             renderBarcodeTable();
@@ -1282,18 +1350,25 @@
             const b = globalBarcodes[idx];
             if (!b) return;
 
-            document.getElementById("edit-barcode-idx").innerText = `#${idx + 1}`;
-            document.getElementById("edit-bar-name").value = b.name || "";
-            document.getElementById("edit-bar-sap").value = b.sapCode || "";
-            document.getElementById("edit-bar-code").value = b.barcode || "";
-            document.getElementById("edit-bar-remark").value = b.remark || "";
-            
-            document.getElementById("barcode-edit-modal").classList.remove("hidden");
+            const idxEl = document.getElementById("edit-barcode-idx");
+            const nameEl = document.getElementById("edit-bar-name");
+            const sapEl = document.getElementById("edit-bar-sap");
+            const codeEl = document.getElementById("edit-bar-code");
+            const remarkEl = document.getElementById("edit-bar-remark");
+            const modalEl = document.getElementById("barcode-edit-modal");
+
+            if (idxEl) idxEl.innerText = `#${idx + 1}`;
+            if (nameEl) nameEl.value = b.name || "";
+            if (sapEl) sapEl.value = b.sapCode || "";
+            if (codeEl) codeEl.value = b.barcode || "";
+            if (remarkEl) remarkEl.value = b.remark || "";
+            if (modalEl) modalEl.classList.remove("hidden");
             lockBodyScroll(true);
         }
 
         function closeBarcodeEditModal() {
-            document.getElementById("barcode-edit-modal").classList.add("hidden");
+            const modalEl = document.getElementById("barcode-edit-modal");
+            if (modalEl) modalEl.classList.add("hidden");
             currentEditingBarcodeIdx = null;
             lockBodyScroll(false);
         }
@@ -1367,8 +1442,8 @@
                     <td class="p-3 text-gray-500">${escapeHtml(b.remark || '-')}</td>
                     <td class="p-3 text-right space-x-2 font-medium">
                         ${!isReadOnlyMode ? `
-                            <button onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline">修改</button>
-                            <button onclick="removeBarcode(${idx})" class="text-red-500 hover:underline">删除</button>
+                            <button type="button" onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline cursor-pointer">修改</button>
+                            <button type="button" onclick="removeBarcode(${idx})" class="text-red-500 hover:underline cursor-pointer">删除</button>
                         ` : '-'}
                     </td>
                 `;
@@ -1464,12 +1539,18 @@
             checkboxEl.checked = !targetVal;
 
             pendingCheck = { prodId: String(prodId), skuIds: [String(skuId)], key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️";
-            document.getElementById("check-modal-title").innerText = targetVal ? `确认完成【${label}】` : `取消完成【${label}】`;
-            document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 规格: ${sku.name}`;
-            document.getElementById("check-remark-input").value = "";
+            const iconEl = document.getElementById("check-action-icon");
+            const titleEl = document.getElementById("check-modal-title");
+            const subEl = document.getElementById("check-modal-subtitle");
+            const modalEl = document.getElementById("check-modal");
 
-            document.getElementById("check-modal").classList.remove("hidden");
+            if(iconEl) iconEl.innerText = targetVal ? "✅" : "↩️";
+            if(titleEl) titleEl.innerText = targetVal ? `确认完成【${label}】` : `取消完成【${label}】`;
+            if(subEl) subEl.innerText = `系列: ${p.name} ｜ 规格: ${sku.name}`;
+            const remarkInput = document.getElementById("check-remark-input");
+            if(remarkInput) remarkInput.value = "";
+
+            if(modalEl) modalEl.classList.remove("hidden");
             lockBodyScroll(true);
         }
 
@@ -1482,17 +1563,24 @@
             const targetVal = !isAll;
 
             pendingCheck = { prodId: String(prodId), skuIds: p.skus.map(s => String(s.id)), key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "⚡" : "↩️";
-            document.getElementById("check-modal-title").innerText = targetVal ? `批量标记全部【${label}】完成` : `批量取消全部【${label}】`;
-            document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 影响全部 ${p.skus.length} 个规格`;
-            document.getElementById("check-remark-input").value = "";
+            const iconEl = document.getElementById("check-action-icon");
+            const titleEl = document.getElementById("check-modal-title");
+            const subEl = document.getElementById("check-modal-subtitle");
+            const modalEl = document.getElementById("check-modal");
 
-            document.getElementById("check-modal").classList.remove("hidden");
+            if(iconEl) iconEl.innerText = targetVal ? "⚡" : "↩️";
+            if(titleEl) titleEl.innerText = targetVal ? `批量标记全部【${label}】完成` : `批量取消全部【${label}】`;
+            if(subEl) subEl.innerText = `系列: ${p.name} ｜ 影响全部 ${p.skus.length} 个规格`;
+            const remarkInput = document.getElementById("check-remark-input");
+            if(remarkInput) remarkInput.value = "";
+
+            if(modalEl) modalEl.classList.remove("hidden");
             lockBodyScroll(true);
         }
 
         function closeCheckModal() {
-            document.getElementById("check-modal").classList.add("hidden");
+            const modalEl = document.getElementById("check-modal");
+            if(modalEl) modalEl.classList.add("hidden");
             pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
             lockBodyScroll(false);
         }
@@ -1502,7 +1590,8 @@
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
 
-            const remark = document.getElementById("check-remark-input").value.trim();
+            const remarkInput = document.getElementById("check-remark-input");
+            const remark = remarkInput ? remarkInput.value.trim() : "";
             const nowTime = getNowString();
 
             p.skus.forEach(sku => {
@@ -1534,8 +1623,10 @@
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return alert("未找到该产品记录！");
 
-            document.getElementById("logs-title").innerText = `【${p.name}】`;
+            const titleEl = document.getElementById("logs-title");
+            if(titleEl) titleEl.innerText = `【${p.name}】`;
             const container = document.getElementById("logs-container");
+            if(!container) return;
             container.innerHTML = "";
 
             const logs = p.historyLogs || [];
@@ -1556,12 +1647,14 @@
                 });
             }
 
-            document.getElementById("logs-modal").classList.remove("hidden");
+            const modalEl = document.getElementById("logs-modal");
+            if(modalEl) modalEl.classList.remove("hidden");
             lockBodyScroll(true);
         }
 
         function closeLogsModal() { 
-            document.getElementById("logs-modal").classList.add("hidden"); 
+            const modalEl = document.getElementById("logs-modal");
+            if(modalEl) modalEl.classList.add("hidden"); 
             lockBodyScroll(false); 
         }
 
@@ -1644,26 +1737,26 @@
                 tr.className = `hover:bg-blue-50/40 transition ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : ''}`;
                 tr.innerHTML = `
                     <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300"></td>
-                    <td class="p-3 text-center"><button onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold">${isExpanded ? '▼' : '▶'}</button></td>
-                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px]">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
+                    <td class="p-3 text-center"><button type="button" onclick="toggleExpand('${prod.id}')" class="text-gray-500 hover:text-blue-600 font-mono font-bold cursor-pointer">${isExpanded ? '▼' : '▶'}</button></td>
+                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)} ${!isReadOnlyMode && !isArchived ? `<button type="button" onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px] cursor-pointer">✏️</button>` : ''} <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${skuCount} SKU</span></div></td>
                     <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
                     <td class="p-3 whitespace-nowrap">${healthBadge}</td>
                     <td class="p-3"><div class="flex items-center space-x-1.5 flex-nowrap">${getBadge('财务BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
                     <td class="p-3 whitespace-nowrap">
                         <div class="flex items-center space-x-1.5">
                             ${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px] inline-flex items-center max-w-[130px] truncate" title="${escapeHtml(prod.remark)}">📝 ${escapeHtml(prod.remark)}</span>` : ''}
-                            ${prod.bigNote ? `<button onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px] font-bold">📌 备忘</button>` : ''}
+                            ${prod.bigNote ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px] font-bold cursor-pointer">📌 备忘</button>` : ''}
                         </div>
                     </td>
                     <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
                     <td class="p-3 text-right whitespace-nowrap">
                         <div class="flex items-center justify-end space-x-2 font-medium">
-                            <button onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline">大备注</button>
+                            <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline cursor-pointer">大备注</button>
                             <span class="text-gray-300">|</span>
-                            <button onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline">📜 追溯</button>
+                            <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline cursor-pointer">📜 追溯</button>
                             <span class="text-gray-300">|</span>
-                            ${isArchived && !isReadOnlyMode ? `<button onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline">↩️ 恢复</button>` : ''}
-                            ${!isReadOnlyMode ? `<button onclick="removeProduct('${prod.id}')" class="text-red-500 hover:underline">删除</button>` : ''}
+                            ${isArchived && !isReadOnlyMode ? `<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline cursor-pointer">↩️ 恢复</button>` : ''}
+                            ${!isReadOnlyMode ? `<button type="button" onclick="removeProduct('${prod.id}')" class="text-red-500 hover:underline cursor-pointer">删除</button>` : ''}
                         </div>
                     </td>
                 `;
@@ -1684,7 +1777,7 @@
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         ${!isReadOnlyMode && !isArchived ? `
-                                            <button onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded text-[11px] font-bold transition">
+                                            <button type="button" onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">
                                                 + 添加新规格
                                             </button>
                                         ` : ''}
@@ -1697,7 +1790,7 @@
                         const matchedBar = findMatchedBarcode(sku.name);
                         let autoLinkTag = "";
                         if (matchedBar && !sku.sapOk && !isReadOnlyMode && !isArchived) {
-                            autoLinkTag = `<button onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-1.5 py-0.2 rounded text-[10px] font-bold transition">🏷️ 匹配69码: ${matchedBar.barcode} (点亮)</button>`;
+                            autoLinkTag = `<button type="button" onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-1.5 py-0.2 rounded text-[10px] font-bold transition cursor-pointer">🏷️ 匹配69码: ${matchedBar.barcode} (点亮)</button>`;
                         } else if (matchedBar) {
                             autoLinkTag = `<span class="text-gray-400 font-mono text-[10px]">🏷️ ${matchedBar.barcode}</span>`;
                         }
@@ -1716,8 +1809,8 @@
                                 <div class="flex items-center space-x-2">
                                     <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
                                     ${!isReadOnlyMode && !isArchived ? `
-                                        <button onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[10px]" title="修改规格名称">✏️</button>
-                                        <button onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[10px]" title="删除规格">🗑️</button>
+                                        <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[10px] cursor-pointer" title="修改规格名称">✏️</button>
+                                        <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[10px] cursor-pointer" title="删除规格">🗑️</button>
                                     ` : ''}
                                     ${autoLinkTag}
                                 </div>
@@ -1760,6 +1853,7 @@
         // ================= 大备注操作 =================
         function insertStrikeThrough() {
             const ta = document.getElementById("big-note-textarea");
+            if(!ta) return;
             const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
             ta.value = (s !== e) ? v.substring(0, s) + `~~${v.substring(s, e)}~~` + v.substring(e) : v.substring(0, s) + `~~作废内容~~` + v.substring(e);
             updateBigNoteLivePreview();
@@ -1767,37 +1861,55 @@
 
         function insertFileLinkPrompt() {
             const link = prompt("请输入网盘/文档链接:");
-            if (link) { const ta = document.getElementById("big-note-textarea"); ta.value += ` 🔗资料链接: ${link.trim()} `; updateBigNoteLivePreview(); }
+            if (link) { 
+                const ta = document.getElementById("big-note-textarea"); 
+                if(ta) {
+                    ta.value += ` 🔗资料链接: ${link.trim()} `; 
+                    updateBigNoteLivePreview(); 
+                }
+            }
         }
 
         function insertTimestamp() {
             const ta = document.getElementById("big-note-textarea");
-            ta.value += ` [${getNowString().substring(5, 16)}] `;
-            updateBigNoteLivePreview();
+            if(ta) {
+                ta.value += ` [${getNowString().substring(5, 16)}] `;
+                updateBigNoteLivePreview();
+            }
         }
 
-        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML = renderFormattedText(document.getElementById("big-note-textarea").value); }
+        function updateBigNoteLivePreview() { 
+            const preview = document.getElementById("big-note-preview");
+            const ta = document.getElementById("big-note-textarea");
+            if(preview && ta) preview.innerHTML = renderFormattedText(ta.value); 
+        }
         
         function openBigNoteModal(prodId) {
             currentBigNoteProdId = String(prodId);
             const p = products.find(item => String(item.id) === String(prodId));
             if (!p) return;
-            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`;
-            document.getElementById("big-note-textarea").value = p.bigNote || "";
+            const nameEl = document.getElementById("big-note-prod-name");
+            const taEl = document.getElementById("big-note-textarea");
+            const modalEl = document.getElementById("big-note-modal");
+
+            if(nameEl) nameEl.innerText = `【${p.name}】`;
+            if(taEl) taEl.value = p.bigNote || "";
             updateBigNoteLivePreview();
-            document.getElementById("big-note-modal").classList.remove("hidden");
+            if(modalEl) modalEl.classList.remove("hidden");
             lockBodyScroll(true);
         }
         
         function closeBigNoteModal() { 
-            document.getElementById("big-note-modal").classList.add("hidden"); 
+            const modalEl = document.getElementById("big-note-modal");
+            if(modalEl) modalEl.classList.add("hidden"); 
             lockBodyScroll(false); 
         }
         
         function saveBigNoteChanges() {
             const p = products.find(item => String(item.id) === String(currentBigNoteProdId));
-            if (p) {
-                p.bigNote = document.getElementById("big-note-textarea").value.trim();
+            const taEl = document.getElementById("big-note-textarea");
+            if (p && taEl) {
+                p.bigNote = taEl.value.trim();
                 if (!p.historyLogs) p.historyLogs = [];
                 p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新了大备注资料" });
                 closeBigNoteModal();
@@ -1960,247 +2072,6 @@
                 syncMatrixToCloud();
             }
         }
-
-        // ================= 🤖 AI 助手 =================
-        function applyQuickPrompt(type) {
-            const input = document.getElementById("ai-user-prompt");
-            if (type === 'DIAGNOSE') input.value = "请结合当前推进看板，诊断延期卡点与风险品类。";
-            else if (type === 'SPEECH_PRODUCT') input.value = "帮我生成一段发给产品经理的微信话术：确认参数与69码由产品端在在线表维护，电商负责核对跟进。";
-            else if (type === 'REPORT_DELAY') input.value = "汇总当前延期或7天内大货的项目，起草一份给领导的进度汇报。";
-            submitUserDemandToAI();
-        }
-
-        function submitUserDemandToAI() {
-            const input = document.getElementById("ai-user-prompt");
-            const demandText = input.value.trim();
-            if (!demandText) return;
-
-            appendChatMessage('USER', escapeHtml(demandText));
-            input.value = "";
-
-            const today = new Date().toISOString().split('T')[0];
-            let runningList = products.filter(p => p.status !== '已归档');
-            let delayedList = [];
-            let nearDaysList = [];
-
-            runningList.forEach(p => {
-                const cleanDate = normalizeDate(p.prodDate);
-                const diffDays = cleanDate ? Math.ceil((new Date(cleanDate) - new Date(today)) / (1000 * 60 * 60 * 24)) : 999;
-                if (cleanDate && diffDays < 0) delayedList.push({ name: p.name, days: Math.abs(diffDays), remark: p.remark });
-                else if (cleanDate && diffDays <= 7) nearDaysList.push({ name: p.name, days: diffDays });
-            });
-
-            setTimeout(() => {
-                let replyHtml = "";
-                if (demandText.includes("诊断") || demandText.includes("卡点")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">📊 实时运营诊断结论：</div>
-                        <div>• <strong>进行中系列</strong>：${runningList.length} 个 ｜ <strong>69码映射库</strong>：${globalBarcodes.length} 条。</div>
-                        <div>• 🚨 <strong>延期风险</strong>：${delayedList.length > 0 ? delayedList.map(d => `【${d.name}】超期 ${d.days} 天`).join('；') : '暂无延期项目'}</div>
-                        <div>• ⚠️ <strong>7天内即将大货</strong>：${nearDaysList.map(n => n.name).join('、') || '无'}</div>
-                        <div class="mt-2 text-blue-600">💡 建议：拉齐责任人优先推进 69 码与详情页验收。</div>
-                    `;
-                } else if (demandText.includes("产品") || demandText.includes("话术") || demandText.includes("沟通")) {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">💬 推荐对齐话术（直接复制）：</div>
-                        <div class="bg-white p-2.5 rounded border border-gray-200 text-gray-700 leading-relaxed select-all">
-                            “Hi 产品同事，跟您拉齐一下后续新品资料的维护流程～<br><br>
-                            为确保两边数据一致，后续新品的<strong>底层核心参数、69条码与上市排期</strong>依然由咱们产品端在在线表负责维护更新。更新完成后同步我们电商运营，我们负责核对并对接策划/视觉落地。<br><br>
-                            这样专业参数以你们确认为准，两边权责清晰，辛苦啦！🤝”
-                        </div>
-                    `;
-                } else {
-                    replyHtml = `
-                        <div class="font-bold text-gray-900 border-b pb-1.5">🤖 WorkBuddy 已完成需求分析：</div>
-                        <div class="text-gray-700 leading-relaxed">已收到指令：“${escapeHtml(demandText)}”。WorkBuddy 支持全盘协同。</div>
-                    `;
-                }
-                appendChatMessage('BOT', replyHtml);
-            }, 300);
-        }
-
-        function toggleAIChatDrawer() {
-            const drawer = document.getElementById("ai-chat-drawer");
-            if (drawer) {
-                drawer.classList.toggle("hidden");
-                lockBodyScroll(!drawer.classList.contains("hidden"));
-            }
-        }
-
-        function clearAIChatHistory() {
-            const container = document.getElementById("ai-chat-messages");
-            if (!container) return;
-            container.innerHTML = `
-                <div class="flex items-start space-x-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                    <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">
-                        已清空历史对话。请输入您新的运营需求～
-                    </div>
-                </div>
-            `;
-        }
-
-        function appendChatMessage(sender, textHtml) {
-            const container = document.getElementById("ai-chat-messages");
-            if (!container) return;
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `flex items-start space-x-2 ${sender === 'USER' ? 'justify-end' : 'justify-start'}`;
-
-            if (sender === 'USER') {
-                msgDiv.innerHTML = `
-                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-xs break-words">${textHtml}</div>
-                    <div class="w-6 h-6 rounded-md bg-gray-800 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">我</div>
-                `;
-            } else {
-                msgDiv.innerHTML = `
-                    <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                    <div class="ai-chat-bubble-bot p-3.5 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs break-words space-y-2">${textHtml}</div>
-                `;
-            }
-            container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function toggleMemoPanel() {
-            isMemoPanelOpen = !isMemoPanelOpen;
-            const body = document.getElementById("memo-panel-body");
-            const btn = document.getElementById("memo-toggle-btn");
-            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
-            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
-        }
-
-        function addMemoItem() {
-            if (isReadOnlyMode) return;
-            const input = document.getElementById("memo-input");
-            if (!input) return;
-            const text = input.value.trim();
-            if (!text) return alert("请输入备忘内容！");
-            globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) });
-            input.value = "";
-            renderMemos();
-            syncMatrixToCloud();
-        }
-
-        function toggleMemoStatus(id) {
-            if (isReadOnlyMode) return;
-            const m = globalMemos.find(item => item.id === id);
-            if (m) { m.done = !m.done; renderMemos(); syncMatrixToCloud(); }
-        }
-
-        function removeMemo(id) {
-            if (isReadOnlyMode) return;
-            globalMemos = globalMemos.filter(item => item.id !== id);
-            renderMemos();
-            syncMatrixToCloud();
-        }
-
-        function clearDoneMemos() {
-            if (isReadOnlyMode) return;
-            if (confirm("确定清理已完成事项吗？")) {
-                globalMemos = globalMemos.filter(m => !m.done);
-                renderMemos();
-                syncMatrixToCloud();
-            }
-        }
-
-        function renderMemos() {
-            const container = document.getElementById("memo-list-container");
-            if (!container) return;
-            container.innerHTML = "";
-            const pending = globalMemos.filter(m => !m.done).length;
-            const memoTag = document.getElementById("memo-count-tag");
-            if (memoTag) memoTag.innerText = `${pending} 项待办 (共 ${globalMemos.length})`;
-            if (globalMemos.length === 0) {
-                container.innerHTML = `<div class="text-gray-400 text-center py-4 text-xs">暂无备忘事项~</div>`;
-                return;
-            }
-            globalMemos.forEach(memo => {
-                let badgeClass = memo.priority.includes("紧急") ? "bg-red-50 text-red-700 border-red-200 font-bold" : (memo.priority.includes("常规") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200");
-                const item = document.createElement("div");
-                item.className = `flex items-center justify-between p-2.5 rounded-lg border ${memo.done ? 'bg-gray-50/70 border-gray-200 text-gray-400' : 'bg-white border-gray-200'}`;
-                item.innerHTML = `
-                    <div class="flex items-center space-x-2 flex-1 min-w-0 pr-2">
-                        <input type="checkbox" onchange="toggleMemoStatus('${memo.id}')" ${memo.done ? 'checked' : ''} class="w-4 h-4 rounded text-amber-600 border-gray-300">
-                        <span class="border px-1 py-0.2 rounded text-[10px] ${badgeClass}">${escapeHtml(memo.priority)}</span>
-                        <span class="text-xs break-words ${memo.done ? 'line-through text-gray-400' : 'text-gray-800'}">${escapeHtml(memo.text)}</span>
-                    </div>
-                    <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
-                        <span>${memo.createdAt || ''}</span>
-                        ${!isReadOnlyMode ? `<button onclick="removeMemo('${memo.id}')" class="text-gray-400 hover:text-red-600">🗑️</button>` : ''}
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        function restoreProductFromArchive(prodId) {
-            if (isReadOnlyMode) return;
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            if (confirm(`确定恢复【${p.name}】吗？`)) {
-                p.status = "进行中";
-                p.archivedAt = null;
-                renderTable();
-                syncMatrixToCloud();
-            }
-        }
-
-        function updateCategoryFilterOptions() {
-            const selectEl = document.getElementById("filter-category");
-            if (!selectEl) return;
-            const currentVal = selectEl.value;
-            let categories = new Set();
-            products.forEach(p => { if (p.category && p.category.trim()) categories.add(p.category.trim()); });
-            selectEl.innerHTML = '<option value="ALL">全部品类</option>';
-            Array.from(categories).sort().forEach(cat => {
-                const opt = document.createElement("option");
-                opt.value = cat;
-                opt.innerText = cat;
-                if (cat === currentVal) opt.selected = true;
-                selectEl.appendChild(opt);
-            });
-        }
-
-        function resetAllFilters() {
-            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
-            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
-            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
-            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
-            renderTable();
-        }
-
-        function lockBodyScroll(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
-        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
-
-        function getNowString() {
-            const now = new Date();
-            return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0') + " " + String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
-        }
-
-        function normalizeDate(str) {
-            if (!str) return "";
-            let s = String(str).trim().replace(/\//g, "-");
-            let match = s.match(/\d{4}-\d{1,2}-\d{1,2}/);
-            return match ? match[0] : (s.length >= 10 ? s.substring(0, 10) : s);
-        }
-
-        function extractCommonPrefix(arr) {
-            if (!arr || arr.length === 0) return "";
-            if (arr.length === 1) return arr[0].replace(/[\u4e00-\u9fa5].*$/, '').replace(/[-_]$/, '') || arr[0];
-            let sorted = arr.concat().sort();
-            let a1 = sorted[0], a2 = sorted[sorted.length - 1], L = a1.length, i = 0;
-            while (i < L && a1.charAt(i) === a2.charAt(i)) i++;
-            return a1.substring(0, i).replace(/[-_]$/, '') || arr[0].substring(0, 8);
-        }
-
-        function renderFormattedText(text) {
-            if (!text) return '<span class="text-gray-400">暂无大备注内容</span>';
-            let safe = escapeHtml(text);
-            safe = safe.replace(/~~(.*?)~~/g, '<s>$1</s>').replace(/(https?:\/\/[^\s\n\r]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline font-medium">$1</a>');
-            return safe;
-        }
-
-        function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
     </script>
 </body>
 </html>
