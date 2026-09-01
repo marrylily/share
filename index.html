@@ -446,11 +446,11 @@
                 </div>
             </div>
 
-            <!-- 本地快照备份、恢复与一键初始化测试数据 -->
+            <!-- 本地快照备份与恢复 -->
             <div class="pt-2 border-t border-gray-100 flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px]">
                 <span class="text-gray-500 font-medium">📦 数据管理：</span>
                 <div class="space-x-2">
-                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer" title="如果本地无数据，点击载入一组测试样例">载入测试数据</button>
+                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer" title="载入一组测试样例数据">载入测试样例</button>
                     <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold cursor-pointer">导出备份</button>
                     <label class="text-blue-600 hover:underline font-bold cursor-pointer">
                         恢复
@@ -1906,6 +1906,58 @@
 
             updateSelectAllCheckboxState();
             renderMemos();
+        }
+
+        // ================= 剪贴板兼容与只读分享 =================
+        function copyTextToClipboard(text, successMsg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    openReadonlyModal(text);
+                }).catch(() => openReadonlyModal(text));
+            } else {
+                openReadonlyModal(text);
+            }
+        }
+
+        function openReadonlyModal(urlText) {
+            const modal = document.getElementById("readonly-share-modal");
+            const ta = document.getElementById("readonly-url-textarea");
+            if(ta) ta.value = urlText;
+            if(modal) {
+                modal.classList.remove("hidden");
+                lockBodyScroll(true);
+            }
+        }
+
+        function closeReadonlyModal() {
+            const modal = document.getElementById("readonly-share-modal");
+            if(modal) modal.classList.add("hidden");
+            lockBodyScroll(false);
+        }
+
+        function confirmCopyReadonlyUrl() {
+            const ta = document.getElementById("readonly-url-textarea");
+            if(ta) {
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    alert("🎉 链接已成功复制到剪贴板！");
+                } catch(e) {
+                    prompt("请手动复制下方链接：", ta.value);
+                }
+            }
+            closeReadonlyModal();
+        }
+
+        function copyReadOnlyShareLink() {
+            const owner = cleanConfigString(localStorage.getItem("wb_owner") || "marrylily");
+            const repo = cleanConfigString(localStorage.getItem("wb_repo") || "my-tasks");
+            const gBar = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || "");
+            const tRepo = (localStorage.getItem("wb_token_repo") || "").trim();
+            const tGist = (localStorage.getItem("wb_token_gist") || "").trim();
+
+            const shareUrl = `${window.location.origin + window.location.pathname}?mode=readonly&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&gist_bar=${encodeURIComponent(gBar)}&token_repo=${encodeURIComponent(tRepo)}&token_gist=${encodeURIComponent(tGist)}`;
+            copyTextToClipboard(shareUrl);
         }
 
         // ================= 大备注操作 =================
