@@ -1780,7 +1780,7 @@
                 `;
                 tbody.appendChild(tr);
 
-                // 展开渲染子变体列表
+                // 展开渲染子变体列表 (桌面版)
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/90";
@@ -1848,6 +1848,113 @@
                     subTr.innerHTML = subHtml;
                     tbody.appendChild(subTr);
                 }
+
+                // -> 移动端卡片视图渲染 <-
+                const mCard = document.createElement("div");
+                mCard.className = `bg-white p-3 rounded-xl border ${isUrgent ? 'border-red-400 shadow-md' : 'border-gray-200 shadow-sm'} flex flex-col space-y-2 relative`;
+
+                let mSubHtml = "";
+                if (isExpanded) {
+                    mSubHtml = `<div class="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[11px] font-bold text-gray-700">子变体规格 (${skuCount})</span>
+                            ${!isReadOnlyMode && !isArchived ? `
+                                <div class="space-x-1 flex">
+                                    <button type="button" onclick="openBatchNodeModal('${prod.id}')" class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-[10px] font-bold">⚡ 批量</button>
+                                    <button type="button" onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-[10px] font-bold">+ 添加</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    prod.skus.forEach(sku => {
+                        const matchedBar = findMatchedBarcode(sku.name);
+                        let autoLinkTag = "";
+                        if (matchedBar && !sku.sapOk && !isReadOnlyMode && !isArchived) {
+                            autoLinkTag = `<button type="button" onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-bold mt-1 w-full text-left truncate">🏷️ 匹配: ${matchedBar.barcode}</button>`;
+                        } else if (matchedBar) {
+                            autoLinkTag = `<div class="text-gray-400 font-mono text-[10px] mt-1 truncate">🏷️ ${matchedBar.barcode}</div>`;
+                        }
+
+                        const renderNodeBadgeM = (key, label, isOk) => {
+                            return `
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="checkbox" ${isReadOnlyMode || isArchived ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', '${key}', '${label}', this)"`} ${isOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                    <span class="${isOk ? 'text-green-700 font-bold' : 'text-gray-500'} text-[11px]">${label}</span>
+                                </label>
+                            `;
+                        };
+
+                        mSubHtml += `
+                            <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 flex flex-col space-y-1.5">
+                                <div class="flex justify-between items-start gap-2">
+                                    <span class="font-semibold text-gray-800 text-[11px] leading-snug break-words">${escapeHtml(sku.name)}</span>
+                                    ${!isReadOnlyMode && !isArchived ? `
+                                        <div class="flex space-x-1.5 flex-shrink-0">
+                                            <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[11px]">✏️</button>
+                                            <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[11px]">🗑️</button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${autoLinkTag}
+                                <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-gray-100">
+                                    ${renderNodeBadgeM('bomOk', '财务BOM', sku.bomOk)}
+                                    ${renderNodeBadgeM('detailOk', '详情页', sku.detailOk)}
+                                    ${renderNodeBadgeM('sapOk', '69编码', sku.sapOk)}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    mSubHtml += `</div>`;
+                }
+
+                mCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start space-x-2.5">
+                            <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 border-gray-300 mt-0.5">
+                            <div>
+                                <div class="font-bold text-gray-900 text-xs sm:text-sm leading-snug break-words pr-1">
+                                    ${escapeHtml(prod.name)}
+                                    ${!isReadOnlyMode && !isArchived ? `<button type="button" onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px] ml-1">✏️</button>` : ''}
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-1 flex items-center space-x-1.5">
+                                    <span class="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">${escapeHtml(prod.category)}</span>
+                                    <span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">${skuCount} SKU</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="toggleExpand('${prod.id}')" class="${isExpanded ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'} hover:bg-gray-200 px-2 py-1.5 rounded text-[11px] font-bold transition flex-shrink-0">
+                            ${isExpanded ? '收起 ▲' : '展开 ▼'}
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-2 pl-6">
+                        <div class="text-[11px]">${healthBadge}</div>
+                        <div class="flex space-x-1">
+                            ${isReadOnlyMode || isArchived ? `<span class="text-[10px] px-1.5 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border border-gray-300 rounded px-1 py-0.5 text-[10px]"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>归档</option></select>`}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5 mt-2 pl-6">
+                        ${getBadge('财务BOM', bomDone, skuCount, 'bomOk', '财务BOM')}
+                        ${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}
+                        ${getBadge('69编码', sapDone, skuCount, 'sapOk', '69编码')}
+                    </div>
+
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                        <div class="flex space-x-1.5">
+                            ${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 text-[10px] max-w-[120px] truncate">📝 ${escapeHtml(prod.remark)}</span>` : ''}
+                        </div>
+                        <div class="flex space-x-3 text-[11px] font-medium">
+                            <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 font-bold flex items-center"><span class="mr-0.5">📌</span>大备注</button>
+                            <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600">追溯</button>
+                            ${!isReadOnlyMode && !isArchived ? `<button type="button" onclick="openEditModal('${prod.id}')" class="text-gray-600">编辑</button>` : ''}
+                            ${isArchived && !isReadOnlyMode ? `<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold">恢复</button>` : ''}
+                            ${!isReadOnlyMode ? `<button type="button" onclick="removeProduct('${prod.id}')" class="text-red-500">删除</button>` : ''}
+                        </div>
+                    </div>
+                    ${mSubHtml}
+                `;
+                mobileContainer.appendChild(mCard);
             });
 
             const statTotal = document.getElementById("stat-total");
