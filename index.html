@@ -273,7 +273,7 @@
                     <div class="flex justify-between items-center">
                         <label class="font-bold text-indigo-900 flex items-center space-x-1">
                             <span>🔍 批量核对 / 查缺补漏查询</span>
-                            <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或空格隔开的多个 69码/SKU编码)</span>
+                            <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或逗号隔开的多个 69码/SKU编码)</span>
                         </label>
                         <button type="button" onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline cursor-pointer">清空核对</button>
                     </div>
@@ -407,9 +407,7 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-gray-700 font-bold mb-1.5">1. 选择要操作的子变体 (可多选)</label>
-                    <div id="batch-node-sku-list" class="space-y-1 max-h-36 log-scroll p-2 bg-gray-50 border border-gray-200 rounded-lg">
-                        <!-- JS 动态渲染复选框 -->
-                    </div>
+                    <div id="batch-node-sku-list" class="space-y-1 max-h-36 log-scroll p-2 bg-gray-50 border border-gray-200 rounded-lg"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -453,6 +451,86 @@
             <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-2.5 bg-gray-50/50" id="logs-container"></div>
             <div class="flex justify-end px-4 sm:px-6 py-3 border-t border-gray-200 flex-shrink-0 bg-white rounded-b-2xl">
                 <button type="button" onclick="closeLogsModal()" class="px-5 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-bold transition cursor-pointer">返回主界面</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✏️ 产品基本信息编辑弹窗 -->
+    <div id="edit-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeEditModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-3 flex items-center justify-between">
+                <span>✏️ 修改产品基本信息</span>
+                <span id="edit-prod-id" class="text-[10px] text-gray-400 font-mono"></span>
+            </h2>
+            <div class="space-y-2.5">
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名 <span class="text-red-500">*</span></label>
+                    <input type="text" id="edit-name" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道 <span class="text-red-500">*</span></label>
+                    <input type="text" id="edit-category" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">量产大货截点</label>
+                    <input type="date" id="edit-prod-date" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-medium mb-1">变动原因 / 简要备注</label>
+                    <input type="text" id="edit-reason" placeholder="如: 结构变更延期、首批主推等..." class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 mt-4">
+                <button type="button" onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium cursor-pointer">取消</button>
+                <button type="button" onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium cursor-pointer">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📌 大备注备忘与资料留痕弹窗 -->
+    <div id="big-note-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh]">
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
+                <span class="flex items-center space-x-1">
+                    <span>📌 大备注备忘与资料留痕</span>
+                    <span id="big-note-prod-name" class="text-indigo-600 font-semibold"></span>
+                </span>
+                <button type="button" onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
+            </h2>
+            
+            <div id="big-note-toolbar" class="flex items-center space-x-2 mb-2 pb-2 border-b border-gray-100 flex-wrap gap-y-1">
+                <button type="button" onclick="insertStrikeThrough()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-[11px] font-mono cursor-pointer"><s>删除线</s></button>
+                <button type="button" onclick="insertFileLinkPrompt()" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[11px] font-bold cursor-pointer">🔗 插入链接</button>
+                <button type="button" onclick="insertTimestamp()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 text-[11px] cursor-pointer">⏱️ 插入时间</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden">
+                <div>
+                    <label class="block text-gray-600 font-semibold mb-1">编辑内容 (支持 Markdown 链接与 ~~删除线~~)：</label>
+                    <textarea id="big-note-textarea" oninput="updateBigNoteLivePreview()" rows="8" class="w-full h-48 md:h-64 bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-semibold mb-1">实时预览效果：</label>
+                    <div id="big-note-preview" class="rich-note w-full h-48 md:h-64 bg-gray-50/50 border border-gray-200 rounded-lg p-2.5 text-xs text-gray-800 log-scroll overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 mt-4 pt-2 border-t border-gray-100">
+                <button type="button" onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium cursor-pointer">取消</button>
+                <button type="button" id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">💾 保存备注</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔗 复制只读分享链接弹窗 -->
+    <div id="readonly-share-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeReadonlyModal()">
+        <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs">
+            <h2 class="text-sm font-bold text-gray-900 mb-2">🔗 复制只读分享链接</h2>
+            <p class="text-gray-500 mb-2 text-[11px]">任何人通过该链接访问均只能查阅看板和 69 码库，无法修改任何内容：</p>
+            <textarea id="readonly-url-textarea" rows="3" readonly class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs font-mono select-all focus:outline-none"></textarea>
+            <div class="flex justify-end space-x-2 mt-3">
+                <button type="button" onclick="closeReadonlyModal()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded cursor-pointer">关闭</button>
+                <button type="button" onclick="confirmCopyReadonlyUrl()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 cursor-pointer">一键复制链接</button>
             </div>
         </div>
     </div>
@@ -701,7 +779,6 @@
                 dateInput.value = d.toISOString().split('T')[0];
             }
 
-            // 1. 优先读取本地缓存
             try {
                 const cachedMatrix = localStorage.getItem("wb_local_matrix");
                 if (cachedMatrix) {
@@ -715,7 +792,6 @@
                 }
             } catch(e) {}
 
-            // 如果本地完全没有数据，自动赋一组默认样例防止空白
             if (products.length === 0) {
                 loadSampleDefaultData();
             } else {
@@ -723,7 +799,6 @@
                 renderBarcodeTable();
             }
 
-            // 2. 检查只读模式
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
             const paramOwner = urlParams.get('owner');
@@ -1274,10 +1349,18 @@
         }
 
         function executeBarcodeBatchSearch() {
-            const rawText = document.getElementById("barcode-batch-search-input").value.trim();
-            if (!rawText) return;
+            const rawText = document.getElementById("barcode-batch-search-input").value;
+            if (!rawText || !rawText.trim()) return;
 
-            const queryItems = Array.from(new Set(rawText.split(/[\n,\s\t]+/).map(s => s.trim()).filter(s => s.length > 0)));
+            const singleSearch = document.getElementById("barcode-search-input");
+            if (singleSearch) singleSearch.value = "";
+
+            const queryItems = Array.from(new Set(
+                rawText.split(/[\r\n,]+/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0)
+            ));
+
             if (queryItems.length === 0) return;
 
             barcodeBatchQueryList = queryItems;
@@ -1285,12 +1368,18 @@
             let missing = [];
 
             queryItems.forEach(q => {
-                const qLower = q.toLowerCase();
-                const found = globalBarcodes.some(b => 
-                    (b.barcode && b.barcode.toLowerCase().includes(qLower)) ||
-                    (b.sapCode && b.sapCode.toLowerCase().includes(qLower)) ||
-                    (b.name && b.name.toLowerCase().includes(qLower))
-                );
+                const qClean = q.toLowerCase();
+                const found = globalBarcodes.some(b => {
+                    const bar = (b.barcode || '').trim().toLowerCase();
+                    const sap = (b.sapCode || '').trim().toLowerCase();
+                    const name = (b.name || '').trim().toLowerCase();
+                    return (bar && bar === qClean) || 
+                           (sap && sap === qClean) || 
+                           (bar && bar.includes(qClean)) || 
+                           (sap && sap.includes(qClean)) || 
+                           (name && name.includes(qClean));
+                });
+
                 if (found) {
                     matchedBarcodes.add(q);
                 } else {
@@ -1303,13 +1392,13 @@
             const summaryEl = document.getElementById("barcode-missing-summary");
             const listEl = document.getElementById("barcode-missing-list");
 
-            if(missingBox) missingBox.classList.remove("hidden");
-            if(summaryEl) summaryEl.innerText = `📊 查询总数: ${queryItems.length} 项 ｜ 库中已匹配: ${matchedBarcodes.size} 项 ｜ 缺失/未录入: ${missing.length} 项`;
+            if (missingBox) missingBox.classList.remove("hidden");
+            if (summaryEl) summaryEl.innerText = `📊 查询总数: ${queryItems.length} 项 ｜ 库中已匹配: ${matchedBarcodes.size} 项 ｜ 缺失/未录入: ${missing.length} 项`;
 
             if (missing.length > 0) {
-                if(listEl) listEl.innerHTML = missing.map(m => `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200">❌ ${escapeHtml(m)}</span>`).join('');
+                if (listEl) listEl.innerHTML = missing.map(m => `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200">❌ ${escapeHtml(m)}</span>`).join('');
             } else {
-                if(listEl) listEl.innerHTML = `<span class="text-green-700 font-bold">🎉 全部 ${queryItems.length} 项均在编码库中找到！无缺失！</span>`;
+                if (listEl) listEl.innerHTML = `<span class="text-green-700 font-bold">🎉 全部 ${queryItems.length} 项均在编码库中找到！无缺失！</span>`;
             }
 
             renderBarcodeTable();
@@ -1435,11 +1524,18 @@
             let matched = 0;
             globalBarcodes.forEach((b, idx) => {
                 if (barcodeBatchQueryList.length > 0) {
-                    const matchBatch = barcodeBatchQueryList.some(q => 
-                        (b.barcode && b.barcode.toLowerCase().includes(q.toLowerCase())) ||
-                        (b.sapCode && b.sapCode.toLowerCase().includes(q.toLowerCase())) ||
-                        (b.name && b.name.toLowerCase().includes(q.toLowerCase()))
-                    );
+                    const bar = (b.barcode || '').trim().toLowerCase();
+                    const sap = (b.sapCode || '').trim().toLowerCase();
+                    const name = (b.name || '').trim().toLowerCase();
+
+                    const matchBatch = barcodeBatchQueryList.some(q => {
+                        const qClean = q.toLowerCase();
+                        return (bar && bar === qClean) || 
+                               (sap && sap === qClean) || 
+                               (bar && bar.includes(qClean)) || 
+                               (sap && sap.includes(qClean)) || 
+                               (name && name.includes(qClean));
+                    });
                     if (!matchBatch) return;
                 }
 
@@ -1449,6 +1545,7 @@
                     const matchBar = (b.barcode || "").toLowerCase().includes(keyword);
                     if (!matchName && !matchSap && !matchBar) return;
                 }
+
                 matched++;
 
                 const tr = document.createElement("tr");
@@ -1780,7 +1877,6 @@
                 `;
                 tbody.appendChild(tr);
 
-                // 展开渲染子变体列表 (桌面版)
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/90";
@@ -1849,7 +1945,6 @@
                     tbody.appendChild(subTr);
                 }
 
-                // -> 移动端卡片视图渲染 <-
                 const mCard = document.createElement("div");
                 mCard.className = `bg-white p-3 rounded-xl border ${isUrgent ? 'border-red-400 shadow-md' : 'border-gray-200 shadow-sm'} flex flex-col space-y-2 relative`;
 
@@ -2253,9 +2348,7 @@
             }
         }
 
-        // ================= 缺失的 UI 与工具函数补充 =================
-
-        // 1. 弹窗与滚动锁定
+        // ================= UI 与工具函数 =================
         function toggleConfigModal() {
             const modal = document.getElementById("config-modal");
             if (modal) {
@@ -2276,7 +2369,6 @@
             document.body.style.overflow = isLocked ? 'hidden' : '';
         }
 
-        // 2. 数据格式化与过滤
         function escapeHtml(str) {
             if (!str) return "";
             return String(str)
@@ -2347,7 +2439,6 @@
             renderTable();
         }
 
-        // 3. 归档与只读模式
         function restoreProductFromArchive(prodId) {
             if (isReadOnlyMode) return;
             const p = products.find(item => String(item.id) === String(prodId));
@@ -2375,7 +2466,7 @@
             if (bigNoteTa) bigNoteTa.readOnly = true;
         }
 
-        // 4. 全局备忘板模块
+        // ================= 全局备忘板模块 =================
         function renderMemos() {
             const container = document.getElementById("memo-list-container");
             const tag = document.getElementById("memo-count-tag");
@@ -2455,7 +2546,7 @@
             }
         }
 
-        // 5. WorkBuddy AI 助手快捷操作
+        // ================= WorkBuddy AI 助手 =================
         function clearAIChatHistory() {
             const messages = document.getElementById("ai-chat-messages");
             if (messages) {
