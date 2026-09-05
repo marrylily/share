@@ -29,7 +29,6 @@
         .ai-chat-bubble-user { background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
         .ai-chat-bubble-bot { background-color: #f1f5f9; color: #1e293b; border-bottom-left-radius: 2px; }
 
-        /* 大备注外显多行省略排版 */
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -187,7 +186,7 @@
                 </div>
             </div>
 
-            <!-- 桌面表格视图 (优化大备注列宽与直观多行渲染) -->
+            <!-- 桌面表格视图 (大备注直观展示) -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
@@ -336,15 +335,12 @@
                 <button type="button" onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
             </h2>
             <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SKU产品编码 \t 69码 \t 备注】</p>
-            
             <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" placeholder="支持直接从表格整列复制粘贴，例如：&#10;D-3181 晨曦金1.2M&#9;320243181001&#9;6941123400012&#9;主推款&#10;D-3181 深空灰1.2M&#9;320243181002&#9;6941123400029&#9;加长款" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono leading-relaxed"></textarea>
-
             <div id="barcode-import-analysis" class="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-1.5 flex-1 log-scroll">
                 <div class="font-bold text-gray-700">📊 数据预审诊断：</div>
                 <div id="barcode-analysis-stats" class="text-gray-500 text-[11px]">等待输入数据...</div>
                 <div id="barcode-analysis-duplicates" class="text-amber-700 text-[11px] space-y-0.5"></div>
             </div>
-
             <div class="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
                 <span class="text-[11px] text-gray-400">💡 自动过滤 69 码完全重复的数据</span>
                 <div class="space-x-2">
@@ -481,7 +477,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">量产大货截点</label>
-                    <input type="date" id="edit-prod-date" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="date" id="edit-prod-date" class="w-full border border-blue-300 bg-blue-50/30 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-gray-600 font-medium mb-1">变动原因 / 简要备注</label>
@@ -505,13 +501,11 @@
                 </span>
                 <button type="button" onclick="closeBigNoteModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
             </h2>
-            
             <div id="big-note-toolbar" class="flex items-center space-x-2 mb-2 pb-2 border-b border-gray-100 flex-wrap gap-y-1">
                 <button type="button" onclick="insertStrikeThrough()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-[11px] font-mono cursor-pointer"><s>删除线</s></button>
                 <button type="button" onclick="insertFileLinkPrompt()" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[11px] font-bold cursor-pointer">🔗 插入链接</button>
                 <button type="button" onclick="insertTimestamp()" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 text-[11px] cursor-pointer">⏱️ 插入时间</button>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden">
                 <div>
                     <label class="block text-gray-600 font-semibold mb-1">编辑内容 (支持 Markdown 链接与 ~~删除线~~)：</label>
@@ -522,7 +516,6 @@
                     <div id="big-note-preview" class="rich-note w-full h-48 md:h-64 bg-gray-50/50 border border-gray-200 rounded-lg p-2.5 text-xs text-gray-800 log-scroll overflow-y-auto"></div>
                 </div>
             </div>
-
             <div class="flex justify-end space-x-2 mt-4 pt-2 border-t border-gray-100">
                 <button type="button" onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium cursor-pointer">取消</button>
                 <button type="button" id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">💾 保存备注</button>
@@ -668,7 +661,8 @@
             localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
             renderTable();
             renderBarcodeTable();
-            alert("🎉 已成功载入测试样例数据！");
+            renderMemos();
+            alert("🎉 已成功恢复基础数据！");
         }
 
         function fetchWithTimeout(url, options = {}, timeout = 5000) {
@@ -697,13 +691,16 @@
                 if (cachedBarcodes) {
                     globalBarcodes = normalizeBarcodesData(JSON.parse(cachedBarcodes));
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.warn("本地缓存解析失败，加载回退数据", e);
+            }
 
             if (products.length === 0) {
                 loadSampleDefaultData();
             } else {
                 renderTable();
                 renderBarcodeTable();
+                renderMemos();
             }
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -1640,6 +1637,67 @@
             syncMatrixToCloud();
         }
 
+        function openBatchNodeModal(prodId) {
+            if (isReadOnlyMode) return;
+            currentBatchProdId = String(prodId);
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+
+            const skuListContainer = document.getElementById("batch-node-sku-list");
+            skuListContainer.innerHTML = p.skus.map(sku => `
+                <label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded border border-transparent hover:border-gray-200 transition">
+                    <input type="checkbox" value="${sku.id}" class="batch-sku-checkbox w-4 h-4 rounded text-blue-600 cursor-pointer">
+                    <span class="text-xs text-gray-800 font-medium">${escapeHtml(sku.name)}</span>
+                </label>
+            `).join('');
+
+            document.getElementById("batch-node-remark").value = "";
+            document.getElementById("batch-node-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeBatchNodeModal() {
+            document.getElementById("batch-node-modal").classList.add("hidden");
+            currentBatchProdId = null;
+            lockBodyScroll(false);
+        }
+
+        function confirmBatchNode() {
+            if (!currentBatchProdId) return;
+            const p = products.find(item => String(item.id) === String(currentBatchProdId));
+            if (!p) return;
+
+            const selectedSkuIds = Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(cb => cb.value);
+            if (selectedSkuIds.length === 0) return alert("请至少勾选一个子变体规格！");
+
+            const nodeType = document.getElementById("batch-node-type").value;
+            const nodeLabels = { bomOk: "财务BOM", detailOk: "详情页", sapOk: "69编码" };
+            const label = nodeLabels[nodeType];
+            
+            const targetVal = document.getElementById("batch-node-status").value === "true";
+            const remark = document.getElementById("batch-node-remark").value.trim();
+            const nowTime = getNowString();
+
+            p.skus.forEach(sku => {
+                if (selectedSkuIds.includes(String(sku.id))) {
+                    sku[nodeType] = targetVal;
+                    if (!sku.nodeRecords) sku.nodeRecords = {};
+                    sku.nodeRecords[nodeType] = { status: targetVal, time: nowTime, remark: remark };
+                }
+            });
+
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({
+                time: nowTime,
+                type: targetVal ? "NODE_DONE" : "NODE_CANCEL",
+                desc: `批量${targetVal ? '完成' : '取消'} ${selectedSkuIds.length} 个规格的【${label}】节点${remark ? ' ｜ 备注: ' + remark : ''}`
+            });
+
+            closeBatchNodeModal();
+            renderTable();
+            syncMatrixToCloud();
+        }
+
         // ================= 📜 追溯弹窗渲染 =================
         function openLogsModal(prodId) {
             const p = products.find(item => String(item.id) === String(prodId));
@@ -2004,7 +2062,6 @@
             if (navMatrix) navMatrix.innerText = products.length;
 
             updateSelectAllCheckboxState();
-            renderMemos();
         }
 
         // ================= 剪贴板兼容与只读分享 =================
@@ -2280,6 +2337,247 @@
                 renderTable();
                 syncMatrixToCloud();
             }
+        }
+
+        // ================= 辅助函数 =================
+        function toggleConfigModal() {
+            const modal = document.getElementById("config-modal");
+            if (modal) {
+                modal.classList.toggle("hidden");
+                lockBodyScroll(!modal.classList.contains("hidden"));
+            }
+        }
+
+        function toggleAIChatDrawer() {
+            const drawer = document.getElementById("ai-chat-drawer");
+            if (drawer) {
+                drawer.classList.toggle("hidden");
+                lockBodyScroll(!drawer.classList.contains("hidden"));
+            }
+        }
+
+        function lockBodyScroll(isLocked) {
+            document.body.style.overflow = isLocked ? 'hidden' : '';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function normalizeDate(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return "";
+                return d.toISOString().split('T')[0];
+            } catch(e) {
+                return "";
+            }
+        }
+
+        function getNowString() {
+            const d = new Date();
+            const pad = (n) => n < 10 ? '0' + n : n;
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+
+        function extractCommonPrefix(arr) {
+            if (!arr || arr.length === 0) return "";
+            let prefix = arr[0];
+            for (let i = 1; i < arr.length; i++) {
+                while (arr[i].indexOf(prefix) !== 0) {
+                    prefix = prefix.substring(0, prefix.length - 1);
+                    if (prefix === "") return "";
+                }
+            }
+            return prefix;
+        }
+
+        function renderFormattedText(text) {
+            if (!text) return "";
+            let html = escapeHtml(text);
+            html = html.replace(/~~(.*?)~~/g, '<s>$1</s>');
+            html = html.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
+            return html;
+        }
+
+        function updateCategoryFilterOptions() {
+            const select = document.getElementById("filter-category");
+            if (!select) return;
+            const currentVal = select.value;
+            const categories = new Set(products.map(p => p.category).filter(c => c));
+            select.innerHTML = '<option value="ALL">全部品类</option>';
+            categories.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.innerText = c;
+                select.appendChild(opt);
+            });
+            if (categories.has(currentVal)) select.value = currentVal;
+        }
+
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
+        }
+
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            if (!p) return;
+            p.status = "进行中";
+            p.archivedAt = null;
+            if (!p.historyLogs) p.historyLogs = [];
+            p.historyLogs.unshift({ time: getNowString(), type: "RESTORE", desc: "从归档库恢复为进行中" });
+            renderTable();
+            syncMatrixToCloud();
+        }
+
+        function applyReadOnlyUI() {
+            const roleBadge = document.getElementById("role-badge");
+            if (roleBadge) {
+                roleBadge.innerText = "访客只读模式";
+                roleBadge.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
+            }
+            const elementsToHide = ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "btn-save-big-note", "big-note-toolbar"];
+            elementsToHide.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+            const bigNoteTa = document.getElementById("big-note-textarea");
+            if (bigNoteTa) bigNoteTa.readOnly = true;
+        }
+
+        // ================= 全局备忘板模块 =================
+        function renderMemos() {
+            const container = document.getElementById("memo-list-container");
+            const tag = document.getElementById("memo-count-tag");
+            if (!container) return;
+            container.innerHTML = "";
+            let activeCount = 0;
+            globalMemos.forEach(m => {
+                if (!m.done) activeCount++;
+                const div = document.createElement("div");
+                div.className = `flex items-start space-x-2 p-2 rounded-lg border ${m.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`;
+                div.innerHTML = `
+                    <input type="checkbox" onchange="toggleMemoDone('${m.id}', this.checked)" ${m.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer">
+                    <div class="flex-1 min-w-0">
+                        <div class="${m.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(m.text)}</div>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="text-[10px] ${m.done ? 'text-gray-400' : (m.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${m.priority}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">${m.createdAt}</span>
+                        </div>
+                    </div>
+                    ${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${m.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+            if (tag) tag.innerText = `${activeCount} 项提醒`;
+        }
+
+        function toggleMemoDone(id, isDone) {
+            if (isReadOnlyMode) return;
+            const m = globalMemos.find(x => x.id === id);
+            if (m) {
+                m.done = isDone;
+                renderMemos();
+                syncMatrixToCloud();
+            }
+        }
+
+        function deleteMemo(id) {
+            if (isReadOnlyMode) return;
+            globalMemos = globalMemos.filter(x => x.id !== id);
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function toggleMemoPanel() {
+            isMemoPanelOpen = !isMemoPanelOpen;
+            const body = document.getElementById("memo-panel-body");
+            const btn = document.getElementById("memo-toggle-btn");
+            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
+            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
+        }
+
+        function addMemoItem() {
+            if (isReadOnlyMode) return;
+            const input = document.getElementById("memo-input");
+            const priority = document.getElementById("memo-priority");
+            if (!input || !input.value.trim()) return;
+            globalMemos.unshift({
+                id: "M_" + Date.now(),
+                text: input.value.trim(),
+                priority: priority ? priority.value : "⚡ 常规跟进",
+                done: false,
+                createdAt: getNowString().substring(5, 16)
+            });
+            input.value = "";
+            renderMemos();
+            syncMatrixToCloud();
+        }
+
+        function clearDoneMemos() {
+            if (isReadOnlyMode) return;
+            const hasDone = globalMemos.some(m => m.done);
+            if (!hasDone) return alert("没有已完成的备忘！");
+            if (confirm("确定清理所有已完成的备忘吗？")) {
+                globalMemos = globalMemos.filter(m => !m.done);
+                renderMemos();
+                syncMatrixToCloud();
+            }
+        }
+
+        // ================= WorkBuddy AI 助手 =================
+        function clearAIChatHistory() {
+            const messages = document.getElementById("ai-chat-messages");
+            if (messages) {
+                messages.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">已为您清空上下文。</div>
+                    </div>`;
+            }
+        }
+
+        function applyQuickPrompt(type) {
+            const input = document.getElementById("ai-user-prompt");
+            if (!input) return;
+            if (type === 'DIAGNOSE') input.value = "帮我诊断当前进行中项目有哪些卡点，并列出延期风险最高的 Top 3。";
+            if (type === 'SPEECH_PRODUCT') input.value = "帮我写一段话术，催促产品经理尽快提供缺少 69 码的商品资料。";
+            if (type === 'REPORT_DELAY') input.value = "根据目前已延期的项目，生成一份向总监汇报的延期说明文案，说明原因及后续推进计划。";
+        }
+
+        function submitUserDemandToAI() {
+            const input = document.getElementById("ai-user-prompt");
+            const messages = document.getElementById("ai-chat-messages");
+            if (!input || !input.value.trim() || !messages) return;
+
+            const userText = input.value.trim();
+            input.value = "";
+            messages.innerHTML += `
+                <div class="flex items-start space-x-2 justify-end mt-3">
+                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">${escapeHtml(userText)}</div>
+                </div>`;
+            messages.scrollTop = messages.scrollHeight;
+
+            setTimeout(() => {
+                messages.innerHTML += `
+                    <div class="flex items-start space-x-2 mt-3">
+                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
+                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">收到指令: “${escapeHtml(userText)}”。<br>当前进行中系列 ${products.length} 个，69 码库映射共 ${globalBarcodes.length} 条。请在“云端配置”绑定 Token 以启用完整深度分析。</div>
+                    </div>`;
+                messages.scrollTop = messages.scrollHeight;
+            }, 600);
         }
     </script>
 </body>
