@@ -29,6 +29,14 @@
         .ai-chat-bubble-user { background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
         .ai-chat-bubble-bot { background-color: #f1f5f9; color: #1e293b; border-bottom-left-radius: 2px; }
 
+        /* 大备注外显多行省略排版 */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         @media (max-width: 860px) {
             .desktop-table-view { display: none !important; }
             .mobile-card-view { display: block !important; }
@@ -179,23 +187,23 @@
                 </div>
             </div>
 
-            <!-- 桌面表格视图 -->
+            <!-- 桌面表格视图 (优化大备注列宽与直观多行渲染) -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
-                    <table class="w-full text-left text-xs text-gray-700 min-w-[1100px]">
+                    <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
                                 <th class="p-3 w-8 text-center">
                                     <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
                                 </th>
                                 <th class="p-3 w-10 text-center">展开</th>
-                                <th class="p-3 min-w-[170px]">产品型号 / 系列</th>
+                                <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
-                                <th class="p-3 min-w-[150px] whitespace-nowrap">量产大货截点 (健康度)</th>
-                                <th class="p-3 min-w-[280px]">三大核心节点总进度 (点亮留痕)</th>
-                                <th class="p-3 min-w-[190px] whitespace-nowrap">排期/变动说明/大备注</th>
-                                <th class="p-3 min-w-[90px]">状态</th>
-                                <th class="p-3 text-right min-w-[230px] whitespace-nowrap">操作与审计</th>
+                                <th class="p-3 min-w-[140px] whitespace-nowrap">量产大货截点 (健康度)</th>
+                                <th class="p-3 min-w-[270px]">三大核心节点总进度 (点亮留痕)</th>
+                                <th class="p-3 min-w-[260px]">排期说明 / 大备注预览</th>
+                                <th class="p-3 min-w-[85px]">状态</th>
+                                <th class="p-3 text-right min-w-[170px] whitespace-nowrap">操作与审计</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
@@ -535,108 +543,6 @@
         </div>
     </div>
 
-    <!-- ⚙️ 云端配置弹窗 -->
-    <div id="config-modal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
-        <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h2 class="text-sm font-bold text-gray-900">⚙️ 多源云端独立配置</h2>
-                <button type="button" onclick="toggleConfigModal()" class="text-gray-400 hover:text-gray-700 cursor-pointer">✕</button>
-            </div>
-            
-            <div class="space-y-2.5">
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1">GitHub 用户名</label>
-                    <input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="marrylily">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1">📊 新品私有仓库名</label>
-                    <input type="text" id="cfg-repo" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="my-tasks">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-blue-700">🔑 仓库专属 Token (需 repo 权限)</label>
-                    <input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-1.5 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx">
-                </div>
-                <div class="pt-2 border-t border-gray-100">
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">🏷️ 69码 Gist ID</label>
-                    <input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-1.5 text-gray-900 font-mono text-xs" placeholder="14e746d186a05310aa271284aaeb2507">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-purple-700">🔑 Gist 专属 Token (需 gist 权限)</label>
-                    <input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx (可与仓库Token不同)">
-                </div>
-            </div>
-
-            <!-- 本地快照备份与恢复 -->
-            <div class="pt-2 border-t border-gray-100 flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px]">
-                <span class="text-gray-500 font-medium">📦 数据管理：</span>
-                <div class="space-x-2">
-                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer" title="载入一组测试样例数据">载入测试样例</button>
-                    <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold cursor-pointer">导出备份</button>
-                    <label class="text-blue-600 hover:underline font-bold cursor-pointer">
-                        恢复
-                        <input type="file" accept=".json" onchange="importLocalBackupSnapshot(event)" class="hidden">
-                    </label>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
-                <button type="button" onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 text-gray-700 rounded cursor-pointer">取消</button>
-                <button type="button" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer">保存并立即同步</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🤖 WorkBuddy AI 智能需求助手抽屉 -->
-    <div id="ai-chat-drawer" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex justify-end hidden" onclick="if(event.target===this) toggleAIChatDrawer()">
-        <div class="bg-white w-full max-w-lg h-full shadow-2xl flex flex-col justify-between text-xs text-gray-800">
-            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">WB</div>
-                    <div>
-                        <h2 class="font-bold text-gray-900 text-sm flex items-center space-x-1">
-                            <span>运营协同大脑</span>
-                            <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-                        </h2>
-                        <p class="text-[10px] text-gray-500">跨文档联合调取排期与 69 码库</p>
-                    </div>
-                </div>
-                <button type="button" onclick="toggleAIChatDrawer()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-1 rounded-lg hover:bg-white transition cursor-pointer">✕</button>
-            </div>
-
-            <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-1.5 overflow-x-auto custom-scroll flex-shrink-0">
-                <span class="text-gray-400 text-[10px] whitespace-nowrap">快捷指令:</span>
-                <button type="button" onclick="applyQuickPrompt('DIAGNOSE')" class="bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">📊 诊断看板卡点</button>
-                <button type="button" onclick="applyQuickPrompt('SPEECH_PRODUCT')" class="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">💬 对齐产品话术</button>
-                <button type="button" onclick="applyQuickPrompt('REPORT_DELAY')" class="bg-white hover:bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">🚨 延期汇报文案</button>
-            </div>
-
-            <div id="ai-chat-messages" class="flex-1 p-4 space-y-3 log-scroll bg-gray-50/50">
-                <div class="flex items-start space-x-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                    <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">
-                        Hi 胡玲！我是你的 <strong>运营智能助手</strong> 👋<br><br>
-                        我已打通你的<strong>新品推进仓库与 69 码 Gist 库</strong>。你可以随时提出任何需求！
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-3.5 border-t border-gray-200 bg-white flex-shrink-0 space-y-2">
-                <div class="relative">
-                    <textarea id="ai-user-prompt" rows="3" placeholder="在此输入你的业务需求、待处理问题或让 小助手帮你写文案..." class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none font-sans leading-relaxed"></textarea>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-[10px] text-gray-400">💡 自动结合全盘数据提供针对性方案</span>
-                    <div class="flex space-x-2">
-                        <button type="button" onclick="clearAIChatHistory()" class="px-2.5 py-1 text-gray-400 hover:text-gray-600 text-[11px] cursor-pointer">清空</button>
-                        <button type="button" onclick="submitUserDemandToAI()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition shadow-sm cursor-pointer">
-                            🚀 发送需求
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         let products = [];
         let globalMemos = [];
@@ -656,6 +562,7 @@
         let barcodeMissingList = [];
         let pendingImportBarcodes = [];
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
+        let currentBatchProdId = null;
 
         function cleanConfigString(str) {
             if (!str) return "";
@@ -740,7 +647,7 @@
                     category: "落地 / 电动",
                     prodDate: "2026-10-15",
                     remark: "首批主推款",
-                    bigNote: "~~打样版本V1作废~~ 🔗资料链接: https://pan.baidu.com",
+                    bigNote: "~~打样版本V1作废~~ 🔗设计图纸: https://pan.baidu.com/s/sample123\n预计下周二产线试装完成并提供首批检验报告。",
                     status: "进行中",
                     createdAt: "2026-09-01 10:00:00",
                     historyLogs: [{ time: "2026-09-01 10:00:00", type: "CREATE", desc: "初始化创建系列" }],
@@ -1773,7 +1680,7 @@
             lockBodyScroll(false); 
         }
 
-        // ================= 页面主表格渲染 =================
+        // ================= 页面主表格渲染 (直观外显大备注与排期说明) =================
         function renderTable() {
             const tbody = document.getElementById("product-table-body");
             const mobileContainer = document.getElementById("mobile-cards-container");
@@ -1848,6 +1755,23 @@
                     }
                 }
 
+                // 大备注平铺直观渲染区
+                let notePreviewHtml = "";
+                if (prod.bigNote && prod.bigNote.trim()) {
+                    notePreviewHtml = `
+                        <div class="bg-indigo-50/50 border border-indigo-100 rounded-lg p-1.5 text-[11px] text-gray-700 relative group">
+                            <div class="line-clamp-2 rich-note leading-relaxed">${renderFormattedText(prod.bigNote)}</div>
+                            ${!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] mt-0.5 inline-block">✏️ 编辑备忘</button>` : ''}
+                        </div>
+                    `;
+                } else if (!isReadOnlyMode) {
+                    notePreviewHtml = `
+                        <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-gray-400 hover:text-indigo-600 border border-dashed border-gray-300 hover:border-indigo-300 rounded px-2 py-1 text-[10px] transition">
+                            + 添加大备注/文档链接
+                        </button>
+                    `;
+                }
+
                 const tr = document.createElement("tr");
                 tr.className = `hover:bg-blue-50/40 transition ${isUrgent ? 'bg-red-50/60 border-l-4 border-red-500' : ''}`;
                 tr.innerHTML = `
@@ -1857,26 +1781,26 @@
                     <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
                     <td class="p-3 whitespace-nowrap">${healthBadge}</td>
                     <td class="p-3"><div class="flex items-center space-x-1.5 flex-nowrap">${getBadge('财务BOM', bomDone, skuCount, 'bomOk', '财务BOM')}${getBadge('详情页', detailDone, skuCount, 'detailOk', '详情页')}${getBadge('69码', sapDone, skuCount, 'sapOk', '69编码')}</div></td>
-                    <td class="p-3 whitespace-nowrap">
-                        <div class="flex items-center space-x-1.5">
-                            ${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-200 text-[11px] inline-flex items-center max-w-[130px] truncate" title="${escapeHtml(prod.remark)}">📝 ${escapeHtml(prod.remark)}</span>` : ''}
-                            ${prod.bigNote ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200 text-[11px] font-bold cursor-pointer">📌 备忘</button>` : ''}
+                    <td class="p-3">
+                        <div class="space-y-1.5">
+                            ${prod.remark ? `<div class="inline-flex items-center bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-[10px] max-w-[240px] truncate" title="${escapeHtml(prod.remark)}">📝 ${escapeHtml(prod.remark)}</div>` : ''}
+                            ${notePreviewHtml}
                         </div>
                     </td>
                     <td class="p-3">${isReadOnlyMode || isArchived ? `<span class="text-xs px-2 py-0.5 rounded ${isArchived ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs"><option value="进行中" ${prod.status === '进行中' ? 'selected' : ''}>进行中</option><option value="紧急重要" ${prod.status === '紧急重要' ? 'selected' : ''}>🔥紧急</option><option value="已归档" ${prod.status === '已归档' ? 'selected' : ''}>执行归档</option></select>`}</td>
                     <td class="p-3 text-right whitespace-nowrap">
                         <div class="flex items-center justify-end space-x-2 font-medium">
-                            <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:underline cursor-pointer">大备注</button>
-                            <span class="text-gray-300">|</span>
                             <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600 hover:underline cursor-pointer">📜 追溯</button>
                             <span class="text-gray-300">|</span>
-                            ${isArchived && !isReadOnlyMode ? `<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline cursor-pointer">↩️ 恢复</button>` : ''}
+                            ${!isReadOnlyMode && !isArchived ? `<button type="button" onclick="openEditModal('${prod.id}')" class="text-gray-600 hover:underline cursor-pointer">编辑</button><span class="text-gray-300">|</span>` : ''}
+                            ${isArchived && !isReadOnlyMode ? `<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold hover:underline cursor-pointer">↩️ 恢复</button><span class="text-gray-300">|</span>` : ''}
                             ${!isReadOnlyMode ? `<button type="button" onclick="removeProduct('${prod.id}')" class="text-red-500 hover:underline cursor-pointer">删除</button>` : ''}
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
 
+                // 展开渲染子变体列表
                 if (isExpanded) {
                     const subTr = document.createElement("tr");
                     subTr.className = "bg-gray-50/90";
@@ -1945,6 +1869,7 @@
                     tbody.appendChild(subTr);
                 }
 
+                // 手机端卡片式渲染
                 const mCard = document.createElement("div");
                 mCard.className = `bg-white p-3 rounded-xl border ${isUrgent ? 'border-red-400 shadow-md' : 'border-gray-200 shadow-sm'} flex flex-col space-y-2 relative`;
 
@@ -2002,6 +1927,16 @@
                     mSubHtml += `</div>`;
                 }
 
+                let mBigNoteHtml = "";
+                if (prod.bigNote && prod.bigNote.trim()) {
+                    mBigNoteHtml = `
+                        <div class="bg-indigo-50/50 border border-indigo-100 rounded-lg p-2 text-[11px] text-gray-700 mt-2">
+                            <div class="line-clamp-2 rich-note">${renderFormattedText(prod.bigNote)}</div>
+                            <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 font-bold text-[10px] mt-1">编辑大备注</button>
+                        </div>
+                    `;
+                }
+
                 mCard.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex items-start space-x-2.5">
@@ -2035,13 +1970,12 @@
                         ${getBadge('69编码', sapDone, skuCount, 'sapOk', '69编码')}
                     </div>
 
+                    ${prod.remark ? `<div class="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded text-[10px] mt-2">📝 备注: ${escapeHtml(prod.remark)}</div>` : ''}
+                    ${mBigNoteHtml}
+
                     <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
-                        <div class="flex space-x-1.5">
-                            ${prod.remark ? `<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 text-[10px] max-w-[120px] truncate">📝 ${escapeHtml(prod.remark)}</span>` : ''}
-                        </div>
-                        <div class="flex space-x-3 text-[11px] font-medium">
-                            <button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 font-bold flex items-center"><span class="mr-0.5">📌</span>大备注</button>
-                            <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600">追溯</button>
+                        <div class="flex space-x-3 text-[11px] font-medium ml-auto">
+                            <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600">📜 追溯</button>
                             ${!isReadOnlyMode && !isArchived ? `<button type="button" onclick="openEditModal('${prod.id}')" class="text-gray-600">编辑</button>` : ''}
                             ${isArchived && !isReadOnlyMode ? `<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold">恢复</button>` : ''}
                             ${!isReadOnlyMode ? `<button type="button" onclick="removeProduct('${prod.id}')" class="text-red-500">删除</button>` : ''}
@@ -2346,310 +2280,6 @@
                 renderTable();
                 syncMatrixToCloud();
             }
-        }
-
-        // ================= UI 与工具函数 =================
-        function toggleConfigModal() {
-            const modal = document.getElementById("config-modal");
-            if (modal) {
-                modal.classList.toggle("hidden");
-                lockBodyScroll(!modal.classList.contains("hidden"));
-            }
-        }
-
-        function toggleAIChatDrawer() {
-            const drawer = document.getElementById("ai-chat-drawer");
-            if (drawer) {
-                drawer.classList.toggle("hidden");
-                lockBodyScroll(!drawer.classList.contains("hidden"));
-            }
-        }
-
-        function lockBodyScroll(isLocked) {
-            document.body.style.overflow = isLocked ? 'hidden' : '';
-        }
-
-        function escapeHtml(str) {
-            if (!str) return "";
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        function normalizeDate(dateStr) {
-            if (!dateStr) return "";
-            try {
-                const d = new Date(dateStr);
-                if (isNaN(d.getTime())) return "";
-                return d.toISOString().split('T')[0];
-            } catch(e) {
-                return "";
-            }
-        }
-
-        function getNowString() {
-            const d = new Date();
-            const pad = (n) => n < 10 ? '0' + n : n;
-            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-        }
-
-        function extractCommonPrefix(arr) {
-            if (!arr || arr.length === 0) return "";
-            let prefix = arr[0];
-            for (let i = 1; i < arr.length; i++) {
-                while (arr[i].indexOf(prefix) !== 0) {
-                    prefix = prefix.substring(0, prefix.length - 1);
-                    if (prefix === "") return "";
-                }
-            }
-            return prefix;
-        }
-
-        function renderFormattedText(text) {
-            if (!text) return "";
-            let html = escapeHtml(text);
-            html = html.replace(/~~(.*?)~~/g, '<s>$1</s>');
-            html = html.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 underline">$1</a>');
-            return html;
-        }
-
-        function updateCategoryFilterOptions() {
-            const select = document.getElementById("filter-category");
-            if (!select) return;
-            const currentVal = select.value;
-            const categories = new Set(products.map(p => p.category).filter(c => c));
-            select.innerHTML = '<option value="ALL">全部品类</option>';
-            categories.forEach(c => {
-                const opt = document.createElement("option");
-                opt.value = c;
-                opt.innerText = c;
-                select.appendChild(opt);
-            });
-            if (categories.has(currentVal)) select.value = currentVal;
-        }
-
-        function resetAllFilters() {
-            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
-            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
-            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
-            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
-            renderTable();
-        }
-
-        function restoreProductFromArchive(prodId) {
-            if (isReadOnlyMode) return;
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-            p.status = "进行中";
-            p.archivedAt = null;
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({ time: getNowString(), type: "RESTORE", desc: "从归档库恢复为进行中" });
-            renderTable();
-            syncMatrixToCloud();
-        }
-
-        function applyReadOnlyUI() {
-            const roleBadge = document.getElementById("role-badge");
-            if (roleBadge) {
-                roleBadge.innerText = "访客只读模式";
-                roleBadge.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold";
-            }
-            const elementsToHide = ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "btn-save-big-note", "big-note-toolbar"];
-            elementsToHide.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = "none";
-            });
-            const bigNoteTa = document.getElementById("big-note-textarea");
-            if (bigNoteTa) bigNoteTa.readOnly = true;
-        }
-
-        // ================= 全局备忘板模块 =================
-        function renderMemos() {
-            const container = document.getElementById("memo-list-container");
-            const tag = document.getElementById("memo-count-tag");
-            if (!container) return;
-            container.innerHTML = "";
-            let activeCount = 0;
-            globalMemos.forEach(m => {
-                if (!m.done) activeCount++;
-                const div = document.createElement("div");
-                div.className = `flex items-start space-x-2 p-2 rounded-lg border ${m.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`;
-                div.innerHTML = `
-                    <input type="checkbox" onchange="toggleMemoDone('${m.id}', this.checked)" ${m.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer">
-                    <div class="flex-1 min-w-0">
-                        <div class="${m.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(m.text)}</div>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <span class="text-[10px] ${m.done ? 'text-gray-400' : (m.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${m.priority}</span>
-                            <span class="text-[10px] text-gray-400 font-mono">${m.createdAt}</span>
-                        </div>
-                    </div>
-                    ${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${m.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}
-                `;
-                container.appendChild(div);
-            });
-            if (tag) tag.innerText = `${activeCount} 项提醒`;
-        }
-
-        function toggleMemoDone(id, isDone) {
-            if (isReadOnlyMode) return;
-            const m = globalMemos.find(x => x.id === id);
-            if (m) {
-                m.done = isDone;
-                renderMemos();
-                syncMatrixToCloud();
-            }
-        }
-
-        function deleteMemo(id) {
-            if (isReadOnlyMode) return;
-            globalMemos = globalMemos.filter(x => x.id !== id);
-            renderMemos();
-            syncMatrixToCloud();
-        }
-
-        function toggleMemoPanel() {
-            isMemoPanelOpen = !isMemoPanelOpen;
-            const body = document.getElementById("memo-panel-body");
-            const btn = document.getElementById("memo-toggle-btn");
-            if (body) body.style.display = isMemoPanelOpen ? "block" : "none";
-            if (btn) btn.innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼";
-        }
-
-        function addMemoItem() {
-            if (isReadOnlyMode) return;
-            const input = document.getElementById("memo-input");
-            const priority = document.getElementById("memo-priority");
-            if (!input || !input.value.trim()) return;
-            globalMemos.unshift({
-                id: "M_" + Date.now(),
-                text: input.value.trim(),
-                priority: priority ? priority.value : "⚡ 常规跟进",
-                done: false,
-                createdAt: getNowString().substring(5, 16)
-            });
-            input.value = "";
-            renderMemos();
-            syncMatrixToCloud();
-        }
-
-        function clearDoneMemos() {
-            if (isReadOnlyMode) return;
-            const hasDone = globalMemos.some(m => m.done);
-            if (!hasDone) return alert("没有已完成的备忘！");
-            if (confirm("确定清理所有已完成的备忘吗？")) {
-                globalMemos = globalMemos.filter(m => !m.done);
-                renderMemos();
-                syncMatrixToCloud();
-            }
-        }
-
-        // ================= WorkBuddy AI 助手 =================
-        function clearAIChatHistory() {
-            const messages = document.getElementById("ai-chat-messages");
-            if (messages) {
-                messages.innerHTML = `
-                    <div class="flex items-start space-x-2">
-                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">已为您清空上下文。</div>
-                    </div>`;
-            }
-        }
-
-        function applyQuickPrompt(type) {
-            const input = document.getElementById("ai-user-prompt");
-            if (!input) return;
-            if (type === 'DIAGNOSE') input.value = "帮我诊断当前进行中项目有哪些卡点，并列出延期风险最高的 Top 3。";
-            if (type === 'SPEECH_PRODUCT') input.value = "帮我写一段话术，催促产品经理尽快提供缺少 69 码的商品资料。";
-            if (type === 'REPORT_DELAY') input.value = "根据目前已延期的项目，生成一份向总监汇报的延期说明文案，说明原因及后续推进计划。";
-        }
-
-        function submitUserDemandToAI() {
-            const input = document.getElementById("ai-user-prompt");
-            const messages = document.getElementById("ai-chat-messages");
-            if (!input || !input.value.trim() || !messages) return;
-
-            const userText = input.value.trim();
-            input.value = "";
-            messages.innerHTML += `
-                <div class="flex items-start space-x-2 justify-end mt-3">
-                    <div class="ai-chat-bubble-user p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">${escapeHtml(userText)}</div>
-                </div>`;
-            messages.scrollTop = messages.scrollHeight;
-
-            setTimeout(() => {
-                messages.innerHTML += `
-                    <div class="flex items-start space-x-2 mt-3">
-                        <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
-                        <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">收到指令: “${escapeHtml(userText)}”。<br>注: 此为前端界面，需通过云端配置绑定 API Token 后方可提供正式诊断结果。</div>
-                    </div>`;
-                messages.scrollTop = messages.scrollHeight;
-            }, 600);
-        }
-
-        let currentBatchProdId = null;
-
-        function openBatchNodeModal(prodId) {
-            if (isReadOnlyMode) return;
-            currentBatchProdId = String(prodId);
-            const p = products.find(item => String(item.id) === String(prodId));
-            if (!p) return;
-
-            const skuListContainer = document.getElementById("batch-node-sku-list");
-            skuListContainer.innerHTML = p.skus.map(sku => `
-                <label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded border border-transparent hover:border-gray-200 transition">
-                    <input type="checkbox" value="${sku.id}" class="batch-sku-checkbox w-4 h-4 rounded text-blue-600 cursor-pointer">
-                    <span class="text-xs text-gray-800 font-medium">${escapeHtml(sku.name)}</span>
-                </label>
-            `).join('');
-
-            document.getElementById("batch-node-remark").value = "";
-            document.getElementById("batch-node-modal").classList.remove("hidden");
-            lockBodyScroll(true);
-        }
-
-        function closeBatchNodeModal() {
-            document.getElementById("batch-node-modal").classList.add("hidden");
-            currentBatchProdId = null;
-            lockBodyScroll(false);
-        }
-
-        function confirmBatchNode() {
-            if (!currentBatchProdId) return;
-            const p = products.find(item => String(item.id) === String(currentBatchProdId));
-            if (!p) return;
-
-            const selectedSkuIds = Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(cb => cb.value);
-            if (selectedSkuIds.length === 0) return alert("请至少勾选一个子变体规格！");
-
-            const nodeType = document.getElementById("batch-node-type").value;
-            const nodeLabels = { bomOk: "财务BOM", detailOk: "详情页", sapOk: "69编码" };
-            const label = nodeLabels[nodeType];
-            
-            const targetVal = document.getElementById("batch-node-status").value === "true";
-            const remark = document.getElementById("batch-node-remark").value.trim();
-            const nowTime = getNowString();
-
-            p.skus.forEach(sku => {
-                if (selectedSkuIds.includes(String(sku.id))) {
-                    sku[nodeType] = targetVal;
-                    if (!sku.nodeRecords) sku.nodeRecords = {};
-                    sku.nodeRecords[nodeType] = { status: targetVal, time: nowTime, remark: remark };
-                }
-            });
-
-            if (!p.historyLogs) p.historyLogs = [];
-            p.historyLogs.unshift({
-                time: nowTime,
-                type: targetVal ? "NODE_DONE" : "NODE_CANCEL",
-                desc: `批量${targetVal ? '完成' : '取消'} ${selectedSkuIds.length} 个规格的【${label}】节点${remark ? ' ｜ 备注: ' + remark : ''}`
-            });
-
-            closeBatchNodeModal();
-            renderTable();
-            syncMatrixToCloud();
         }
     </script>
 </body>
