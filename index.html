@@ -50,7 +50,7 @@
                     <button type="button" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
-                    <button type="button" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">
+                    <button type="button" id="top-btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">
                         ⚙️ 云端配置
                     </button>
                 </div>
@@ -98,6 +98,7 @@
                 </div>
             </div>
 
+            <!-- 双 Tab 切换栏 -->
             <div class="flex items-center gap-2">
                 <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer">
                     <span>⚡ 进行中看板</span>
@@ -109,6 +110,7 @@
                 </button>
             </div>
 
+            <!-- 智能筛选器 -->
             <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm text-xs space-y-3">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <div class="flex items-center gap-1.5 font-bold text-gray-800">
@@ -137,8 +139,8 @@
                         <label class="block text-gray-500 text-[10px] mb-0.5">大备注备忘</label>
                         <select id="filter-bignote" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
                             <option value="ALL">全部备忘</option>
-                            <option value="HAS_NOTE">📌 仅看有大备注</option>
-                            <option value="NO_NOTE">⚪ 仅看无大备注</option>
+                            <option value="HAS_NOTE">📌 有大备注</option>
+                            <option value="NO_NOTE">⚪ 无大备注</option>
                         </select>
                     </div>
                     <div>
@@ -148,6 +150,7 @@
                 </div>
             </div>
 
+            <!-- 统计与导出条 -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 text-xs text-gray-600 px-1">
                 <div class="flex items-center gap-3 sm:gap-4 flex-wrap text-[11px] sm:text-xs">
                     <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
@@ -156,7 +159,7 @@
                     <span id="stat-box-running">⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
                 </div>
                 <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-                    <button type="button" onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1 cursor-pointer flex-shrink-0">
+                    <button type="button" onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer flex-shrink-0">
                         <span id="btn-export-label">📥 导出至 Excel</span>
                     </button>
                     <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">准备就绪</div>
@@ -169,7 +172,9 @@
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
-                                <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer"></th>
+                                <th class="p-3 w-8 text-center">
+                                    <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
+                                </th>
                                 <th class="p-3 w-10 text-center">展开</th>
                                 <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
@@ -300,7 +305,7 @@
         </div>
     </div>
 
-    <!-- ================= 全局弹窗层 ================= -->
+    <!-- ================= 全局直属弹窗层 ================= -->
     
     <!-- ⚙️ 1. 云端配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
@@ -342,13 +347,13 @@
                     <div class="bg-white rounded-md border border-gray-200 p-2"><div class="text-[10px] text-gray-400 mb-0.5">新品矩阵 Repo</div><div id="cfg-repo-status" class="font-semibold text-gray-500 break-all">未检测</div></div>
                     <div class="bg-white rounded-md border border-gray-200 p-2"><div class="text-[10px] text-gray-400 mb-0.5">69码 Gist</div><div id="cfg-gist-status" class="font-semibold text-gray-500 break-all">未检测</div></div>
                 </div>
-                <div id="cfg-status-detail" class="text-[10px] text-gray-400">填写配置后保存，系统将自动检测同步。</div>
+                <div id="cfg-status-detail" class="text-[10px] text-gray-400 text-center">填写配置后保存，系统将自动检测同步。</div>
             </div>
 
             <div class="pt-2 border-t border-gray-100 flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px] flex-wrap gap-2">
                 <span class="text-gray-500 font-medium">📦 本地数据急救：</span>
                 <div class="flex gap-2">
-                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer whitespace-nowrap">重置样例数据</button>
+                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer whitespace-nowrap">重置样例</button>
                     <span class="text-gray-300">|</span>
                     <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold cursor-pointer whitespace-nowrap">导出备份</button>
                     <span class="text-gray-300">|</span>
@@ -361,7 +366,7 @@
 
             <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
                 <button type="button" onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 text-gray-700 rounded cursor-pointer">取消</button>
-                <button type="button" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer">保存并立即同步</button>
+                <button type="button" id="btn-save-sync" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer">保存并立即同步</button>
             </div>
         </div>
     </div>
@@ -394,7 +399,7 @@
                 <div class="flex items-start gap-2">
                     <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div>
                     <div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] min-w-0 text-xs leading-relaxed shadow-xs break-words">
-                        Hi 胡玲！我是你的 <strong>运营智能助手</strong> 👋<br><br>
+                        Hi！我是你的 <strong>运营智能助手</strong> 👋<br><br>
                         我已打通你的<strong>新品推进仓库与 69 码 Gist 库</strong>。你可以随时提出任何需求！
                     </div>
                 </div>
@@ -564,11 +569,11 @@
             </h2>
             <div class="space-y-2.5">
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名</label>
+                    <label class="block text-gray-600 font-medium mb-1">主产品型号 / 系列名 <span class="text-red-500">*</span></label>
                     <input type="text" id="edit-name" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道</label>
+                    <label class="block text-gray-600 font-medium mb-1">品类 / 渠道 <span class="text-red-500">*</span></label>
                     <input type="text" id="edit-category" class="w-full border border-gray-300 rounded p-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
@@ -622,7 +627,7 @@
         </div>
     </div>
 
-    <!-- ================= JAVASCRIPT 全局核心逻辑 ================= -->
+    <!-- ================= JAVASCRIPT 终极完整逻辑层 ================= -->
     <script>
         let products = [];
         let globalMemos = [];
@@ -643,7 +648,7 @@
         let pendingCheck = { prodId: null, skuIds: [], key: null, label: null, targetVal: false };
         let currentBatchProdId = null;
 
-        // ================= 基础工具函数 =================
+        // 基础防御与转义
         function escapeHtml(str) { return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
         function normalizeDate(str) { try{const d=new Date(str);return isNaN(d.getTime())?"":d.toISOString().split('T')[0];}catch(e){return"";} }
         function getNowString() { const d=new Date();const pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
@@ -652,6 +657,7 @@
         function cleanConfigString(str) { return String(str||"").trim().match(/([a-f0-9]{32})/i)?.[1] || String(str||"").trim(); }
         function safeBase64Decode(str) { try{return decodeURIComponent(escape(atob(str.replace(/\s/g,''))));}catch(e){try{return decodeURIComponent(atob(str.replace(/\s/g,'')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));}catch(e2){return atob(str.replace(/\s/g,''));}} }
         
+        // 数据清洗与组装
         function normalizeMatrixData(raw) {
             let p = Array.isArray(raw) ? raw : (raw?.products || []);
             let m = Array.isArray(raw) ? [] : (raw?.memos || []);
@@ -662,22 +668,112 @@
             return l.map(i => ({ name: String(i.name||i['产品名称']||'').trim(), sapCode: String(i.sapCode||i['SKU产品编码']||'').trim(), barcode: String(i.barcode||i['69码']||'').trim(), remark: String(i.remark||i['备注']||'').trim() })).filter(i => i.name || i.barcode || i.sapCode);
         }
 
+        // ================= 核心：极速 Timeout 与网络请求 =================
+        // 关键改动：使用 AbortController 实现 3.5秒 强行阻断网络，防止挂死
+        async function fetchWithTimeout(url, opts = {}, t = 3500) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), t);
+            try {
+                const res = await fetch(url, { ...opts, signal: controller.signal });
+                clearTimeout(id);
+                return res;
+            } catch (err) {
+                clearTimeout(id);
+                throw new Error(err.name === 'AbortError' ? '网络连接超时' : err.message);
+            }
+        }
+
+        // ================= 云端通讯引擎与状态管理 =================
         function updateCloudStatus(rState, gState, detail) {
             const syncStatus = document.getElementById("sync-status"); const authDot = document.getElementById("auth-dot"); const authText = document.getElementById("auth-tag-text");
             const repoEl = document.getElementById("cfg-repo-status"); const gistEl = document.getElementById("cfg-gist-status");
             const summaryEl = document.getElementById("cfg-status-summary"); const detailEl = document.getElementById("cfg-status-detail");
-            const labels = { ok: "✅ 已连接", loading: "⏳ 检测中...", error: "❌ 失败", none: "未配置" };
-            if (repoEl) repoEl.innerText = labels[rState] || rState; if (gistEl) gistEl.innerText = labels[gState] || gState; if (detailEl) detailEl.innerText = detail || "";
+            const labels = { ok: "✅ 已连接", loading: "⏳ 检测中...", error: "❌ 失败/超时", none: "未配置" };
+            
+            if (repoEl) repoEl.innerText = labels[rState] || rState; 
+            if (gistEl) gistEl.innerText = labels[gState] || gState; 
+            if (detailEl) detailEl.innerText = detail || "";
             
             let okCount = 0; if (rState === 'ok') okCount++; if (gState === 'ok') okCount++;
             let isErr = rState === 'error' || gState === 'error';
+            let isNone = rState === 'none' && gState === 'none';
             
-            if (summaryEl) { summaryEl.innerText = okCount === 2 ? "双源正常" : okCount === 1 ? "部分连接" : (isErr ? "存在异常" : "未配置"); summaryEl.className = "text-[10px] px-2 py-0.5 rounded-full border " + (okCount === 2 ? "bg-green-50 text-green-700 border-green-200" : okCount === 1 ? "bg-blue-50 text-blue-700 border-blue-200" : isErr ? "bg-red-50 text-red-700 border-red-200" : "bg-gray-100 text-gray-500 border-gray-200"); }
-            if (syncStatus) { syncStatus.innerText = detail || (okCount === 2 ? "双源已同步 ✅" : okCount === 1 ? "部分同步 ⚠️" : isErr ? "连接异常 ❌" : "本地模式就绪"); syncStatus.className = "font-medium whitespace-nowrap text-[11px] " + (okCount === 2 ? "text-green-600" : okCount === 1 ? "text-amber-600" : isErr ? "text-red-600" : "text-gray-500"); }
+            if (summaryEl) { 
+                summaryEl.innerText = okCount === 2 ? "双源正常" : okCount === 1 ? "部分连接" : (isErr ? "连接异常" : "未配置"); 
+                summaryEl.className = "text-[10px] px-2 py-0.5 rounded-full border " + (okCount === 2 ? "bg-green-50 text-green-700 border-green-200" : okCount === 1 ? "bg-blue-50 text-blue-700 border-blue-200" : isErr ? "bg-red-50 text-red-700 border-red-200" : "bg-gray-100 text-gray-500 border-gray-200"); 
+            }
+            if (syncStatus) { 
+                syncStatus.innerText = detail || (okCount === 2 ? "双源已同步 ✅" : okCount === 1 ? "部分同步 ⚠️" : isErr ? "网络异常 ❌" : "本地模式就绪"); 
+                syncStatus.className = "font-medium whitespace-nowrap text-[11px] " + (okCount === 2 ? "text-green-600" : okCount === 1 ? "text-amber-600" : isErr ? "text-red-600" : "text-gray-500"); 
+            }
             if (authDot) authDot.className = "w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 " + (okCount === 2 ? "bg-green-500" : okCount === 1 ? "bg-amber-500" : isErr ? "bg-red-500" : "bg-gray-400");
             if (authText) authText.innerText = okCount === 2 ? "双源连接" : okCount === 1 ? "部分连接" : isErr ? "连接异常" : "本地就绪";
         }
 
+        async function fetchAllDualTokenData() {
+            const owner = cleanConfigString(localStorage.getItem("wb_owner"));
+            const repo = cleanConfigString(localStorage.getItem("wb_repo"));
+            const tokenRepo = (localStorage.getItem("wb_token_repo") || "").trim();
+            const tokenGist = (localStorage.getItem("wb_token_gist") || "").trim();
+            const gistBarcodes = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
+            
+            const repoConfigured = !!(owner && repo && tokenRepo);
+            const gistConfigured = !!(gistBarcodes && tokenGist);
+            
+            if (!repoConfigured && !gistConfigured) return updateCloudStatus("none", "none", "未配置云端 (仅本地)");
+            
+            updateCloudStatus(repoConfigured?"loading":"none", gistConfigured?"loading":"none", "正在极速拉取数据...");
+            let rOk = false, gOk = false, rErr = "", gErr = "", tasks = [];
+
+            if (repoConfigured) {
+                tasks.push(fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tokenRepo}`, "Accept": "application/vnd.github+json" } }, 3500)
+                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                    .then(d => { if (d?.content) { fileSha = d.sha; let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); if(n.products.length) products = n.products; if(n.memos.length) globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({products, memos: globalMemos})); rOk = true; } })
+                    .catch(e => { rErr = e.message; })
+                );
+            }
+            if (gistConfigured) {
+                tasks.push(fetchWithTimeout(`https://api.github.com/gists/${encodeURIComponent(gistBarcodes)}`, { headers: { "Authorization": `Bearer ${tokenGist}`, "Accept": "application/vnd.github+json" } }, 3500)
+                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                    .then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { let p = normalizeBarcodesData(JSON.parse(d.files[f].content)); if(p.length) globalBarcodes = p; localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); gOk = true; break; } } } })
+                    .catch(e => { gErr = e.message; })
+                );
+            }
+            await Promise.allSettled(tasks);
+            
+            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
+            
+            const rState = repoConfigured ? (rOk ? "ok" : "error") : "none";
+            const gState = gistConfigured ? (gOk ? "ok" : "error") : "none";
+            const detailMsg = (rOk && gOk) ? "云端数据同步完成 ✅" : (rErr || gErr) ? `⚠️网络波动，已应用本地缓存。(${[rErr,gErr].filter(Boolean).join(',')})` : "数据就绪";
+            
+            updateCloudStatus(rState, gState, detailMsg);
+            return (rOk && gOk); // Return true if completely successful
+        }
+
+        async function saveDualTokenConfigAndSync() {
+            localStorage.setItem("wb_owner", cleanConfigString(document.getElementById("cfg-owner").value)); 
+            localStorage.setItem("wb_repo", cleanConfigString(document.getElementById("cfg-repo").value)); 
+            localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim()); 
+            localStorage.setItem("wb_gist_barcodes", cleanConfigString(document.getElementById("cfg-gist-barcodes").value)); 
+            localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
+            
+            const btn = document.getElementById("btn-save-sync");
+            if (btn) { btn.innerText = "⏳ 连线中..."; btn.disabled = true; }
+            
+            await fetchAllDualTokenData();
+            
+            if (btn) { btn.innerText = "保存并立即同步"; btn.disabled = false; }
+            
+            const s = document.getElementById("cfg-status-summary")?.innerText || "";
+            if (s.includes("正常") || s.includes("部分")) {
+                toggleConfigModal();
+            } else {
+                alert("云端连接超时或失败！请检查您是否开启了科学上网/代理，或 Token 权限是否正确。");
+            }
+        }
+
+        // ================= 其余全部业务逻辑 =================
         function loadSampleDefaultData() {
             products = [{ id: "P_SAMPLE_1", name: "HD-LD22-H 智能晾衣机", category: "落地 / 电动", prodDate: "2026-10-15", remark: "首推打样款", bigNote: "~~打样V1作废~~\n预计下周二提供检验报告。", status: "进行中", createdAt: "2026-09-01 10:00:00", historyLogs: [{ time: "2026-09-01 10:00:00", type: "CREATE", desc: "创建系列" }], skus: [{ id: "S_101", name: "HD-LD22-H 枪灰色 1.3M", bomOk: true, detailOk: false, sapOk: true, nodeRecords: {} }, { id: "S_102", name: "HD-LD22-H 奶白色 1.3M", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }] }];
             globalBarcodes = [{ name: "HD-LD22-H 枪灰色 1.3M", sapCode: "320243181001", barcode: "6941123400012", remark: "标准款" }];
@@ -687,9 +783,6 @@
             renderTable(); renderBarcodeTable(); renderMemos(); alert("🎉 已成功载入测试样例数据！");
         }
 
-        function fetchWithTimeout(url, opts = {}, t = 5000) { return Promise.race([fetch(url, opts), new Promise((_, r) => setTimeout(() => r(new Error('请求超时')), t))]); }
-
-        // ================= 初始化入口 =================
         window.onload = function() {
             const dateInput = document.getElementById("p-prod-date");
             if(dateInput) { const d=new Date(); d.setDate(d.getDate()+30); dateInput.value = d.toISOString().split('T')[0]; }
@@ -706,16 +799,15 @@
             if (up.get('mode') === 'readonly' || (!localStorage.getItem("wb_token_repo") && up.get('token_repo'))) {
                 isReadOnlyMode = true; applyReadOnlyUI(); fetchFromDualTokenCustom(up.get('owner'), up.get('repo'), up.get('gist_bar'), up.get('token_repo'), up.get('token_gist'));
             } else {
-                if(document.getElementById("cfg-owner")) document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
-                if(document.getElementById("cfg-repo")) document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
+                if(document.getElementById("cfg-owner")) document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "";
+                if(document.getElementById("cfg-repo")) document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "";
                 if(document.getElementById("cfg-token-repo")) document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
-                if(document.getElementById("cfg-gist-barcodes")) document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+                if(document.getElementById("cfg-gist-barcodes")) document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "";
                 if(document.getElementById("cfg-token-gist")) document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
                 
-                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) {
+                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist")) {
                     fetchAllDualTokenData();
                 } else {
-                    // 重要修复：如果什么都没配置，需要把“初始化中”变成“本地模式就绪”
                     updateCloudStatus("none", "none", "未配置云端，当前使用本地数据模式");
                 }
             }
@@ -725,78 +817,56 @@
             });
         };
 
-        // ================= 视图切换与UI =================
-        function switchMainView(v) { currentMainView = v; document.getElementById("module-matrix").classList.toggle("hidden", v !== 'MATRIX'); document.getElementById("module-barcodes").classList.toggle("hidden", v !== 'BARCODES'); document.getElementById("nav-btn-matrix").className = (v === 'MATRIX' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer"); document.getElementById("nav-btn-barcodes").className = (v === 'BARCODES' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer"); if (v === 'MATRIX') renderTable(); else renderBarcodeTable(); }
-        function switchTab(t) { currentTab = t; document.getElementById("tab-btn-running").className = (t === 'RUNNING' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center gap-1.5 cursor-pointer"); document.getElementById("tab-btn-archived").className = (t === 'ARCHIVED' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center gap-1.5 cursor-pointer"); document.getElementById("filter-health-box").style.display = t === 'RUNNING' ? "block" : "none"; renderTable(); }
+        // --- View toggles ---
+        function switchMainView(v) { currentMainView = v; document.getElementById("module-matrix").classList.toggle("hidden", v !== 'MATRIX'); document.getElementById("module-barcodes").classList.toggle("hidden", v !== 'BARCODES'); document.getElementById("nav-btn-matrix").className = (v === 'MATRIX' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); document.getElementById("nav-btn-barcodes").className = (v === 'BARCODES' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); if (v === 'MATRIX') renderTable(); else renderBarcodeTable(); }
+        function switchTab(t) { currentTab = t; document.getElementById("tab-btn-running").className = (t === 'RUNNING' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 transition flex items-center gap-1.5 cursor-pointer"); document.getElementById("tab-btn-archived").className = (t === 'ARCHIVED' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 transition flex items-center gap-1.5 cursor-pointer"); document.getElementById("filter-health-box").style.display = t === 'RUNNING' ? "block" : "none"; renderTable(); }
         function applyReadOnlyUI() { const r = document.getElementById("role-badge"); if (r) { r.innerText = "访客只读模式"; r.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold"; } ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "top-btn-config"].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }); }
-        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
+        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { if(m.classList.contains("hidden")) { document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
         function toggleAIChatDrawer() { const m = document.getElementById("ai-chat-drawer"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
 
-        // ================= 云端通讯引擎 =================
-        async function fetchAllDualTokenData() {
-            const owner = cleanConfigString(localStorage.getItem("wb_owner")), repo = cleanConfigString(localStorage.getItem("wb_repo")), tokenRepo = (localStorage.getItem("wb_token_repo") || "").trim(), tokenGist = (localStorage.getItem("wb_token_gist") || "").trim(), gistBarcodes = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
-            const repoConfigured = !!(owner && repo && tokenRepo), gistConfigured = !!(gistBarcodes && tokenGist);
-            if (!repoConfigured && !gistConfigured) return updateCloudStatus("none", "none", "未配置云端");
-            
-            updateCloudStatus(repoConfigured?"loading":"none", gistConfigured?"loading":"none", "正在拉取云端数据...");
-            let rOk = false, gOk = false, rErr = "", gErr = "", tasks = [];
-
-            if (repoConfigured) {
-                tasks.push(fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tokenRepo}`, "Accept": "application/vnd.github+json" } }, 10000)
-                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-                    .then(d => { if (d?.content) { fileSha = d.sha; let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); if(n.products.length) products = n.products; if(n.memos.length) globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({products, memos: globalMemos})); rOk = true; } })
-                    .catch(e => { rErr = e.message; })
-                );
-            }
-            if (gistConfigured) {
-                tasks.push(fetchWithTimeout(`https://api.github.com/gists/${encodeURIComponent(gistBarcodes)}`, { headers: { "Authorization": `Bearer ${tokenGist}`, "Accept": "application/vnd.github+json" } }, 10000)
-                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-                    .then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { let p = normalizeBarcodesData(JSON.parse(d.files[f].content)); if(p.length) globalBarcodes = p; localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); gOk = true; break; } } } })
-                    .catch(e => { gErr = e.message; })
-                );
-            }
-            await Promise.allSettled(tasks);
-            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
-            updateCloudStatus(repoConfigured?(rOk?"ok":"error"):"none", gistConfigured?(gOk?"ok":"error"):"none", (rOk&&gOk) ? "双源已同步 ✅" : rOk ? `矩阵同步✅${gErr?" ｜ Gist失败":""}` : gOk ? `条码同步✅${rErr?" ｜ 矩阵失败":""}` : "云端读取失败，已保留本地缓存");
+        // --- Readonly URL Generation ---
+        function copyReadOnlyShareLink() {
+            try {
+                const o = cleanConfigString(localStorage.getItem("wb_owner") || ""); 
+                const r = cleanConfigString(localStorage.getItem("wb_repo") || ""); 
+                const b = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || ""); 
+                const tr = (localStorage.getItem("wb_token_repo") || "").trim(); 
+                const tg = (localStorage.getItem("wb_token_gist") || "").trim();
+                const url = `${window.location.origin}${window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(b)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`;
+                
+                const m = document.getElementById("readonly-share-modal");
+                if (m) {
+                    document.getElementById("readonly-url-textarea").value = url;
+                    m.classList.remove("hidden");
+                    lockBodyScroll(true);
+                } else {
+                    alert("弹出失败，您的链接为：\n" + url);
+                }
+            } catch (err) { alert("生成分享链接失败：" + err.message); }
         }
-
-        async function fetchFromDualTokenCustom(o, r, gb, tr, tg) {
-            const repoConfigured = !!(o && r && tr), gistConfigured = !!(gb && tg);
-            updateCloudStatus(repoConfigured?"loading":"none", gistConfigured?"loading":"none", "只读拉取中...");
-            let rOk = false, gOk = false, tasks = [];
-            if (repoConfigured) { tasks.push(fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tr}` } }, 10000).then(r => r.ok?r.json():null).then(d => { if (d?.content) { let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); if(n.products.length) products = n.products; if(n.memos.length) globalMemos = n.memos; rOk = true; } }).catch(()=>{})); }
-            if (gistConfigured) { tasks.push(fetchWithTimeout(`https://api.github.com/gists/${encodeURIComponent(gb)}`, { headers: { "Authorization": `Bearer ${tg}` } }, 10000).then(r => r.ok?r.json():null).then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { let p = normalizeBarcodesData(JSON.parse(d.files[f].content)); if(p.length) globalBarcodes = p; gOk = true; break; } } } }).catch(()=>{})); }
-            await Promise.allSettled(tasks);
-            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
-            updateCloudStatus(repoConfigured?(rOk?"ok":"error"):"none", gistConfigured?(gOk?"ok":"error"):"none", (rOk&&gOk) ? "只读数据已同步 ✅" : "部分只读数据失败");
-        }
-
-        async function saveDualTokenConfigAndSync() {
-            localStorage.setItem("wb_owner", cleanConfigString(document.getElementById("cfg-owner").value)); localStorage.setItem("wb_repo", cleanConfigString(document.getElementById("cfg-repo").value)); localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes", cleanConfigString(document.getElementById("cfg-gist-barcodes").value)); localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
-            toggleConfigModal(); await fetchAllDualTokenData();
-        }
+        function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
+        function confirmCopyReadonlyUrl() { const ta = document.getElementById("readonly-url-textarea"); ta.select(); try { document.execCommand('copy'); alert("🎉 链接已成功复制！"); } catch(e) { prompt("请手动复制链接：", ta.value); } }
 
         async function syncMatrixToCloud() {
             if (isReadOnlyMode) return; localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos }));
             const o = cleanConfigString(localStorage.getItem("wb_owner")), r = cleanConfigString(localStorage.getItem("wb_repo")), t = (localStorage.getItem("wb_token_repo") || "").trim(); if (!t || !o || !r) return;
             try {
-                let sha = fileSha || ""; const cRes = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${t}` } }); if (cRes.ok) { const cD = await cRes.json(); sha = cD.sha; }
-                const res = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { method: "PUT", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update matrix", content: btoa(unescape(encodeURIComponent(JSON.stringify({products, memos: globalMemos})))), ...(sha ? {sha} : {}) }) });
+                let sha = fileSha || ""; const cRes = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${t}` } }, 3500); if (cRes.ok) { const cD = await cRes.json(); sha = cD.sha; }
+                const res = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { method: "PUT", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update matrix", content: btoa(unescape(encodeURIComponent(JSON.stringify({products, memos: globalMemos})))), ...(sha ? {sha} : {}) }) }, 5000);
                 if (res.ok) { const d = await res.json(); fileSha = d.content.sha; document.getElementById("sync-status").innerText = "矩阵已保存 ✅"; }
             } catch(e) { document.getElementById("sync-status").innerText = "保存失败 ❌"; }
         }
-
         async function syncBarcodesToGist() {
             if (isReadOnlyMode) return; localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
             const gId = cleanConfigString(localStorage.getItem("wb_gist_barcodes")), t = (localStorage.getItem("wb_token_gist") || "").trim(); if (!t || !gId) return;
             try {
-                const gRes = await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { headers: { "Authorization": `Bearer ${t}` } }); let tName = "69code_data.json"; if (gRes.ok) { const gd = await gRes.json(); if(gd.files && Object.keys(gd.files).length) tName = Object.keys(gd.files)[0]; }
-                await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { method: "PATCH", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ files: { [tName]: { content: JSON.stringify(globalBarcodes, null, 2) } } }) });
+                const gRes = await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { headers: { "Authorization": `Bearer ${t}` } }, 3500); let tName = "69code_data.json"; if (gRes.ok) { const gd = await gRes.json(); if(gd.files && Object.keys(gd.files).length) tName = Object.keys(gd.files)[0]; }
+                await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { method: "PATCH", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ files: { [tName]: { content: JSON.stringify(globalBarcodes, null, 2) } } }) }, 5000);
                 document.getElementById("sync-status").innerText = "条码已保存 ✅";
             } catch(e) { document.getElementById("sync-status").innerText = "保存失败 ❌"; }
         }
 
-        // ================= 核心表格渲染 =================
+        // ================= 表格与卡片渲染 =================
         function renderTable() {
             const tbody = document.getElementById("product-table-body"); const mContainer = document.getElementById("mobile-cards-container"); if (!tbody || !mContainer) return;
             tbody.innerHTML = ""; mContainer.innerHTML = "";
@@ -817,8 +887,8 @@
                 const getBadge = (t, c, k, l) => {
                     let all = (tot > 0 && c === tot), none = (c === 0);
                     let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" : (none ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
-                    let clk = (!isReadOnlyMode && !isArch) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
-                    return `<div ${clk} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all?'✅':(none?'⚪':'⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
+                    let click = (!isReadOnlyMode && !isArch) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
+                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all?'✅':(none?'⚪':'⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
                 };
 
                 let hBadge = `<span class="text-gray-400 font-mono">-</span>`;
@@ -829,7 +899,7 @@
                     else hBadge = `<div class="font-mono text-gray-700 whitespace-nowrap">${cDate} <span class="text-green-600 text-[10px]">(余${diffD}天)</span></div>`;
                 }
 
-                let noteHtml = prod.bigNote ? `<div class="bg-indigo-50/50 border border-indigo-100 rounded-lg p-1.5 text-[11px] text-gray-700 mt-1"><div class="line-clamp-2 rich-note leading-relaxed">${renderFormattedText(prod.bigNote)}</div>${!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:text-indigo-800 font-bold mt-0.5 inline-block cursor-pointer">✏️ 编辑备忘</button>` : ''}</div>` : (!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-gray-400 hover:text-indigo-600 border border-dashed border-gray-300 rounded px-2 py-1 text-[10px] mt-1 cursor-pointer">+ 添加大备注</button>` : '');
+                let noteHtml = prod.bigNote ? `<div class="bg-indigo-50/50 border border-indigo-100 rounded-lg p-1.5 text-[11px] text-gray-700 mt-1"><div class="line-clamp-2 rich-note leading-relaxed">${renderFormattedText(prod.bigNote)}</div>${!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:text-indigo-800 font-bold mt-0.5 inline-block cursor-pointer">✏️ 编辑</button>` : ''}</div>` : (!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-gray-400 hover:text-indigo-600 border border-dashed border-gray-300 rounded px-2 py-1 text-[10px] mt-1 cursor-pointer">+ 添加大备注</button>` : '');
 
                 const isExpanded = !!expandedRows[prod.id];
                 const isSelected = selectedProductIds.has(String(prod.id));
@@ -859,7 +929,7 @@
                         const rBadge = (k, l, o) => `<label class="flex items-center space-x-1 cursor-pointer"><input type="checkbox" ${isReadOnlyMode||isArch?'disabled':`onchange="triggerSkuNodeCheck('${prod.id}','${sku.id}','${k}','${l}',this)"`} ${o?'checked':''} class="w-3.5 h-3.5 rounded text-blue-600 cursor-pointer"><span class="${o?'text-green-700 font-bold':'text-gray-500'} text-xs">${l}</span></label>`;
                         const mBar = globalBarcodes.find(b => { const n = String(sku.name).replace(/[\s-_米]/g, '').toLowerCase(); const bn = String(b.name||'').replace(/[\s-_米]/g, '').toLowerCase(); return bn.includes(n) || n.includes(bn); });
                         let autoTag = mBar ? (!sku.sapOk && !isReadOnlyMode && !isArch ? `<button type="button" onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-300 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer">🏷️ 匹配: ${mBar.barcode} (点亮)</button>` : `<span class="text-gray-400 font-mono text-[10px]">🏷️ ${mBar.barcode}</span>`) : "";
-                        sHtml += `<div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200 text-xs"><div class="flex items-center gap-2"><span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSkuName('${prod.id}','${sku.id}')" class="text-gray-400 cursor-pointer">✏️</button><button type="button" onclick="removeSku('${prod.id}','${sku.id}')" class="text-red-400 cursor-pointer">🗑️</button>`:''}${autoTag}</div><div class="flex items-center space-x-6">${rBadge('bomOk','财务BOM',sku.bomOk)}${rBadge('detailOk','详情页',sku.detailOk)}${rBadge('sapOk','69编码',sku.sapOk)}</div></div>`;
+                        sHtml += `<div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200 text-xs"><div class="flex items-center space-x-2"><span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSkuName('${prod.id}','${sku.id}')" class="text-gray-400 cursor-pointer">✏️</button><button type="button" onclick="removeSku('${prod.id}','${sku.id}')" class="text-red-400 cursor-pointer">🗑️</button>`:''}${autoTag}</div><div class="flex items-center space-x-6">${rBadge('bomOk','财务BOM',sku.bomOk)}${rBadge('detailOk','详情页',sku.detailOk)}${rBadge('sapOk','69编码',sku.sapOk)}</div></div>`;
                     });
                     subTr.innerHTML = sHtml + `</div></div></td>`; tbody.appendChild(subTr);
                 }
@@ -898,8 +968,8 @@
                                     <span class="font-semibold text-gray-800 text-[11px] leading-snug break-words flex-1 min-w-0">${escapeHtml(sku.name)}</span>
                                     ${!isReadOnlyMode && !isArch ? `
                                         <div class="flex space-x-1.5 flex-shrink-0">
-                                            <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[11px] cursor-pointer">✏️</button>
-                                            <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[11px] cursor-pointer">🗑️</button>
+                                            <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[11px]">✏️</button>
+                                            <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[11px]">🗑️</button>
                                         </div>
                                     ` : ''}
                                 </div>
@@ -938,7 +1008,7 @@
                     <div class="flex items-center justify-between mt-2 pl-6">
                         <div class="text-[11px]">${hBadge}</div>
                         <div class="flex space-x-1">
-                            ${isReadOnlyMode||isArch?`<span class="text-[10px] px-1.5 py-0.5 rounded ${isArch?'bg-green-50 text-green-700':'bg-blue-50 text-blue-700'}">${prod.status}</span>`:`<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border border-gray-300 rounded px-1 py-0.5 text-[10px]"><option value="进行中" ${prod.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${prod.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}
+                            ${isReadOnlyMode||isArch?`<span class="text-[10px] px-1.5 py-0.5 rounded ${isArch?'bg-green-50 text-green-700':'bg-blue-50 text-blue-700'}">${prod.status}</span>`:`<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1 py-0.5 text-[10px]"><option value="进行中" ${prod.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${prod.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}
                         </div>
                     </div>
 
@@ -961,7 +1031,7 @@
                     </div>
                     ${mSubHtml}
                 `;
-                mobileContainer.appendChild(mCard);
+                mContainer.appendChild(mCard);
             });
 
             document.getElementById("stat-total").innerText = products.length; 
@@ -975,99 +1045,73 @@
             updateSelectAllCheckboxState();
         }
 
-        // ================= 各类弹窗交互 =================
-        function triggerBatchColumnCheck(prodId, key, label) {
-            if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p || !p.skus.length) return;
-            const targetVal = !p.skus.every(s => s[key]);
-            pendingCheck = { prodId: String(prodId), skuIds: p.skus.map(s => String(s.id)), key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "⚡" : "↩️"; document.getElementById("check-modal-title").innerText = targetVal ? `批量标记全部【${label}】完成` : `批量取消全部【${label}】`; document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 影响 ${p.skus.length} 个规格`; document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true);
-        }
-        function triggerSkuNodeCheck(prodId, skuId, key, label, cbEl) {
-            if (isReadOnlyMode) { cbEl.checked = !cbEl.checked; return; }
-            const p = products.find(x => String(x.id) === String(prodId)); const sku = p?.skus.find(s => String(s.id) === String(skuId)); if (!sku) return;
-            const targetVal = cbEl.checked; cbEl.checked = !targetVal;
-            pendingCheck = { prodId: String(prodId), skuIds: [String(skuId)], key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️"; document.getElementById("check-modal-title").innerText = targetVal ? `确认完成【${label}】` : `取消完成【${label}】`; document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 规格: ${sku.name}`; document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true);
-        }
-        function confirmNodeCheckChange() {
-            const { prodId, skuIds, key, label, targetVal } = pendingCheck; const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            const remark = document.getElementById("check-remark-input")?.value.trim() || ""; const t = getNowString();
-            p.skus.forEach(s => { if (skuIds.includes(String(s.id))) { s[key] = targetVal; s.nodeRecords[key] = { status: targetVal, time: t, remark }; } });
-            p.historyLogs.unshift({ time: t, type: targetVal ? "NODE_DONE" : "NODE_CANCEL", desc: (skuIds.length===1 ? `规格节点【${label}】${targetVal?'完成':'取消'}` : `批量${targetVal?'完成':'取消'} ${skuIds.length} 个【${label}】`) + (remark ? ` ｜ 备注: ${remark}` : '') });
-            closeCheckModal(); renderTable(); syncMatrixToCloud();
-        }
-        function closeCheckModal() { document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
-
-        function openBatchNodeModal(prodId) {
-            currentBatchProdId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if(!p) return;
-            document.getElementById("batch-node-sku-list").innerHTML = p.skus.map(s => `<label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded"><input type="checkbox" value="${s.id}" class="batch-sku-checkbox w-4 h-4 text-blue-600 rounded cursor-pointer"><span class="text-xs font-medium">${escapeHtml(s.name)}</span></label>`).join('');
-            document.getElementById("batch-node-modal").classList.remove("hidden"); lockBodyScroll(true);
-        }
-        function closeBatchNodeModal() { document.getElementById("batch-node-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmBatchNode() {
-            const p = products.find(x => String(x.id) === String(currentBatchProdId)); if(!p) return;
-            const sIds = Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(cb => cb.value); if (!sIds.length) return alert("请勾选规格！");
-            const type = document.getElementById("batch-node-type").value; const isOk = document.getElementById("batch-node-status").value === "true"; const rem = document.getElementById("batch-node-remark").value.trim(); const t = getNowString(); const lbs = { bomOk: "财务BOM", detailOk: "详情页", sapOk: "69编码" };
-            p.skus.forEach(s => { if (sIds.includes(String(s.id))) { s[type] = isOk; s.nodeRecords[type] = { status: isOk, time: t, remark: rem }; } });
-            p.historyLogs.unshift({ time: t, type: "BATCH", desc: `批量更新 ${sIds.length} 个规格的【${lbs[type]}】为${isOk?'完成':'取消'}` + (rem ? ` ｜ 备注: ${rem}` : '') });
-            closeBatchNodeModal(); renderTable(); syncMatrixToCloud();
+        // ================= 各类功能补充 =================
+        function updateCategoryFilterOptions() {
+            const select = document.getElementById("filter-category"); if (!select) return;
+            const currentVal = select.value;
+            const categories = new Set(products.map(p => p.category).filter(Boolean));
+            select.innerHTML = '<option value="ALL">全部品类</option>';
+            categories.forEach(c => { const opt = document.createElement("option"); opt.value = c; opt.innerText = c; select.appendChild(opt); });
+            if (categories.has(currentVal)) select.value = currentVal;
         }
 
-        // ================= 大备注与历史追溯 =================
-        function openBigNoteModal(prodId) {
-            currentBigNoteProdId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`; document.getElementById("big-note-textarea").value = p.bigNote || ""; updateBigNoteLivePreview();
-            document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true);
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
         }
-        function closeBigNoteModal() { document.getElementById("big-note-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveBigNoteChanges() {
-            const p = products.find(x => String(x.id) === String(currentBigNoteProdId));
-            if (p) { p.bigNote = document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新大备注" }); closeBigNoteModal(); renderTable(); syncMatrixToCloud(); }
-        }
-        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML = renderFormattedText(document.getElementById("big-note-textarea").value); }
-        function insertStrikeThrough() { document.getElementById("big-note-textarea").value += "~~作废内容~~"; updateBigNoteLivePreview(); }
-        function insertFileLinkPrompt() { const link = prompt("链接:"); if (link) { document.getElementById("big-note-textarea").value += ` 🔗 ${link} `; updateBigNoteLivePreview(); } }
-        function insertTimestamp() { document.getElementById("big-note-textarea").value += ` [${getNowString().substring(5, 16)}] `; updateBigNoteLivePreview(); }
 
-        function openLogsModal(prodId) {
-            const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            document.getElementById("logs-title").innerText = `【${p.name}】`;
-            document.getElementById("logs-container").innerHTML = p.historyLogs.length ? p.historyLogs.map(l => `<div class="bg-white p-3 rounded-xl shadow-xs"><div class="text-xs text-gray-800 break-words">${escapeHtml(l.desc)}</div><div class="text-[10px] text-gray-400 mt-1 font-mono">${l.time}</div></div>`).join('') : '<div class="text-gray-400 text-center py-4">无记录</div>';
-            document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true);
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
+            p.status = "进行中"; p.archivedAt = null; p.historyLogs.unshift({ time: getNowString(), type: "STATUS", desc: "从归档库恢复为【进行中】" });
+            switchTab('RUNNING'); renderTable(); syncMatrixToCloud();
         }
+
+        function addProductWithBatchSkus() {
+            if (isReadOnlyMode) return;
+            const batchText = document.getElementById("p-skus-batch").value.trim();
+            if (!batchText && !document.getElementById("p-name").value.trim()) return alert("请填写内容！");
+            let skus = Array.from(new Set(batchText.split('\n').map(l => l.trim()).filter(Boolean)));
+            
+            // 防重判定
+            let existing = {}; products.forEach(p => (p.skus || []).forEach(s => existing[s.name.trim().toLowerCase()] = p.name));
+            let validSkus = skus.filter(s => !existing[s.toLowerCase()]);
+            if (validSkus.length === 0 && skus.length > 0) return alert("所有 SKU 均已存在！");
+
+            let prefix = validSkus.length ? validSkus[0] : "";
+            for (let i = 1; i < validSkus.length; i++) { while (validSkus[i].indexOf(prefix) !== 0) { prefix = prefix.substring(0, prefix.length - 1); if (!prefix) break; } }
+            
+            const seriesName = document.getElementById("p-name").value.trim() || prefix.replace(/[\s\-_/]+$/, "").trim() || "新品系列";
+            const skusList = validSkus.length ? validSkus.map((s,i) => ({ id: "S_"+Date.now()+"_"+i, name: s, bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} })) : [{ id: "S_"+Date.now(), name: seriesName+" 标配", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }];
+            
+            products.unshift({ id: "P_" + Date.now(), name: seriesName, category: document.getElementById("p-category").value.trim() || "常规", prodDate: normalizeDate(document.getElementById("p-prod-date").value), remark: "", bigNote: "", status: "进行中", archivedAt: null, createdAt: getNowString(), historyLogs: [{ time: getNowString(), type: "CREATE", desc: `创建系列【${seriesName}】` }], skus: skusList });
+            document.getElementById("p-name").value = ""; document.getElementById("p-skus-batch").value = ""; expandedRows[products[0].id] = true;
+            switchTab('RUNNING'); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud();
+        }
+
+        function openLogsModal(prodId) { const p = products.find(x => String(x.id) === String(prodId)); if (!p) return; document.getElementById("logs-title").innerText = `【${p.name}】`; document.getElementById("logs-container").innerHTML = p.historyLogs.length ? p.historyLogs.map(l => `<div class="bg-white p-3 rounded-xl shadow-xs"><div class="text-xs text-gray-800 break-words">${escapeHtml(l.desc)}</div><div class="text-[10px] text-gray-400 mt-1 font-mono">${l.time}</div></div>`).join('') : '<div class="text-gray-400 text-center py-4">无记录</div>'; document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
-
-        function openEditModal(prodId) {
-            currentEditingId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            document.getElementById("edit-name").value = p.name || ""; document.getElementById("edit-category").value = p.category || "";
-            document.getElementById("edit-prod-date").value = normalizeDate(p.prodDate); document.getElementById("edit-reason").value = p.remark || "";
-            document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true);
-        }
+        function openEditModal(prodId) { currentEditingId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return; document.getElementById("edit-name").value = p.name || ""; document.getElementById("edit-category").value = p.category || ""; document.getElementById("edit-prod-date").value = normalizeDate(p.prodDate); document.getElementById("edit-reason").value = p.remark || ""; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeEditModal() { document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveEditChanges() {
-            const p = products.find(x => String(x.id) === String(currentEditingId)); if (!p) return;
-            p.name = document.getElementById("edit-name").value.trim(); p.category = document.getElementById("edit-category").value.trim();
-            p.prodDate = normalizeDate(document.getElementById("edit-prod-date").value); p.remark = document.getElementById("edit-reason").value.trim();
-            p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新排期/基础信息" });
-            closeEditModal(); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud();
-        }
-
-        // ================= 69码交互渲染 =================
-        function renderBarcodeTable() {
-            const tbody = document.getElementById("barcode-table-body"); if (!tbody) return; tbody.innerHTML = "";
-            const kw = document.getElementById("barcode-search-input")?.value.trim().toLowerCase() || ""; let matched = 0;
-            globalBarcodes.forEach((b, idx) => {
-                if (barcodeBatchQueryList.length > 0 && !barcodeBatchQueryList.some(q => [b.barcode, b.sapCode, b.name].some(x => String(x||'').toLowerCase().includes(q.toLowerCase())))) return;
-                if (kw && ![b.name, b.sapCode, b.barcode].some(x => String(x||'').toLowerCase().includes(kw))) return;
-                matched++;
-                const tr = document.createElement("tr"); tr.className = "hover:bg-indigo-50/40 transition";
-                tr.innerHTML = `<td class="p-3 font-bold text-gray-900">${escapeHtml(b.name)}</td><td class="p-3 font-mono text-gray-700">${escapeHtml(b.sapCode || '-')}</td><td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode)}</td><td class="p-3 text-gray-500">${escapeHtml(b.remark || '-')}</td><td class="p-3 text-right space-x-2 font-medium">${!isReadOnlyMode ? `<button type="button" onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline cursor-pointer">修改</button><button type="button" onclick="removeBarcode(${idx})" class="text-red-500 hover:underline cursor-pointer">删除</button>` : '-'}</td>`;
-                tbody.appendChild(tr);
-            });
-            document.getElementById("barcode-table-count").innerText = `筛选 ${matched} 条 / 共 ${globalBarcodes.length} 条`; document.getElementById("nav-count-barcodes").innerText = globalBarcodes.length;
-        }
+        function saveEditChanges() { const p = products.find(x => String(x.id) === String(currentEditingId)); if (!p) return; p.name = document.getElementById("edit-name").value.trim(); p.category = document.getElementById("edit-category").value.trim(); p.prodDate = normalizeDate(document.getElementById("edit-prod-date").value); p.remark = document.getElementById("edit-reason").value.trim(); p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新排期/基础信息" }); closeEditModal(); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud(); }
+        function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
+        function changeProdStatus(prodId, val) { if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p || p.status === val) return; p.status = val; p.archivedAt = (val === "已归档") ? getNowString() : null; p.historyLogs.unshift({ time: getNowString(), type: "STATUS", desc: `状态变更为【${val}】` }); renderTable(); syncMatrixToCloud(); }
+        function removeProduct(prodId) { if (confirm("彻底删除该产品系列？")) { products = products.filter(p => String(p.id) !== String(prodId)); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud(); } }
+        function removeSku(prodId, skuId) { if (confirm("彻底删除规格？")) { const p = products.find(x => String(x.id) === String(prodId)); p.skus = p.skus.filter(s => String(s.id) !== String(skuId)); renderTable(); syncMatrixToCloud(); } }
+        function quickEditSkuName(prodId, skuId) { const p = products.find(x => String(x.id) === String(prodId)); const s = p?.skus.find(x => String(x.id) === String(skuId)); if (s) { const n = prompt("修改规格名:", s.name); if (n && n.trim() !== s.name) { s.name = n.trim(); renderTable(); syncMatrixToCloud(); } } }
+        function addNewSkuToProd(prodId) { const p = products.find(x => String(x.id) === String(prodId)); const n = prompt("新规格名称:"); if (n && n.trim()) { p.skus.push({ id: "S_"+Date.now(), name: n.trim(), bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }); renderTable(); syncMatrixToCloud(); } }
+        function quickEditSeriesName(prodId) { const p = products.find(x => String(x.id) === String(prodId)); if (p) { const n = prompt("修改系列名:", p.name); if (n && n.trim() !== p.name) { p.name = n.trim(); renderTable(); syncMatrixToCloud(); } } }
+        function quickApplyMatchedBarcode(prodId, skuId) { const p = products.find(x => String(x.id) === String(prodId)); const s = p?.skus.find(x => String(x.id) === String(skuId)); if (s) { s.sapOk = true; s.nodeRecords.sapOk = { status: true, time: getNowString(), remark: "自动匹配联动" }; p.historyLogs.unshift({ time: getNowString(), type: "SYNC", desc: `规格【${s.name}】联动点亮【69编码】` }); renderTable(); syncMatrixToCloud(); } }
+        function toggleProductSelect(id, checked) { checked ? selectedProductIds.add(String(id)) : selectedProductIds.delete(String(id)); updateSelectAllCheckboxState(); }
+        function toggleSelectAll(checked) { products.forEach(p => { const isArch = (p.status === "已归档"); if ((currentTab === 'RUNNING' && !isArch) || (currentTab === 'ARCHIVED' && isArch)) { checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id)); } }); renderTable(); }
+        function updateSelectAllCheckboxState() { const tabProds = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档'); const selCount = tabProds.filter(p => selectedProductIds.has(String(p.id))).length; const isAll = (tabProds.length > 0 && selCount === tabProds.length); const sEl = document.getElementById("select-all-checkbox"); const msEl = document.getElementById("mobile-select-all"); if (sEl) { sEl.checked = isAll; sEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } if (msEl) { msEl.checked = isAll; msEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } const mcEl = document.getElementById("mobile-selected-count"); if (mcEl) mcEl.innerText = `已选 ${selCount} 项`; }
+        function exportSelectedToExcel() { const tp = selectedProductIds.size > 0 ? products.filter(p => selectedProductIds.has(String(p.id))) : products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档'); if (!tp.length) return alert("无数据导出！"); let csv = ["系列,规格,品类,截点,状态,财务BOM,详情页,69编码,备注"]; tp.forEach(p => (p.skus||[]).forEach(s => csv.push(`"${p.name}","${s.name}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}"`))); const b = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "排期导出.csv"; a.click(); }
+        
+        function openBatchNodeModal(prodId) { currentBatchProdId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if(!p) return; document.getElementById("batch-node-sku-list").innerHTML = p.skus.map(s => `<label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded"><input type="checkbox" value="${s.id}" class="batch-sku-checkbox w-4 h-4 text-blue-600 rounded cursor-pointer"><span class="text-xs font-medium">${escapeHtml(s.name)}</span></label>`).join(''); document.getElementById("batch-node-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function closeBatchNodeModal() { document.getElementById("batch-node-modal").classList.add("hidden"); lockBodyScroll(false); }
+        function confirmBatchNode() { const p = products.find(x => String(x.id) === String(currentBatchProdId)); if(!p) return; const sIds = Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(cb => cb.value); if (!sIds.length) return alert("请勾选规格！"); const type = document.getElementById("batch-node-type").value; const isOk = document.getElementById("batch-node-status").value === "true"; const rem = document.getElementById("batch-node-remark").value.trim(); const t = getNowString(); const lbs = { bomOk: "财务BOM", detailOk: "详情页", sapOk: "69编码" }; p.skus.forEach(s => { if (sIds.includes(String(s.id))) { s[type] = isOk; s.nodeRecords[type] = { status: isOk, time: t, remark: rem }; } }); p.historyLogs.unshift({ time: t, type: "BATCH", desc: `批量更新 ${sIds.length} 个规格的【${lbs[type]}】为${isOk?'完成':'取消'}` + (rem ? ` ｜ 备注: ${rem}` : '') }); closeBatchNodeModal(); renderTable(); syncMatrixToCloud(); }
 
         function toggleBarcodeBatchImportModal() { const m = document.getElementById("barcode-batch-import-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function analyzeBarcodeBatchImport() { const t = document.getElementById("barcode-batch-import-text").value.trim(); document.getElementById("barcode-analysis-stats").innerText = `已输入 ${t ? t.split('\n').length : 0} 行数据，确认即可导入。`; }
@@ -1080,54 +1124,22 @@
         function executeBarcodeBatchSearch() { const r = document.getElementById("barcode-batch-search-input").value.trim(); if(!r) return; barcodeBatchQueryList = Array.from(new Set(r.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean))); let missing = barcodeBatchQueryList.filter(q => !globalBarcodes.some(b => [b.barcode, b.sapCode, b.name].some(x => String(x||'').toLowerCase().includes(q.toLowerCase())))); barcodeMissingList = missing; document.getElementById("barcode-missing-box").classList.remove("hidden"); document.getElementById("barcode-missing-summary").innerText = `查询 ${barcodeBatchQueryList.length} 项 ｜ 匹配 ${barcodeBatchQueryList.length - missing.length} 项 ｜ 缺失 ${missing.length} 项`; document.getElementById("barcode-missing-list").innerHTML = missing.length ? missing.map(m => `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px]">❌ ${escapeHtml(m)}</span>`).join('') : '<span class="text-green-700 font-bold">🎉 全部找到！</span>'; renderBarcodeTable(); }
         function clearBarcodeBatchSearch() { document.getElementById("barcode-batch-search-input").value = ""; document.getElementById("barcode-missing-box").classList.add("hidden"); barcodeBatchQueryList = []; barcodeMissingList = []; renderBarcodeTable(); }
         function copyMissingBarcodes() { if(barcodeMissingList.length) { try { navigator.clipboard.writeText(barcodeMissingList.join('\n')); alert("已复制缺失条码！"); } catch(e) { alert("复制失败"); } } }
-        function generateMissingUrgeMessage() { if(barcodeMissingList.length) { try { navigator.clipboard.writeText(`Hi，以下货品暂未在 69 码库中检索到有效编码，急需协助补充：\n${barcodeMissingList.join('\n')}`); alert("已复制催办话术！"); } catch(e) { alert("复制失败"); } } }
+        function generateMissingUrgeMessage() { if(barcodeMissingList.length) { try { navigator.clipboard.writeText(`Hi，以下货品暂未在 69 码库中检索到有效编码，急需协助补充维护：\n${barcodeMissingList.join('\n')}`); alert("已复制催办话术！"); } catch(e) { alert("复制失败"); } } }
 
-        // ================= 只读链接复制 =================
-        function copyReadOnlyShareLink() {
-            try {
-                const o = cleanConfigString(localStorage.getItem("wb_owner") || ""); 
-                const r = cleanConfigString(localStorage.getItem("wb_repo") || ""); 
-                const b = cleanConfigString(localStorage.getItem("wb_gist_barcodes") || ""); 
-                const tr = (localStorage.getItem("wb_token_repo") || "").trim(); 
-                const tg = (localStorage.getItem("wb_token_gist") || "").trim();
-                const url = `${window.location.origin}${window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(b)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`;
-                
-                const m = document.getElementById("readonly-share-modal");
-                if (m) {
-                    document.getElementById("readonly-url-textarea").value = url;
-                    m.classList.remove("hidden");
-                    lockBodyScroll(true);
-                } else {
-                    alert("弹出失败，您的链接为：\n" + url);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("生成分享链接失败：" + err.message);
-            }
-        }
-        function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmCopyReadonlyUrl() { const ta = document.getElementById("readonly-url-textarea"); ta.select(); try { document.execCommand('copy'); alert("🎉 链接已成功复制！"); } catch(e) { prompt("请手动复制链接：", ta.value); } }
-
-        // ================= 独立交互与操作 =================
-        function toggleProductSelect(id, checked) { checked ? selectedProductIds.add(String(id)) : selectedProductIds.delete(String(id)); updateSelectAllCheckboxState(); }
-        function toggleSelectAll(checked) { products.forEach(p => { const isArch = (p.status === "已归档"); if ((currentTab === 'RUNNING' && !isArch) || (currentTab === 'ARCHIVED' && isArch)) { checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id)); } }); renderTable(); }
-        function updateSelectAllCheckboxState() { const tabProds = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档'); const selCount = tabProds.filter(p => selectedProductIds.has(String(p.id))).length; const isAll = (tabProds.length > 0 && selCount === tabProds.length); const sEl = document.getElementById("select-all-checkbox"); const msEl = document.getElementById("mobile-select-all"); if (sEl) { sEl.checked = isAll; sEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } if (msEl) { msEl.checked = isAll; msEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } const mcEl = document.getElementById("mobile-selected-count"); if (mcEl) mcEl.innerText = `已选 ${selCount} 项`; }
-        function exportSelectedToExcel() { const tp = selectedProductIds.size > 0 ? products.filter(p => selectedProductIds.has(String(p.id))) : products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档'); if (!tp.length) return alert("无数据导出！"); let csv = ["系列,规格,品类,截点,状态,财务BOM,详情页,69编码,备注"]; tp.forEach(p => (p.skus||[]).forEach(s => csv.push(`"${p.name}","${s.name}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}"`))); const b = new Blob(["\uFEFF" + csv.join("\n")], {type: "text/csv;charset=utf-8;"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "排期导出.csv"; a.click(); }
-        
-        function updateCategoryFilterOptions() { const select = document.getElementById("filter-category"); if (!select) return; const currentVal = select.value; const categories = new Set(products.map(p => p.category).filter(Boolean)); select.innerHTML = '<option value="ALL">全部品类</option>'; categories.forEach(c => { const opt = document.createElement("option"); opt.value = c; opt.innerText = c; select.appendChild(opt); }); if (categories.has(currentVal)) select.value = currentVal; }
-        function resetAllFilters() { if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL"; if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL"; if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL"; if (document.getElementById("search-input")) document.getElementById("search-input").value = ""; renderTable(); }
-
-        // ================= 备忘板 =================
-        function toggleMemoPanel() { isMemoPanelOpen = !isMemoPanelOpen; document.getElementById("memo-panel-body").classList.toggle("hidden", !isMemoPanelOpen); document.getElementById("memo-toggle-btn").innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼"; }
+        function toggleMemoPanel() { isMemoPanelOpen = !isMemoPanelOpen; document.getElementById("memo-panel-body").style.display = isMemoPanelOpen ? "block" : "none"; document.getElementById("memo-toggle-btn").innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼"; }
         function addMemoItem() { if (isReadOnlyMode) return; const input = document.getElementById("memo-input"); const text = input.value.trim(); if (!text) return alert("请输入备忘！"); globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) }); input.value = ""; renderMemos(); syncMatrixToCloud(); }
         function toggleMemoDone(id, isDone) { if (isReadOnlyMode) return; const m = globalMemos.find(item => item.id === id); if (m) { m.done = isDone; renderMemos(); syncMatrixToCloud(); } }
         function deleteMemo(id) { if (isReadOnlyMode) return; globalMemos = globalMemos.filter(item => item.id !== id); renderMemos(); syncMatrixToCloud(); }
         function clearDoneMemos() { if (isReadOnlyMode) return; if (confirm("确定清理已完成事项吗？")) { globalMemos = globalMemos.filter(m => !m.done); renderMemos(); syncMatrixToCloud(); } }
         function renderMemos() { const c = document.getElementById("memo-list-container"); if (!c) return; c.innerHTML = ""; const pending = globalMemos.filter(m => !m.done).length; document.getElementById("memo-count-tag").innerText = `${pending} 项提醒`; if (globalMemos.length === 0) { c.innerHTML = `<div class="text-gray-400 text-center py-4 text-xs">暂无备忘事项~</div>`; return; } globalMemos.forEach(m => { let bClass = m.priority.includes("紧急") ? "bg-red-50 text-red-700 border-red-200 font-bold" : (m.priority.includes("常规") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200"); const item = document.createElement("div"); item.className = `flex items-start space-x-2 p-2 rounded-lg border ${m.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`; item.innerHTML = `<input type="checkbox" onchange="toggleMemoDone('${m.id}', this.checked)" ${m.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer"><div class="flex-1 min-w-0"><div class="${m.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(m.text)}</div><div class="flex items-center space-x-2 mt-1"><span class="text-[10px] ${m.done ? 'text-gray-400' : (m.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${m.priority}</span><span class="text-[10px] text-gray-400 font-mono">${m.createdAt}</span></div></div>${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${m.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}`; c.appendChild(item); }); }
 
-        // ================= AI 助手功能 =================
+        function exportLocalBackupSnapshot() { const backupData = { version: "2026.1", exportTime: getNowString(), products, memos: globalMemos, barcodes: globalBarcodes }; const b = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json;charset=utf-8;" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `WorkBuddy备份_${new Date().toISOString().split('T')[0]}.json`; a.click(); }
+        function importLocalBackupSnapshot(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const p = JSON.parse(evt.target.result); if (p.products) { let n = normalizeMatrixData(p); products = n.products; globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos })); } if (p.barcodes) { globalBarcodes = normalizeBarcodesData(p.barcodes); localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); } alert("🎉 快照恢复成功！"); toggleConfigModal(); renderTable(); renderBarcodeTable(); renderMemos(); syncMatrixToCloud(); syncBarcodesToGist(); } catch(err) { alert("解析失败: " + err.message); } }; reader.readAsText(file); }
+        function exportBarcodesToCsv() { if (!globalBarcodes.length) return alert("暂无数据可导出！"); let csvRows = ["产品名称,SKU编码,69条码,备注"]; globalBarcodes.forEach(b => { csvRows.push(`"${b.name}","${b.sapCode}","${b.barcode}","${b.remark}"`); }); const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `69码库_${new Date().toISOString().split('T')[0]}.csv`; a.click(); }
+        function handleBarcodeExcelUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const data = new Uint8Array(evt.target.result); const wb = XLSX.read(data, { type: 'array' }); let list = []; wb.SheetNames.forEach(sheet => { const json = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: "" }); json.forEach(row => { let name = "", sap = "", bar = "", rem = ""; for (let k in row) { let key = k.toLowerCase(), v = String(row[k]).trim(); if (!v) continue; if (key.includes("名称") || key.includes("型号")) name = v; else if (key.includes("sku") || key.includes("编码")) sap = v; else if (key.includes("69") || key.includes("条码")) bar = v; else if (key.includes("备注")) rem = v; } if (name || bar) list.push({ name, sapCode: sap, barcode: bar, remark: rem }); }); }); if (!list.length) return alert("未解析出有效数据！"); globalBarcodes = list; renderBarcodeTable(); renderTable(); syncBarcodesToGist(); alert(`成功导入 ${list.length} 条数据！`); } catch(err) { alert("导入失败：" + err.message); } }; reader.readAsArrayBuffer(file); }
+
         function applyQuickPrompt(type) { const input = document.getElementById("ai-user-prompt"); if (!input) return; if (type === 'DIAGNOSE') input.value = "帮我诊断当前进行中项目有哪些卡点，并列出延期风险最高的 Top 3。"; if (type === 'SPEECH_PRODUCT') input.value = "帮我写一段话术，催促产品经理尽快提供缺少 69 码的商品资料。"; if (type === 'REPORT_DELAY') input.value = "根据目前已延期的项目，生成一份向总监汇报的延期说明文案，说明原因及后续推进计划。"; }
-        function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML = `<div class="flex items-start space-x-2"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div><div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">已清空上下文。</div></div>`; }
+        function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML = `<div class="flex items-start space-x-2"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div><div class="bg-gray-100 p-3 rounded-xl max-w-[88%] text-xs shadow-xs">已清空上下文。</div></div>`; }
         function submitUserDemandToAI() { const input = document.getElementById("ai-user-prompt"); const msg = document.getElementById("ai-chat-messages"); const text = input.value.trim(); if (!text) return; input.value = ""; msg.innerHTML += `<div class="flex items-start space-x-2 justify-end mt-3"><div class="ai-chat-bubble-user p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">${escapeHtml(text)}</div></div>`; msg.scrollTop = msg.scrollHeight; setTimeout(() => { msg.innerHTML += `<div class="flex items-start space-x-2 mt-3"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div><div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">收到指令: “${escapeHtml(text)}”。<br>当前进行中系列 ${products.filter(p=>p.status!=='已归档').length} 个，69 码库映射共 ${globalBarcodes.length} 条。请在“云端配置”绑定 Token 以启用完整深度分析。</div></div>`; msg.scrollTop = msg.scrollHeight; }, 600); }
     </script>
 </body>
