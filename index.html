@@ -14,37 +14,15 @@
         .log-scroll::-webkit-scrollbar { width: 5px; }
         .log-scroll::-webkit-scrollbar-track { background: #f8fafc; }
         .log-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        
-        .btn-export-excel {
-            background-color: #059669 !important;
-            color: #ffffff !important;
-            border: 1px solid #047857 !important;
-            font-weight: 700 !important;
-        }
+        .btn-export-excel { background-color: #059669 !important; color: #ffffff !important; border: 1px solid #047857 !important; font-weight: 700 !important; }
         .btn-export-excel:hover { background-color: #047857 !important; }
-
         .rich-note s, .rich-note del, .rich-note strike { text-decoration: line-through; color: #94a3b8; }
         .rich-note a { color: #2563eb; text-decoration: underline; word-break: break-all; }
-
         .ai-chat-bubble-user { background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
         .ai-chat-bubble-bot { background-color: #f1f5f9; color: #1e293b; border-bottom-left-radius: 2px; }
-
-        /* 大备注外显多行省略排版 */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        @media (max-width: 860px) {
-            .desktop-table-view { display: none !important; }
-            .mobile-card-view { display: block !important; }
-        }
-        @media (min-width: 861px) {
-            .desktop-table-view { display: block !important; }
-            .mobile-card-view { display: none !important; }
-        }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        @media (max-width: 860px) { .desktop-table-view { display: none !important; } .mobile-card-view { display: block !important; } }
+        @media (min-width: 861px) { .desktop-table-view { display: block !important; } .mobile-card-view { display: none !important; } }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
@@ -53,37 +31,39 @@
         <!-- 头部导航与全局状态 -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
             <div>
-                <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
+                <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                     <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-0.5 rounded-lg text-xs tracking-wide">工作台</span>
                     <span>电商运营超级工作台</span>
                     <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
                 </h1>
                 <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进矩阵 · 69码与SKU编码联动库 · 节点留痕追溯 · 双Token独立鉴权</p>
             </div>
-            <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
-                <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                    <span id="auth-dot" class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                    <span id="auth-tag-text">就绪</span>
+            <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
+                <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                    <span id="auth-dot" class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block flex-shrink-0"></span>
+                    <span id="auth-tag-text">初始化中</span>
                 </span>
-                <div class="flex items-center space-x-1.5">
-                    <button type="button" onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center space-x-1 shadow-xs cursor-pointer">
-                        <span>🤖 小助手</span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center gap-1 shadow-xs cursor-pointer">
+                        🤖 小助手
                     </button>
                     <button type="button" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold transition cursor-pointer">
                         🔗 只读链接
                     </button>
-                    <button type="button" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">⚙️ 云端配置</button>
+                    <button type="button" id="top-btn-config" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">
+                        ⚙️ 云端配置
+                    </button>
                 </div>
             </div>
         </header>
 
         <!-- 顶层主工作区切换导航 -->
-        <nav class="flex items-center space-x-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-xs overflow-x-auto custom-scroll">
-            <button type="button" onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+        <nav class="flex items-center gap-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-xs overflow-x-auto custom-scroll">
+            <button type="button" onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
                 <span>📊 新品排期推进矩阵</span>
                 <span id="nav-count-matrix" class="bg-blue-800 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
-            <button type="button" onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
+            <button type="button" onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
                 <span>🏷️ 69码与编码库 (Gist)</span>
                 <span id="nav-count-barcodes" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.2 rounded-full font-mono">0</span>
             </button>
@@ -102,108 +82,85 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs mb-1">
                     <div>
                         <label class="block text-gray-600 font-medium mb-1 text-[11px]">主产品型号 / 系列名 <span class="text-gray-400">(选填)</span></label>
-                        <input type="text" id="p-name" placeholder="自动提取如: HD-LD22-H" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <input type="text" id="p-name" placeholder="自动提取如: HD-LD22-H" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-gray-600 font-medium mb-1 text-[11px]">品类 / 渠道 <span class="text-red-500">*</span></label>
-                        <input type="text" id="p-category" placeholder="如: 落地 / 手摇 / 电动" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <input type="text" id="p-category" placeholder="如: 落地 / 手摇" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-gray-600 font-medium mb-1 text-[11px]">量产大货截点 <span class="text-red-500">*</span></label>
-                        <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-gray-900 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div class="flex items-end">
-                        <button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 rounded-lg font-bold shadow-sm transition text-xs cursor-pointer">🚀 智能查重并创建</button>
+                        <button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 rounded-lg font-bold shadow-sm cursor-pointer">🚀 智能查重并创建</button>
                     </div>
                 </div>
             </div>
 
             <!-- 双 Tab 切换栏 -->
-            <div class="flex items-center space-x-2">
-                <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm cursor-pointer flex items-center gap-1.5">
                     <span>⚡ 进行中看板</span>
-                    <span id="tab-count-running" class="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                    <span id="tab-count-running" class="bg-blue-800 px-2 py-0.5 rounded-full font-mono">0</span>
                 </button>
-                <button type="button" onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
-                    <span>📦 已归档历史库</span>
-                    <span id="tab-count-archived" class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                <button type="button" onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 cursor-pointer flex items-center gap-1.5">
+                    <span>📦 历史库</span>
+                    <span id="tab-count-archived" class="bg-gray-100 px-2 py-0.5 rounded-full font-mono">0</span>
                 </button>
             </div>
 
             <!-- 智能筛选器 -->
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2.5">
                 <div class="flex justify-between items-center flex-wrap gap-2">
-                    <div class="flex items-center space-x-1.5 font-bold text-gray-800">
-                        <span>🔍 智能筛选器</span>
-                        <span id="filter-result-count" class="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-normal">显示全部</span>
-                    </div>
+                    <span class="font-bold text-gray-800">🔍 智能筛选器</span>
                     <button type="button" onclick="resetAllFilters()" class="text-[11px] text-gray-400 hover:text-blue-600 underline cursor-pointer">重置筛选</button>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div>
-                        <label class="block text-gray-500 text-[10px] mb-0.5">品类/渠道</label>
-                        <select id="filter-category" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="ALL">全部品类</option>
-                        </select>
-                    </div>
-                    <div id="filter-health-box">
-                        <label class="block text-gray-500 text-[10px] mb-0.5">健康度预警</label>
-                        <select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="ALL">全部排期</option>
-                            <option value="DELAY">🚨 仅看延期项目</option>
-                            <option value="URGENT_DAYS">⚠️ 7天内即将大货</option>
-                            <option value="NORMAL">🟢 正常推进中</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-500 text-[10px] mb-0.5">大备注备忘</label>
-                        <select id="filter-bignote" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="ALL">全部</option>
-                            <option value="HAS_NOTE">📌 仅看有大备注</option>
-                            <option value="NO_NOTE">⚪ 仅看无大备注</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-500 text-[10px] mb-0.5">关键词搜索</label>
-                        <input type="text" id="search-input" oninput="renderTable()" placeholder="型号/变体/备注..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
+                    <select id="filter-category" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部品类</option>
+                    </select>
+                    <select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部排期</option><option value="DELAY">🚨 仅延期</option><option value="URGENT_DAYS">⚠️ 7天内</option><option value="NORMAL">🟢 正常</option>
+                    </select>
+                    <select id="filter-bignote" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
+                        <option value="ALL">全部备忘</option><option value="HAS_NOTE">📌 有大备注</option><option value="NO_NOTE">⚪ 无大备注</option>
+                    </select>
+                    <input type="text" id="search-input" oninput="renderTable()" placeholder="搜索型号/备注..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
 
             <!-- 统计与导出条 -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 text-xs text-gray-600 px-1">
-                <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
+                <div class="flex items-center gap-3 sm:gap-4 flex-wrap text-[11px] sm:text-xs">
                     <span>总系列: <strong id="stat-total" class="text-gray-900 font-bold">0</strong></span>
                     <span id="stat-box-delay">🚨 延期: <strong id="stat-delay" class="text-red-600 font-bold">0</strong></span>
                     <span id="stat-box-urgent">🔥 紧急: <strong id="stat-urgent" class="text-red-600 font-bold">0</strong></span>
                     <span id="stat-box-running">⚡ 推进中: <strong id="stat-running" class="text-blue-600 font-bold">0</strong></span>
-                    <span>✅ 归档库: <strong id="stat-archived" class="text-green-600 font-bold">0</strong></span>
                 </div>
-                <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-end">
-                    <button type="button" onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs transition flex items-center space-x-1 cursor-pointer">
-                        <span id="btn-export-label">📥 导出当前视图至 Excel</span>
+                <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+                    <button type="button" onclick="exportSelectedToExcel()" class="btn-export-excel px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+                        <span id="btn-export-label">📥 导出至 Excel</span>
                     </button>
                     <div id="sync-status" class="text-gray-500 font-medium whitespace-nowrap text-[11px]">准备就绪</div>
                 </div>
             </div>
 
-            <!-- 桌面表格视图 (单行同行规整呈现) -->
+            <!-- 桌面表格视图 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-x-auto custom-scroll w-full">
-                    <table class="w-full text-left text-xs text-gray-700 min-w-[1100px]">
+                    <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
-                                <th class="p-3 w-8 text-center">
-                                    <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-0 cursor-pointer">
-                                </th>
+                                <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer"></th>
                                 <th class="p-3 w-10 text-center">展开</th>
-                                <th class="p-3 min-w-[170px]">产品型号 / 系列</th>
+                                <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
-                                <th class="p-3 min-w-[150px] whitespace-nowrap">量产大货截点 (健康度)</th>
-                                <th class="p-3 min-w-[280px]">三大核心节点总进度 (点亮留痕)</th>
-                                <th class="p-3 min-w-[240px] whitespace-nowrap">排期说明 / 大备注预览</th>
-                                <th class="p-3 min-w-[90px]">状态</th>
-                                <th class="p-3 text-right min-w-[190px] whitespace-nowrap">操作与审计</th>
+                                <th class="p-3 min-w-[140px] whitespace-nowrap">大货截点 (健康度)</th>
+                                <th class="p-3 min-w-[270px]">三大核心节点总进度 (点击留痕)</th>
+                                <th class="p-3 min-w-[260px]">排期说明 / 大备注预览</th>
+                                <th class="p-3 min-w-[85px]">状态</th>
+                                <th class="p-3 text-right min-w-[170px] whitespace-nowrap">操作与审计</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
@@ -211,11 +168,11 @@
                 </div>
             </div>
 
-            <!-- 手机卡片流视图 -->
+            <!-- 手机卡片流视图 (优化结构，防挤压) -->
             <div class="mobile-card-view space-y-3">
                 <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 text-xs">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 border-gray-300">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="mobile-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-blue-600 cursor-pointer">
                         <span class="font-bold text-gray-700">全选当前视图</span>
                     </label>
                     <span class="text-gray-400 text-[11px]" id="mobile-selected-count">已选 0 项</span>
@@ -226,29 +183,22 @@
             <!-- 全局备忘板 -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                 <div class="flex justify-between items-center pb-3 border-b border-gray-100 flex-wrap gap-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-base sm:text-lg">📌</span>
-                        <h2 class="text-xs sm:text-sm font-bold text-gray-900">运营重要备忘 & 琐事消息速记板</h2>
-                        <span id="memo-count-tag" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">0 项提醒</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📌</span><h2 class="text-sm font-bold text-gray-900">运营重要备忘 & 速记板</h2>
+                        <span id="memo-count-tag" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">0 提醒</span>
                     </div>
                     <button type="button" onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-xs text-gray-500 hover:text-gray-800 cursor-pointer">折叠 ▲</button>
                 </div>
                 <div id="memo-panel-body" class="pt-3 space-y-3">
-                    <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
-                        <select id="memo-priority" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none">
-                            <option value="🔥 紧急重要">🔥 紧急重要</option>
-                            <option value="⚡ 常规跟进" selected>⚡ 常规跟进</option>
-                            <option value="💡 琐事记录">💡 琐事记录</option>
-                        </select>
+                    <div id="memo-create-box" class="flex flex-col sm:flex-row items-stretch gap-2 bg-amber-50/40 p-2.5 rounded-xl border border-amber-200/60">
+                        <select id="memo-priority" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none"><option value="🔥 紧急重要">🔥 紧急重要</option><option value="⚡ 常规跟进" selected>⚡ 常规跟进</option><option value="💡 琐事记录">💡 琐事记录</option></select>
                         <input type="text" id="memo-input" placeholder="输入待办/琐事提醒..." class="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <button type="button" onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
-                            + 添加备忘
-                        </button>
+                        <button type="button" onclick="addMemoItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold cursor-pointer">+ 添加备忘</button>
                     </div>
                     <div id="memo-list-container" class="space-y-2 max-h-[360px] log-scroll pr-1"></div>
                     <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
-                        <span>💡 点击左侧复选框标为完成（自动删除线）；随矩阵全局同步。</span>
-                        <button type="button" id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 transition underline cursor-pointer">清理已完成事项</button>
+                        <span>💡 勾选标为完成，随全局同步。</span>
+                        <button type="button" id="btn-clear-done-memo" onclick="clearDoneMemos()" class="text-gray-500 hover:text-red-600 underline cursor-pointer">清理已完成</button>
                     </div>
                 </div>
             </div>
@@ -258,115 +208,77 @@
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
-                    <div>
-                        <h2 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
-                            <span>🏷️ 69码与产品编码联动库</span>
-                            <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 数据实时接入</span>
-                        </h2>
-                        <p class="text-[11px] text-gray-400 mt-0.5">支持直接上传 Excel 表格重刷全量数据、批量文本导入防重与“未匹配缺失项”微信催办</p>
-                    </div>
-                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <label class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer transition shadow-xs flex items-center space-x-1">
-                            <span>📥 导入 Excel 表格</span>
-                            <input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
+                    <h2 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
+                        <span>🏷️ 69码与产品编码联动库</span>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-normal">Gist 接入</span>
+                    </h2>
+                    <div class="flex items-center gap-2 flex-wrap mt-2 sm:mt-0">
+                        <label class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer flex items-center gap-1">
+                            <span>📥 导入 Excel</span><input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
                         </label>
-                        <button type="button" onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition cursor-pointer">📋 粘贴批量文本</button>
-                        <button type="button" onclick="exportBarcodesToCsv()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 font-medium cursor-pointer">导出 CSV</button>
-                        <button type="button" onclick="addNewBarcodePrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold transition cursor-pointer">+ 单条录入</button>
+                        <button type="button" onclick="toggleBarcodeBatchImportModal()" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 cursor-pointer">📋 粘贴批量文本</button>
+                        <button type="button" onclick="exportBarcodesToCsv()" class="bg-gray-100 text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 font-medium cursor-pointer">导出 CSV</button>
+                        <button type="button" onclick="addNewBarcodePrompt()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer">+ 单条录入</button>
                     </div>
                 </div>
 
                 <div class="bg-indigo-50/30 p-3 rounded-xl border border-indigo-100 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="font-bold text-indigo-900 flex items-center space-x-1">
-                            <span>🔍 批量核对 / 查缺补漏查询</span>
-                            <span class="text-[10px] text-gray-400 font-normal">(支持粘贴多行或逗号隔开的多个 69码/SKU编码)</span>
-                        </label>
-                        <button type="button" onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline cursor-pointer">清空核对</button>
-                    </div>
-                    <div class="flex gap-2">
-                        <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码，如:&#10;6941123400012&#10;320243181002" class="flex-1 bg-white border border-gray-300 rounded-lg p-2 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"></textarea>
-                        <button type="button" onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition text-xs flex-shrink-0 self-end cursor-pointer">⚡ 开始核对</button>
-                    </div>
-                    <div id="barcode-missing-box" class="hidden bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs space-y-1.5">
-                        <div class="flex justify-between items-center text-amber-800 font-bold flex-wrap gap-1">
-                            <span id="barcode-missing-summary">📊 查询结果</span>
-                            <div class="space-x-2">
-                                <button type="button" onclick="copyMissingBarcodes()" class="text-indigo-600 hover:underline text-[11px] font-bold cursor-pointer">📋 复制未匹配编码</button>
-                                <button type="button" onclick="generateMissingUrgeMessage()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer">💬 生成催办微信话术</button>
-                            </div>
-                        </div>
-                        <div id="barcode-missing-list" class="font-mono text-[11px] text-red-600 flex flex-wrap gap-1.5"></div>
-                    </div>
+                    <div class="flex justify-between items-center"><label class="font-bold text-indigo-900">🔍 批量核对 / 查缺补漏查询</label><button type="button" onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline cursor-pointer">清空核对</button></div>
+                    <div class="flex gap-2"><textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码..." class="flex-1 bg-white border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 font-mono"></textarea><button type="button" onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 text-white px-4 rounded-lg font-bold flex-shrink-0 cursor-pointer">⚡ 开始核对</button></div>
+                    <div id="barcode-missing-box" class="hidden bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs space-y-1.5"><div class="flex justify-between items-center font-bold text-amber-800"><span id="barcode-missing-summary">📊 查询结果</span><div class="flex gap-2"><button type="button" onclick="copyMissingBarcodes()" class="text-indigo-600 hover:underline cursor-pointer">📋 复制未匹配</button><button type="button" onclick="generateMissingUrgeMessage()" class="bg-amber-600 text-white px-2 py-0.5 rounded cursor-pointer">💬 催办话术</button></div></div><div id="barcode-missing-list" class="font-mono text-red-600 flex flex-wrap gap-1.5"></div></div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="单条快速过滤：输入 69码 / 产品名称 / SKU产品编码..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="单条快速过滤：输入 69码 / 产品名称 / SKU产品编码..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-blue-500">
                     <div class="text-right text-gray-400 self-center text-[11px]" id="barcode-table-count">共 0 条编码映射</div>
                 </div>
             </div>
 
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-xs">
                 <div class="overflow-x-auto custom-scroll">
-                    <table class="w-full text-left text-gray-700 min-w-[750px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
-                            <tr>
-                                <th class="p-3 min-w-[160px]">产品名称 / 规格型号</th>
-                                <th class="p-3 min-w-[140px]">SKU 产品编码</th>
-                                <th class="p-3 min-w-[140px]">69 商品条形码</th>
-                                <th class="p-3 min-w-[150px]">备注说明 / 状态</th>
-                                <th class="p-3 text-right min-w-[110px]">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="barcode-table-body" class="divide-y divide-gray-200"></tbody>
-                    </table>
+                    <table class="w-full text-left text-gray-700 min-w-[750px]"><thead class="bg-gray-50 font-bold border-b border-gray-200"><tr><th class="p-3">产品名称 / 规格型号</th><th class="p-3">SKU 产品编码</th><th class="p-3">69 商品条形码</th><th class="p-3">备注说明 / 状态</th><th class="p-3 text-right">操作</th></tr></thead><tbody id="barcode-table-body" class="divide-y divide-gray-200"></tbody></table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= 全局弹窗层 ================= -->
+    <!-- ================= 全局直属弹窗层 ================= -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h2 class="text-sm font-bold text-gray-900">⚙️ 多源云端独立配置</h2>
-                <button type="button" onclick="toggleConfigModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
-            </div>
+            <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold text-gray-900">⚙️ 云端配置</h2><button type="button" onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
             <div class="space-y-2.5">
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1">GitHub 用户名</label>
-                    <input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="marrylily">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1">📊 新品私有仓库名</label>
-                    <input type="text" id="cfg-repo" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="my-tasks">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-blue-700">🔑 仓库专属 Token (需 repo 权限)</label>
-                    <input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-1.5 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx">
-                </div>
-                <div class="pt-2 border-t border-gray-100">
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">🏷️ 69码 Gist ID</label>
-                    <input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-1.5 text-gray-900 font-mono text-xs" placeholder="14e746d186a05310aa271284aaeb2507">
-                </div>
-                <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-purple-700">🔑 Gist 专属 Token (需 gist 权限)</label>
-                    <input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 text-gray-900 font-mono" placeholder="ghp_xxxxxxxxxxxx (可与仓库Token不同)">
-                </div>
+                <div><label class="block text-gray-600 font-medium mb-1">GitHub 用户名</label><input type="text" id="cfg-owner" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="例如: marrylily"></div>
+                <div><label class="block text-gray-600 font-medium mb-1">新品私有仓库名</label><input type="text" id="cfg-repo" class="w-full border border-gray-300 rounded p-1.5 text-gray-900" placeholder="例如: my-tasks"></div>
+                <div><label class="block text-gray-600 font-medium mb-1 font-bold text-blue-700">仓库专属 Token (需 repo 权限)</label><input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-1.5 font-mono"></div>
+                <div class="pt-2 border-t border-gray-100"><label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">69码 Gist ID</label><input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-1.5 font-mono text-xs"></div>
+                <div><label class="block text-gray-600 font-medium mb-1 font-bold text-purple-700">Gist 专属 Token</label><input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 font-mono" placeholder="可与仓库Token相同"></div>
             </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-2 mt-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-gray-700">☁️ 云端连接状态</span>
+                    <span id="cfg-status-summary" class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">未检测</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="bg-white rounded-md border border-gray-200 p-2"><div class="text-[10px] text-gray-400 mb-0.5">新品矩阵 Repo</div><div id="cfg-repo-status" class="font-semibold text-gray-500 break-all">未检测</div></div>
+                    <div class="bg-white rounded-md border border-gray-200 p-2"><div class="text-[10px] text-gray-400 mb-0.5">69码 Gist</div><div id="cfg-gist-status" class="font-semibold text-gray-500 break-all">未检测</div></div>
+                </div>
+                <div id="cfg-status-detail" class="text-[10px] text-gray-400">填写配置后保存，系统将检测双向连接。</div>
+            </div>
+
             <div class="pt-2 border-t border-gray-100 flex justify-between items-center bg-gray-50 p-2.5 rounded-lg text-[11px] flex-wrap gap-2">
-                <span class="text-gray-500 font-medium">📦 数据管理：</span>
+                <span class="text-gray-500 font-medium">📦 本地数据急救：</span>
                 <div class="flex gap-2">
-                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer whitespace-nowrap">重置样例数据</button>
+                    <button type="button" onclick="loadSampleDefaultData()" class="text-green-600 hover:underline font-bold cursor-pointer">重置样例数据</button>
                     <span class="text-gray-300">|</span>
-                    <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 hover:underline font-bold cursor-pointer">导出</button>
+                    <button type="button" onclick="exportLocalBackupSnapshot()" class="text-indigo-600 font-bold cursor-pointer">导出</button>
                     <span class="text-gray-300">|</span>
-                    <label class="text-blue-600 hover:underline font-bold cursor-pointer">恢复<input type="file" accept=".json" onchange="importLocalBackupSnapshot(event)" class="hidden"></label>
+                    <label class="text-blue-600 font-bold cursor-pointer">恢复<input type="file" accept=".json" onchange="importLocalBackupSnapshot(event)" class="hidden"></label>
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
-                <button type="button" onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 text-gray-700 rounded cursor-pointer">取消</button>
-                <button type="button" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer">保存并同步</button>
+            <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <button type="button" onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button>
+                <button type="button" onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 text-white font-bold rounded cursor-pointer">保存并立即同步</button>
             </div>
         </div>
     </div>
@@ -375,10 +287,7 @@
     <div id="ai-chat-drawer" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex justify-end hidden" onclick="if(event.target===this) toggleAIChatDrawer()">
         <div class="bg-white w-full max-w-lg h-full shadow-2xl flex flex-col justify-between text-xs text-gray-800 relative">
             <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-blue-50 flex-shrink-0">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">WB</div>
-                    <h2 class="font-bold text-gray-900 text-sm">运营大脑</h2>
-                </div>
+                <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">WB</div><h2 class="font-bold text-gray-900 text-sm">运营大脑</h2></div>
                 <button type="button" onclick="toggleAIChatDrawer()" class="text-gray-400 hover:text-gray-800 text-lg cursor-pointer">✕</button>
             </div>
             <div class="px-4 py-2 bg-gray-50 border-b flex gap-1.5 overflow-x-auto flex-shrink-0">
@@ -387,10 +296,7 @@
                 <button type="button" onclick="applyQuickPrompt('SPEECH_PRODUCT')" class="bg-white text-indigo-700 border border-indigo-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">💬 催办话术</button>
             </div>
             <div id="ai-chat-messages" class="flex-1 p-4 space-y-3 log-scroll bg-gray-50/50">
-                <div class="flex items-start space-x-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">WB</div>
-                    <div class="bg-gray-100 p-3 rounded-xl max-w-[88%] text-xs shadow-xs">随时为您服务！</div>
-                </div>
+                <div class="flex items-start gap-2"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">WB</div><div class="bg-gray-100 p-3 rounded-xl max-w-[88%] text-xs shadow-xs">随时为您服务！输入指令即可联动分析。</div></div>
             </div>
             <div class="p-3.5 border-t border-gray-200 bg-white space-y-2">
                 <textarea id="ai-user-prompt" rows="3" placeholder="输入业务需求..." class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 font-sans"></textarea>
@@ -407,7 +313,7 @@
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs relative">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex justify-between items-center"><span>🔗 复制只读分享链接</span><button type="button" onclick="closeReadonlyModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></h2>
             <textarea id="readonly-url-textarea" rows="3" readonly class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs font-mono select-all focus:outline-none"></textarea>
-            <div class="flex justify-end space-x-2 mt-3">
+            <div class="flex justify-end gap-2 mt-3">
                 <button type="button" onclick="closeReadonlyModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">关闭</button>
                 <button type="button" onclick="confirmCopyReadonlyUrl()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded font-bold cursor-pointer">一键复制</button>
             </div>
@@ -420,7 +326,10 @@
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between"><span>📋 批量粘贴导入 69 码</span><button type="button" onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></h2>
             <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 font-mono"></textarea>
             <div class="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-200 text-xs flex-1 log-scroll"><div class="font-bold text-gray-700">📊 诊断：</div><div id="barcode-analysis-stats" class="text-gray-500 text-[11px]">等待输入...</div><div id="barcode-analysis-duplicates" class="text-amber-700 text-[11px]"></div></div>
-            <div class="flex justify-end space-x-2 mt-4 pt-2 border-t border-gray-100"><button type="button" onclick="toggleBarcodeBatchImportModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" onclick="confirmBarcodeBatchImport()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold shadow-sm cursor-pointer">🚀 确认导入</button></div>
+            <div class="flex justify-end space-x-2 mt-4 pt-2 border-t border-gray-100">
+                <button type="button" onclick="toggleBarcodeBatchImportModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button>
+                <button type="button" onclick="confirmBarcodeBatchImport()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold shadow-sm cursor-pointer">🚀 确认导入</button>
+            </div>
         </div>
     </div>
 
@@ -429,17 +338,17 @@
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs relative">
             <h2 class="text-sm font-bold text-gray-900 mb-3.5 flex justify-between"><span>✏️ 修改编码</span><span id="edit-barcode-idx" class="text-[10px] text-gray-400"></span></h2>
             <div class="space-y-2.5"><input type="text" id="edit-bar-name" class="w-full border border-gray-300 rounded p-2" placeholder="产品名称"><input type="text" id="edit-bar-sap" class="w-full border border-gray-300 rounded p-2 font-mono" placeholder="SKU 编码"><input type="text" id="edit-bar-code" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-2 font-mono" placeholder="69 码"><input type="text" id="edit-bar-remark" class="w-full border border-gray-300 rounded p-2" placeholder="备注"></div>
-            <div class="flex justify-end space-x-2 mt-4"><button type="button" onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button type="button" onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 text-white rounded cursor-pointer">保存修改</button></div>
+            <div class="flex justify-end gap-2 mt-4"><button type="button" onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button type="button" onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 text-white rounded cursor-pointer">保存修改</button></div>
         </div>
     </div>
 
     <!-- 节点变动记录弹窗 -->
     <div id="check-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeCheckModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-sm shadow-2xl text-gray-800 text-xs relative">
-            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center space-x-1.5"><span id="check-action-icon">📝</span><span id="check-modal-title">节点变动</span></h2>
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5"><span id="check-action-icon">📝</span><span id="check-modal-title">节点变动</span></h2>
             <p class="text-gray-500 mb-3 text-[11px]" id="check-modal-subtitle"></p>
             <input type="text" id="check-remark-input" placeholder="变动说明 (选填)..." class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 mb-4">
-            <div class="flex justify-end space-x-2"><button type="button" onclick="closeCheckModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" onclick="confirmNodeCheckChange()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg font-bold cursor-pointer">确认</button></div>
+            <div class="flex justify-end gap-2"><button type="button" onclick="closeCheckModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" onclick="confirmNodeCheckChange()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg font-bold cursor-pointer">确认</button></div>
         </div>
     </div>
 
@@ -452,14 +361,14 @@
                 <div class="grid grid-cols-2 gap-2"><select id="batch-node-type" class="w-full bg-white border rounded-lg px-2.5 py-1.5"><option value="bomOk">财务BOM</option><option value="detailOk">详情页</option><option value="sapOk">69编码</option></select><select id="batch-node-status" class="w-full bg-white border rounded-lg px-2.5 py-1.5"><option value="true">✅ 已完成</option><option value="false">↩️ 未完成</option></select></div>
                 <input type="text" id="batch-node-remark" placeholder="统一备注 (选填)..." class="w-full border rounded-lg p-2">
             </div>
-            <div class="flex justify-end space-x-2 mt-4 pt-3 border-t"><button type="button" onclick="closeBatchNodeModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" onclick="confirmBatchNode()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg font-bold cursor-pointer">确认批量更新</button></div>
+            <div class="flex justify-end gap-2 mt-4 pt-3 border-t"><button type="button" onclick="closeBatchNodeModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" onclick="confirmBatchNode()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg font-bold cursor-pointer">确认批量更新</button></div>
         </div>
     </div>
 
     <!-- 生命周期追溯弹窗 -->
     <div id="logs-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-2 sm:p-4" onclick="if(event.target===this) closeLogsModal()">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl shadow-2xl text-gray-800 text-xs flex flex-col relative" style="height: 82vh; max-height: 600px;">
-            <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b flex-shrink-0"><h2 class="text-xs sm:text-sm font-bold text-gray-900 flex space-x-1.5"><span>📜 生命周期变更追溯</span><span id="logs-title" class="text-blue-600 truncate"></span></h2><button type="button" onclick="closeLogsModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
+            <div class="flex justify-between items-center px-4 sm:px-6 py-3 border-b flex-shrink-0"><h2 class="text-xs sm:text-sm font-bold text-gray-900 flex gap-1.5"><span>📜 生命周期变更追溯</span><span id="logs-title" class="text-blue-600 truncate"></span></h2><button type="button" onclick="closeLogsModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
             <div class="log-scroll flex-1 p-3.5 sm:p-6 space-y-2.5 bg-gray-50/50" id="logs-container"></div>
             <div class="flex justify-end px-4 sm:px-6 py-3 border-t flex-shrink-0"><button type="button" onclick="closeLogsModal()" class="px-5 py-2 bg-gray-900 text-white rounded-lg font-bold cursor-pointer">关闭</button></div>
         </div>
@@ -470,20 +379,20 @@
         <div class="bg-white border p-5 rounded-2xl w-full max-w-md shadow-2xl text-gray-800 text-xs relative">
             <h2 class="text-sm font-bold text-gray-900 mb-3 flex justify-between"><span>✏️ 修改产品基本信息</span><span id="edit-prod-id" class="text-[10px] text-gray-400"></span></h2>
             <div class="space-y-2.5"><input type="text" id="edit-name" class="w-full border rounded p-2" placeholder="产品名称"><input type="text" id="edit-category" class="w-full border rounded p-2" placeholder="品类"><input type="date" id="edit-prod-date" class="w-full border rounded p-2"><input type="text" id="edit-reason" class="w-full border rounded p-2" placeholder="变动原因"></div>
-            <div class="flex justify-end space-x-2 mt-4"><button type="button" onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button type="button" onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存</button></div>
+            <div class="flex justify-end gap-2 mt-4"><button type="button" onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button type="button" onclick="saveEditChanges()" class="px-3.5 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存</button></div>
         </div>
     </div>
 
     <!-- 大备注弹窗 -->
     <div id="big-note-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white border p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh] relative">
-            <h2 class="text-sm font-bold text-gray-900 mb-2 flex justify-between"><span class="flex space-x-1 min-w-0"><span class="whitespace-nowrap">📌 大备注备忘留痕</span><span id="big-note-prod-name" class="text-indigo-600 truncate"></span></span><button type="button" onclick="closeBigNoteModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></h2>
-            <div id="big-note-toolbar" class="flex space-x-2 mb-2 pb-2 border-b flex-wrap"><button type="button" onclick="insertStrikeThrough()" class="px-2 py-1 bg-gray-100 rounded font-mono cursor-pointer"><s>删除线</s></button><button type="button" onclick="insertFileLinkPrompt()" class="px-2 py-1 bg-blue-50 text-blue-700 rounded font-bold cursor-pointer">🔗 链接</button><button type="button" onclick="insertTimestamp()" class="px-2 py-1 bg-gray-100 rounded text-gray-600 cursor-pointer">⏱️ 时间</button></div>
+            <h2 class="text-sm font-bold text-gray-900 mb-2 flex justify-between"><span class="flex gap-1 min-w-0"><span class="whitespace-nowrap">📌 大备注备忘留痕</span><span id="big-note-prod-name" class="text-indigo-600 truncate"></span></span><button type="button" onclick="closeBigNoteModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></h2>
+            <div id="big-note-toolbar" class="flex gap-2 mb-2 pb-2 border-b flex-wrap"><button type="button" onclick="insertStrikeThrough()" class="px-2 py-1 bg-gray-100 rounded font-mono cursor-pointer"><s>删除线</s></button><button type="button" onclick="insertFileLinkPrompt()" class="px-2 py-1 bg-blue-50 text-blue-700 rounded font-bold cursor-pointer">🔗 链接</button><button type="button" onclick="insertTimestamp()" class="px-2 py-1 bg-gray-100 rounded text-gray-600 cursor-pointer">⏱️ 时间</button></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden">
                 <div class="flex flex-col h-48 md:h-auto"><textarea id="big-note-textarea" oninput="updateBigNoteLivePreview()" class="w-full flex-1 bg-gray-50 border rounded-lg p-2.5 custom-scroll"></textarea></div>
                 <div class="flex flex-col h-48 md:h-auto"><div id="big-note-preview" class="rich-note w-full flex-1 bg-gray-50/50 border rounded-lg p-2.5 log-scroll overflow-y-auto"></div></div>
             </div>
-            <div class="flex justify-end space-x-2 mt-4 pt-2 border-t flex-shrink-0"><button type="button" onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold cursor-pointer">💾 保存</button></div>
+            <div class="flex justify-end gap-2 mt-4 pt-2 border-t flex-shrink-0"><button type="button" onclick="closeBigNoteModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">取消</button><button type="button" id="btn-save-big-note" onclick="saveBigNoteChanges()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold cursor-pointer">💾 保存</button></div>
         </div>
     </div>
 
@@ -519,31 +428,48 @@
         function normalizeMatrixData(raw) {
             let p = Array.isArray(raw) ? raw : (raw?.products || []);
             let m = Array.isArray(raw) ? [] : (raw?.memos || []);
-            return { products: p.map(item => ({ id: String(item.id||"P_"+Math.random()), name: item.name||"未命名系列", category: item.category||"常规新品", prodDate: item.prodDate||"", remark: item.remark||"", bigNote: item.bigNote||"", status: item.status||"进行中", archivedAt: item.archivedAt||null, createdAt: item.createdAt||"", historyLogs: item.historyLogs||[], skus: (item.skus||[]).map((s,i) => ({ id: String(s.id||"S_"+i), name: s.name||"标配", bomOk: !!s.bomOk, detailOk: !!s.detailOk, sapOk: !!s.sapOk, nodeRecords: s.nodeRecords||{} })) })), memos: m };
+            return { products: p.map(item => ({ id: String(item.id||"P_"+Math.random()), name: String(item.name||"未命名系列"), category: String(item.category||"常规新品"), prodDate: item.prodDate||"", remark: item.remark||"", bigNote: item.bigNote||"", status: item.status||"进行中", archivedAt: item.archivedAt||null, createdAt: item.createdAt||"", historyLogs: item.historyLogs||[], skus: (item.skus||[]).map((s,i) => ({ id: String(s.id||"S_"+i), name: String(s.name||"标配"), bomOk: !!s.bomOk, detailOk: !!s.detailOk, sapOk: !!s.sapOk, nodeRecords: s.nodeRecords||{} })) })), memos: m };
         }
         function normalizeBarcodesData(raw) {
             let l = Array.isArray(raw) ? raw : (raw?.barcodes || raw?.list || []);
             return l.map(i => ({ name: String(i.name||i['产品名称']||'').trim(), sapCode: String(i.sapCode||i['SKU产品编码']||'').trim(), barcode: String(i.barcode||i['69码']||'').trim(), remark: String(i.remark||i['备注']||'').trim() })).filter(i => i.name || i.barcode || i.sapCode);
         }
 
-        function loadSampleDefaultData() {
-            products = [{ id: "P_SAMPLE_1", name: "HD-LD22-H 智能晾衣机", category: "落地 / 电动", prodDate: "2026-10-15", remark: "首推", bigNote: "~~打样V1作废~~\n预计下周二产线试装完成。", status: "进行中", createdAt: "2026-09-01 10:00:00", historyLogs: [{ time: "2026-09-01 10:00:00", type: "CREATE", desc: "创建系列" }], skus: [{ id: "S_101", name: "HD-LD22-H 枪灰色 1.3M", bomOk: true, detailOk: false, sapOk: true, nodeRecords: {} }, { id: "S_102", name: "HD-LD22-H 奶白色 1.3M", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }] }];
-            globalBarcodes = [{ name: "HD-LD22-H 枪灰色 1.3M", sapCode: "320243181001", barcode: "6941123400012", remark: "标准款" }, { name: "HD-LD22-H 奶白色 1.3M", sapCode: "320243181002", barcode: "6941123400029", remark: "标准款" }];
-            globalMemos = [{ id: "M_1", text: "核对本周排产计划", priority: "🔥 紧急重要", done: false, createdAt: "09-01 10:12" }];
-            localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos }));
-            localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
-            renderTable(); renderBarcodeTable(); renderMemos(); alert("🎉 已成功载入测试样例数据！");
+        function updateCloudStatus(rState, gState, detail) {
+            const syncStatus = document.getElementById("sync-status"); const authDot = document.getElementById("auth-dot"); const authText = document.getElementById("auth-tag-text");
+            const repoEl = document.getElementById("cfg-repo-status"); const gistEl = document.getElementById("cfg-gist-status");
+            const summaryEl = document.getElementById("cfg-status-summary"); const detailEl = document.getElementById("cfg-status-detail");
+            const labels = { ok: "✅ 已连接", loading: "⏳ 检测中...", error: "❌ 失败", none: "未配置" };
+            if (repoEl) repoEl.innerText = labels[rState] || rState; if (gistEl) gistEl.innerText = labels[gState] || gState; if (detailEl) detailEl.innerText = detail || "";
+            
+            let okCount = 0; if (rState === 'ok') okCount++; if (gState === 'ok') okCount++;
+            let isErr = rState === 'error' || gState === 'error';
+            
+            if (summaryEl) { summaryEl.innerText = okCount === 2 ? "双源正常" : okCount === 1 ? "部分连接" : (isErr ? "存在异常" : "未配置"); summaryEl.className = "text-[10px] px-2 py-0.5 rounded-full border " + (okCount === 2 ? "bg-green-50 text-green-700 border-green-200" : okCount === 1 ? "bg-blue-50 text-blue-700 border-blue-200" : isErr ? "bg-red-50 text-red-700 border-red-200" : "bg-gray-100 text-gray-500 border-gray-200"); }
+            if (syncStatus) { syncStatus.innerText = detail || (okCount === 2 ? "双源已同步 ✅" : okCount === 1 ? "部分同步 ⚠️" : isErr ? "连接异常 ❌" : "本地模式"); syncStatus.className = "font-medium whitespace-nowrap text-[11px] " + (okCount === 2 ? "text-green-600" : okCount === 1 ? "text-amber-600" : isErr ? "text-red-600" : "text-gray-500"); }
+            if (authDot) authDot.className = "w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 " + (okCount === 2 ? "bg-green-500" : okCount === 1 ? "bg-amber-500" : isErr ? "bg-red-500" : "bg-gray-400");
+            if (authText) authText.innerText = okCount === 2 ? "双源连接" : okCount === 1 ? "部分连接" : isErr ? "连接异常" : "未配置云端";
         }
 
-        function fetchWithTimeout(url, opts = {}, t = 5000) { return Promise.race([fetch(url, opts), new Promise((_, r) => setTimeout(() => r(new Error('超时')), t))]); }
+        function loadSampleDefaultData() {
+            products = [{ id: "P_SAMPLE_1", name: "HD-LD22-H 智能晾衣机", category: "落地 / 电动", prodDate: "2026-10-15", remark: "首批主推款", bigNote: "~~打样V1作废~~\n预计下周二提供检验报告。", status: "进行中", createdAt: "2026-09-01 10:00:00", historyLogs: [{ time: "2026-09-01 10:00:00", type: "CREATE", desc: "创建系列" }], skus: [{ id: "S_101", name: "HD-LD22-H 枪灰色 1.3M", bomOk: true, detailOk: false, sapOk: true, nodeRecords: {} }, { id: "S_102", name: "HD-LD22-H 奶白色 1.3M", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }] }];
+            globalBarcodes = [{ name: "HD-LD22-H 枪灰色 1.3M", sapCode: "320243181001", barcode: "6941123400012", remark: "标准款" }];
+            globalMemos = [{ id: "M_1", text: "核对新品排产计划", priority: "🔥 紧急重要", done: false, createdAt: "09-01 10:12" }];
+            localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos })); localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
+            renderTable(); renderBarcodeTable(); renderMemos(); alert("🎉 已成功恢复基础数据！");
+        }
 
+        function fetchWithTimeout(url, opts = {}, t = 5000) { return Promise.race([fetch(url, opts), new Promise((_, r) => setTimeout(() => r(new Error('请求超时')), t))]); }
+
+        // ================= 核心初始化 =================
         window.onload = function() {
+            const dateInput = document.getElementById("p-prod-date");
+            if(dateInput) { const d=new Date(); d.setDate(d.getDate()+30); dateInput.value = d.toISOString().split('T')[0]; }
+
             try {
-                const cM = localStorage.getItem("wb_local_matrix");
-                if (cM) { let n = normalizeMatrixData(JSON.parse(cM)); products = n.products; globalMemos = n.memos; }
-                const cB = localStorage.getItem("wb_local_barcodes");
-                if (cB) { globalBarcodes = normalizeBarcodesData(JSON.parse(cB)); }
-            } catch(e) { console.warn("本地解析失败", e); }
+                const cM = localStorage.getItem("wb_local_matrix"); if (cM) { let n = normalizeMatrixData(JSON.parse(cM)); if (n.products.length) products = n.products; if (n.memos.length) globalMemos = n.memos; }
+                const cB = localStorage.getItem("wb_local_barcodes"); if (cB) { let b = normalizeBarcodesData(JSON.parse(cB)); if (b.length) globalBarcodes = b; }
+            } catch(e) { console.warn("本地缓存读取异常", e); }
 
             if (products.length === 0) loadSampleDefaultData();
             else { renderTable(); renderBarcodeTable(); renderMemos(); }
@@ -551,8 +477,13 @@
             const up = new URLSearchParams(window.location.search);
             if (up.get('mode') === 'readonly' || (!localStorage.getItem("wb_token_repo") && up.get('token_repo'))) {
                 isReadOnlyMode = true; applyReadOnlyUI(); fetchFromDualTokenCustom(up.get('owner'), up.get('repo'), up.get('gist_bar'), up.get('token_repo'), up.get('token_gist'));
-            } else if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist")) {
-                fetchAllDualTokenData();
+            } else {
+                if(document.getElementById("cfg-owner")) document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner") || "marrylily";
+                if(document.getElementById("cfg-repo")) document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo") || "my-tasks";
+                if(document.getElementById("cfg-token-repo")) document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token") || "";
+                if(document.getElementById("cfg-gist-barcodes")) document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes") || "14e746d186a05310aa271284aaeb2507";
+                if(document.getElementById("cfg-token-gist")) document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token") || "";
+                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist") || localStorage.getItem("wb_token")) fetchAllDualTokenData();
             }
 
             document.addEventListener('keydown', e => {
@@ -560,49 +491,76 @@
             });
         };
 
-        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { if(m.classList.contains("hidden")) { document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
-        function toggleAIChatDrawer() { const m = document.getElementById("ai-chat-drawer"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
-        function switchMainView(v) { currentMainView = v; document.getElementById("module-matrix").classList.toggle("hidden", v !== 'MATRIX'); document.getElementById("module-barcodes").classList.toggle("hidden", v !== 'BARCODES'); document.getElementById("nav-btn-matrix").className = (v === 'MATRIX' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); document.getElementById("nav-btn-barcodes").className = (v === 'BARCODES' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); if (v === 'MATRIX') renderTable(); else renderBarcodeTable(); }
-        function switchTab(t) { currentTab = t; document.getElementById("tab-btn-running").className = (t === 'RUNNING' ? "px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm flex items-center space-x-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 flex items-center space-x-1.5 cursor-pointer"); document.getElementById("tab-btn-archived").className = (t === 'ARCHIVED' ? "px-4 py-2 rounded-xl text-xs font-bold bg-green-600 text-white shadow-sm flex items-center space-x-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 flex items-center space-x-1.5 cursor-pointer"); document.getElementById("filter-health-box").style.display = t === 'RUNNING' ? "block" : "none"; renderTable(); }
-        function applyReadOnlyUI() { const r = document.getElementById("role-badge"); if (r) { r.innerText = "访客只读模式"; r.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold"; } ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "top-btn-config"].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }); }
-
+        // ================= 云端通讯机制 =================
         async function fetchAllDualTokenData() {
-            const owner = cleanConfigString(localStorage.getItem("wb_owner")); const repo = cleanConfigString(localStorage.getItem("wb_repo"));
-            const tokenRepo = (localStorage.getItem("wb_token_repo") || "").trim(); const tokenGist = (localStorage.getItem("wb_token_gist") || "").trim();
-            const gistBarcodes = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
-            const s = document.getElementById("sync-status"); if (s) s.innerText = "拉取云端..."; let rOk = false, gOk = false, tasks = [];
-            if (owner && repo && tokenRepo) { tasks.push(fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tokenRepo}` } }).then(r => r.ok ? r.json() : null).then(d => { if (d?.content) { fileSha = d.sha; let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); products = n.products; globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({products, memos: globalMemos})); rOk = true; } }).catch(()=>{})); }
-            if (gistBarcodes && tokenGist) { tasks.push(fetchWithTimeout(`https://api.github.com/gists/${gistBarcodes}`, { headers: { "Authorization": `Bearer ${tokenGist}` } }).then(r => r.ok ? r.json() : null).then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { globalBarcodes = normalizeBarcodesData(JSON.parse(d.files[f].content)); localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); gOk = true; break; } } } }).catch(()=>{})); }
-            await Promise.allSettled(tasks); if (s) s.innerText = (rOk && gOk) ? "双源已同步 ✅" : "已加载本地缓存";
-            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable();
+            const owner = cleanConfigString(localStorage.getItem("wb_owner")), repo = cleanConfigString(localStorage.getItem("wb_repo")), tokenRepo = (localStorage.getItem("wb_token_repo") || "").trim(), tokenGist = (localStorage.getItem("wb_token_gist") || "").trim(), gistBarcodes = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
+            const repoConfigured = !!(owner && repo && tokenRepo), gistConfigured = !!(gistBarcodes && tokenGist);
+            if (!repoConfigured && !gistConfigured) return updateCloudStatus("none", "none", "未配置云端");
+            
+            updateCloudStatus(repoConfigured?"loading":"none", gistConfigured?"loading":"none", "正在拉取云端数据...");
+            let rOk = false, gOk = false, rErr = "", gErr = "", tasks = [];
+
+            if (repoConfigured) {
+                tasks.push(fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tokenRepo}`, "Accept": "application/vnd.github+json" } }, 10000)
+                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                    .then(d => { if (d?.content) { fileSha = d.sha; let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); if(n.products.length) products = n.products; if(n.memos.length) globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({products, memos: globalMemos})); rOk = true; } })
+                    .catch(e => { rErr = e.message; })
+                );
+            }
+            if (gistConfigured) {
+                tasks.push(fetchWithTimeout(`https://api.github.com/gists/${encodeURIComponent(gistBarcodes)}`, { headers: { "Authorization": `Bearer ${tokenGist}`, "Accept": "application/vnd.github+json" } }, 10000)
+                    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                    .then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { let p = normalizeBarcodesData(JSON.parse(d.files[f].content)); if(p.length) globalBarcodes = p; localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); gOk = true; break; } } } })
+                    .catch(e => { gErr = e.message; })
+                );
+            }
+            await Promise.allSettled(tasks);
+            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
+            updateCloudStatus(repoConfigured?(rOk?"ok":"error"):"none", gistConfigured?(gOk?"ok":"error"):"none", (rOk&&gOk) ? "双源已同步 ✅" : rOk ? `矩阵同步✅${gErr?" ｜ Gist失败":""}` : gOk ? `条码同步✅${rErr?" ｜ 矩阵失败":""}` : "云端读取失败，已保留本地缓存");
         }
+
         async function fetchFromDualTokenCustom(o, r, gb, tr, tg) {
-            const s = document.getElementById("sync-status"); if (s) s.innerText = "拉取只读..."; let tasks = [];
-            if (o && r && tr) { tasks.push(fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tr}` } }).then(r => r.ok ? r.json() : null).then(d => { if (d?.content) { let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); products = n.products; globalMemos = n.memos; } }).catch(()=>{})); }
-            if (gb && tg) { tasks.push(fetchWithTimeout(`https://api.github.com/gists/${gb}`, { headers: { "Authorization": `Bearer ${tg}` } }).then(r => r.ok ? r.json() : null).then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { globalBarcodes = normalizeBarcodesData(JSON.parse(d.files[f].content)); break; } } } }).catch(()=>{})); }
-            await Promise.allSettled(tasks); if (s) s.innerText = "已加载只读数据 ✅"; updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
+            const repoConfigured = !!(o && r && tr), gistConfigured = !!(gb && tg);
+            updateCloudStatus(repoConfigured?"loading":"none", gistConfigured?"loading":"none", "只读拉取中...");
+            let rOk = false, gOk = false, tasks = [];
+            if (repoConfigured) { tasks.push(fetchWithTimeout(`https://api.github.com/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tr}` } }, 10000).then(r => r.ok?r.json():null).then(d => { if (d?.content) { let n = normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))); if(n.products.length) products = n.products; if(n.memos.length) globalMemos = n.memos; rOk = true; } }).catch(()=>{})); }
+            if (gistConfigured) { tasks.push(fetchWithTimeout(`https://api.github.com/gists/${encodeURIComponent(gb)}`, { headers: { "Authorization": `Bearer ${tg}` } }, 10000).then(r => r.ok?r.json():null).then(d => { if (d?.files) { for (let f in d.files) { if (d.files[f].content) { let p = normalizeBarcodesData(JSON.parse(d.files[f].content)); if(p.length) globalBarcodes = p; gOk = true; break; } } } }).catch(()=>{})); }
+            await Promise.allSettled(tasks);
+            updateCategoryFilterOptions(); renderTable(); renderBarcodeTable(); renderMemos();
+            updateCloudStatus(repoConfigured?(rOk?"ok":"error"):"none", gistConfigured?(gOk?"ok":"error"):"none", (rOk&&gOk) ? "只读数据已同步 ✅" : "部分只读数据失败");
         }
+
         async function saveDualTokenConfigAndSync() {
             localStorage.setItem("wb_owner", cleanConfigString(document.getElementById("cfg-owner").value)); localStorage.setItem("wb_repo", cleanConfigString(document.getElementById("cfg-repo").value)); localStorage.setItem("wb_token_repo", document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes", cleanConfigString(document.getElementById("cfg-gist-barcodes").value)); localStorage.setItem("wb_token_gist", document.getElementById("cfg-token-gist").value.trim());
             toggleConfigModal(); await fetchAllDualTokenData();
         }
+
         async function syncMatrixToCloud() {
             if (isReadOnlyMode) return; localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos }));
             const o = cleanConfigString(localStorage.getItem("wb_owner")), r = cleanConfigString(localStorage.getItem("wb_repo")), t = (localStorage.getItem("wb_token_repo") || "").trim(); if (!t || !o || !r) return;
             try {
                 let sha = fileSha || ""; const cRes = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${t}` } }); if (cRes.ok) { const cD = await cRes.json(); sha = cD.sha; }
                 const res = await fetchWithTimeout(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { method: "PUT", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update matrix", content: btoa(unescape(encodeURIComponent(JSON.stringify({products, memos: globalMemos})))), ...(sha ? {sha} : {}) }) });
-                if (res.ok) { const d = await res.json(); fileSha = d.content.sha; document.getElementById("sync-status").innerText = "仓库已保存 ✅"; }
-            } catch(e) {}
+                if (res.ok) { const d = await res.json(); fileSha = d.content.sha; document.getElementById("sync-status").innerText = "矩阵已保存 ✅"; }
+            } catch(e) { document.getElementById("sync-status").innerText = "保存失败 ❌"; }
         }
+
         async function syncBarcodesToGist() {
             if (isReadOnlyMode) return; localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
             const gId = cleanConfigString(localStorage.getItem("wb_gist_barcodes")), t = (localStorage.getItem("wb_token_gist") || "").trim(); if (!t || !gId) return;
             try {
                 const gRes = await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { headers: { "Authorization": `Bearer ${t}` } }); let tName = "69code_data.json"; if (gRes.ok) { const gd = await gRes.json(); if(gd.files && Object.keys(gd.files).length) tName = Object.keys(gd.files)[0]; }
                 await fetchWithTimeout(`https://api.github.com/gists/${gId}`, { method: "PATCH", headers: { "Authorization": `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ files: { [tName]: { content: JSON.stringify(globalBarcodes, null, 2) } } }) });
-            } catch(e) {}
+                document.getElementById("sync-status").innerText = "条码已保存 ✅";
+            } catch(e) { document.getElementById("sync-status").innerText = "保存失败 ❌"; }
         }
+
+        // ================= UI 与页面渲染 =================
+        function toggleConfigModal() { const m = document.getElementById("config-modal"); if(m) { if(m.classList.contains("hidden")) { document.getElementById("cfg-owner").value = localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value = localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value = localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value = localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value = localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
+        function toggleAIChatDrawer() { const m = document.getElementById("ai-chat-drawer"); if(m) { m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); } }
+        function switchMainView(v) { currentMainView = v; document.getElementById("module-matrix").classList.toggle("hidden", v !== 'MATRIX'); document.getElementById("module-barcodes").classList.toggle("hidden", v !== 'BARCODES'); document.getElementById("nav-btn-matrix").className = (v === 'MATRIX' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); document.getElementById("nav-btn-barcodes").className = (v === 'BARCODES' ? "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0" : "px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer flex-shrink-0"); if (v === 'MATRIX') renderTable(); else renderBarcodeTable(); }
+        function switchTab(t) { currentTab = t; document.getElementById("tab-btn-running").className = (t === 'RUNNING' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 flex items-center gap-1.5 cursor-pointer"); document.getElementById("tab-btn-archived").className = (t === 'ARCHIVED' ? "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-green-600 text-white shadow-sm flex items-center gap-1.5 cursor-pointer" : "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-gray-600 border border-gray-200 shadow-sm hover:text-gray-900 flex items-center gap-1.5 cursor-pointer"); document.getElementById("filter-health-box").style.display = t === 'RUNNING' ? "block" : "none"; renderTable(); }
+        function applyReadOnlyUI() { const r = document.getElementById("role-badge"); if (r) { r.innerText = "访客只读模式"; r.className = "text-[10px] sm:text-xs bg-purple-100 text-purple-800 border border-purple-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold"; } ["admin-create-panel", "memo-create-box", "btn-clear-done-memo", "top-btn-config"].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hidden"); }); }
 
         function renderTable() {
             const tbody = document.getElementById("product-table-body"); const mContainer = document.getElementById("mobile-cards-container"); if (!tbody || !mContainer) return;
@@ -611,7 +569,8 @@
             let countRunning = 0, countArchived = 0, countDelay = 0, countUrgent = 0;
 
             products.forEach(prod => {
-                const isArch = (prod.status === "已归档"); isArch ? countArchived++ : countRunning++; if (prod.status === "紧急重要") countUrgent++;
+                const isArch = (prod.status === "已归档"); const isArchived = isArch;
+                isArch ? countArchived++ : countRunning++; if (prod.status === "紧急重要") countUrgent++;
                 if (currentTab === 'RUNNING' && isArch) return; if (currentTab === 'ARCHIVED' && !isArch) return;
                 const cDate = normalizeDate(prod.prodDate); const diffD = cDate ? Math.ceil((new Date(cDate) - new Date(today)) / 86400000) : 999; const isDel = (!isArch && cDate && diffD < 0); if (isDel) countDelay++;
                 if (fCat !== "ALL" && (prod.category || "").trim() !== fCat) return;
@@ -624,8 +583,8 @@
                 const getBadge = (t, c, k, l) => {
                     let all = (tot > 0 && c === tot), none = (c === 0);
                     let cls = all ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-bold" : (none ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-300 font-semibold");
-                    let click = (!isReadOnlyMode && !isArch) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
-                    return `<div ${click} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all?'✅':(none?'⚪':'⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
+                    let clk = (!isReadOnlyMode && !isArch) ? `onclick="event.stopPropagation(); triggerBatchColumnCheck('${prod.id}', '${k}', '${l}')" style="cursor:pointer;"` : '';
+                    return `<div ${clk} class="inline-flex items-center space-x-1 border px-2 py-0.5 rounded text-[11px] ${cls} transition whitespace-nowrap"><span>${all?'✅':(none?'⚪':'⏳')} ${t}</span><span class="font-mono text-[10px]">(${c}/${tot})</span></div>`;
                 };
 
                 let hBadge = `<span class="text-gray-400 font-mono">-</span>`;
@@ -638,14 +597,17 @@
 
                 let noteHtml = prod.bigNote ? `<div class="bg-indigo-50/50 border border-indigo-100 rounded-lg p-1.5 text-[11px] text-gray-700 mt-1"><div class="line-clamp-2 rich-note leading-relaxed">${renderFormattedText(prod.bigNote)}</div>${!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-indigo-600 hover:text-indigo-800 font-bold mt-0.5 inline-block cursor-pointer">✏️ 编辑</button>` : ''}</div>` : (!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${prod.id}')" class="text-gray-400 hover:text-indigo-600 border border-dashed border-gray-300 rounded px-2 py-1 text-[10px] mt-1 cursor-pointer">+ 添加大备注</button>` : '');
 
+                const isExpanded = !!expandedRows[prod.id];
+                const isSelected = selectedProductIds.has(String(prod.id));
+
                 const tr = document.createElement("tr"); tr.className = "hover:bg-blue-50/40 transition border-b border-gray-100";
                 tr.innerHTML = `
-                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${selectedProductIds.has(String(prod.id))?'checked':''} class="w-4 h-4 rounded text-blue-600 border-gray-300 cursor-pointer"></td>
-                    <td class="p-3 text-center"><button type="button" onclick="toggleExpand('${prod.id}')" class="text-gray-500 font-mono font-bold cursor-pointer">${expandedRows[prod.id]?'▼':'▶'}</button></td>
-                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center space-x-1.5">${escapeHtml(prod.name)}${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px] cursor-pointer">✏️</button>`:''}<span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${tot} SKU</span></div></td>
+                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected?'checked':''} class="w-4 h-4 rounded text-blue-600 border-gray-300 cursor-pointer"></td>
+                    <td class="p-3 text-center"><button type="button" onclick="toggleExpand('${prod.id}')" class="text-gray-500 font-mono font-bold cursor-pointer">${isExpanded?'▼':'▶'}</button></td>
+                    <td class="p-3 font-bold text-gray-900"><div class="flex items-center gap-1.5">${escapeHtml(prod.name)}${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px] cursor-pointer">✏️</button>`:''}<span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">${tot} SKU</span></div></td>
                     <td class="p-3 text-gray-600">${escapeHtml(prod.category)}</td>
                     <td class="p-3">${hBadge}</td>
-                    <td class="p-3"><div class="flex items-center space-x-1.5 flex-nowrap">${getBadge('财务BOM',bomD,'bomOk','财务BOM')}${getBadge('详情页',detD,'detailOk','详情页')}${getBadge('69编码',sapD,'sapOk','69编码')}</div></td>
+                    <td class="p-3"><div class="flex items-center gap-1.5 flex-nowrap">${getBadge('财务BOM',bomD,'bomOk','财务BOM')}${getBadge('详情页',detD,'detailOk','详情页')}${getBadge('69编码',sapD,'sapOk','69编码')}</div></td>
                     <td class="p-3"><div class="flex flex-col">${prod.remark ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-[10px] w-fit">📝 ${escapeHtml(prod.remark)}</span>` : ''}${noteHtml}</div></td>
                     <td class="p-3">${isReadOnlyMode||isArch ? `<span class="text-xs px-2 py-0.5 rounded ${isArch?'bg-green-50 text-green-700':'bg-blue-50 text-blue-700'}">${prod.status}</span>` : `<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1.5 py-0.5 text-xs cursor-pointer"><option value="进行中" ${prod.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${prod.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td>
                     <td class="p-3 text-right whitespace-nowrap">
@@ -656,112 +618,224 @@
                 `;
                 tbody.appendChild(tr);
 
-                if (expandedRows[prod.id]) {
+                if (isExpanded) {
                     const subTr = document.createElement("tr"); subTr.className = "bg-gray-50/90";
                     let sHtml = `<td colspan="9" class="p-3.5 pl-10"><div class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="font-bold text-gray-700 text-xs">子规格列表</span><div>${!isReadOnlyMode && !isArch ? `<button type="button" onclick="openBatchNodeModal('${prod.id}')" class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-[11px] font-bold mr-2 cursor-pointer">⚡ 批量更新</button><button type="button" onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-[11px] font-bold cursor-pointer">+ 新增</button>` : ''}</div></div><div class="space-y-1.5">`;
                     prod.skus.forEach(sku => {
                         const rBadge = (k, l, o) => `<label class="flex items-center space-x-1 cursor-pointer"><input type="checkbox" ${isReadOnlyMode||isArch?'disabled':`onchange="triggerSkuNodeCheck('${prod.id}','${sku.id}','${k}','${l}',this)"`} ${o?'checked':''} class="w-3.5 h-3.5 rounded text-blue-600 cursor-pointer"><span class="${o?'text-green-700 font-bold':'text-gray-500'} text-xs">${l}</span></label>`;
-                        const mBar = findMatchedBarcode(sku.name);
+                        const mBar = globalBarcodes.find(b => { const n = String(sku.name).replace(/[\s-_米]/g, '').toLowerCase(); const bn = String(b.name||'').replace(/[\s-_米]/g, '').toLowerCase(); return bn.includes(n) || n.includes(bn); });
                         let autoTag = mBar ? (!sku.sapOk && !isReadOnlyMode && !isArch ? `<button type="button" onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-300 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer">🏷️ 匹配: ${mBar.barcode} (点亮)</button>` : `<span class="text-gray-400 font-mono text-[10px]">🏷️ ${mBar.barcode}</span>`) : "";
                         sHtml += `<div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200 text-xs"><div class="flex items-center space-x-2"><span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSkuName('${prod.id}','${sku.id}')" class="text-gray-400 cursor-pointer">✏️</button><button type="button" onclick="removeSku('${prod.id}','${sku.id}')" class="text-red-400 cursor-pointer">🗑️</button>`:''}${autoTag}</div><div class="flex items-center space-x-6">${rBadge('bomOk','财务BOM',sku.bomOk)}${rBadge('detailOk','详情页',sku.detailOk)}${rBadge('sapOk','69编码',sku.sapOk)}</div></div>`;
                     });
                     subTr.innerHTML = sHtml + `</div></div></td>`; tbody.appendChild(subTr);
                 }
+
+                // 手机卡片（彻底解决移动端挤压与未定义问题）
+                const mCard = document.createElement("div"); 
+                mCard.className = `bg-white p-3 rounded-xl border ${prod.status==='紧急重要' ? 'border-red-400 shadow-md' : 'border-gray-200 shadow-sm'} flex flex-col space-y-2 relative`;
+                
+                let mSubHtml = "";
+                if (isExpanded) {
+                    mSubHtml = `<div class="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[11px] font-bold text-gray-700">子变体规格 (${tot})</span>
+                            ${!isReadOnlyMode && !isArch ? `
+                                <div class="space-x-1 flex">
+                                    <button type="button" onclick="openBatchNodeModal('${prod.id}')" class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-[10px] font-bold cursor-pointer">⚡ 批量</button>
+                                    <button type="button" onclick="addNewSkuToProd('${prod.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-[10px] font-bold cursor-pointer">+ 添加</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    prod.skus.forEach(sku => {
+                        const mBar = globalBarcodes.find(b => { const n = String(sku.name).replace(/[\s-_米]/g, '').toLowerCase(); const bn = String(b.name||'').replace(/[\s-_米]/g, '').toLowerCase(); return bn.includes(n) || n.includes(bn); });
+                        let autoTag = mBar ? (!sku.sapOk && !isReadOnlyMode && !isArch ? `<button type="button" onclick="quickApplyMatchedBarcode('${prod.id}', '${sku.id}')" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-bold mt-1 w-full text-left truncate cursor-pointer">🏷️ 匹配: ${mBar.barcode}</button>` : `<div class="text-gray-400 font-mono text-[10px] mt-1 truncate">🏷️ ${mBar.barcode}</div>`) : "";
+
+                        const rBadgeM = (key, label, isOk) => `
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" ${isReadOnlyMode || isArch ? 'disabled' : `onchange="triggerSkuNodeCheck('${prod.id}', '${sku.id}', '${key}', '${label}', this)"`} ${isOk ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-blue-600 border-gray-300 focus:ring-0">
+                                <span class="${isOk ? 'text-green-700 font-bold' : 'text-gray-500'} text-[11px]">${label}</span>
+                            </label>
+                        `;
+
+                        mSubHtml += `
+                            <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 flex flex-col space-y-1.5">
+                                <div class="flex justify-between items-start gap-2">
+                                    <span class="font-semibold text-gray-800 text-[11px] leading-snug break-words flex-1 min-w-0">${escapeHtml(sku.name)}</span>
+                                    ${!isReadOnlyMode && !isArch ? `
+                                        <div class="flex space-x-1.5 flex-shrink-0">
+                                            <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[11px]">✏️</button>
+                                            <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[11px]">🗑️</button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${autoTag}
+                                <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-gray-100">
+                                    ${rBadgeM('bomOk', '财务BOM', sku.bomOk)}
+                                    ${rBadgeM('detailOk', '详情页', sku.detailOk)}
+                                    ${rBadgeM('sapOk', '69编码', sku.sapOk)}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    mSubHtml += `</div>`;
+                }
+
+                mCard.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex items-start gap-2.5 flex-1 min-w-0">
+                            <input type="checkbox" onchange="toggleProductSelect('${prod.id}', this.checked)" ${isSelected?'checked':''} class="w-4 h-4 rounded text-blue-600 border-gray-300 mt-0.5 flex-shrink-0">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-gray-900 text-xs sm:text-sm break-words">
+                                    ${escapeHtml(prod.name)}
+                                    ${!isReadOnlyMode&&!isArch?`<button type="button" onclick="quickEditSeriesName('${prod.id}')" class="text-gray-400 text-[11px] ml-1">✏️</button>`:''}
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
+                                    <span class="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">${escapeHtml(prod.category)}</span>
+                                    <span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">${tot} SKU</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="toggleExpand('${prod.id}')" class="${isExpanded?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-600'} hover:bg-gray-200 px-2 py-1.5 rounded text-[11px] font-bold flex-shrink-0 cursor-pointer">
+                            ${isExpanded?'收起 ▲':'展开 ▼'}
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-2 pl-6">
+                        <div class="text-[11px]">${hBadge}</div>
+                        <div class="flex space-x-1">
+                            ${isReadOnlyMode||isArch?`<span class="text-[10px] px-1.5 py-0.5 rounded ${isArch?'bg-green-50 text-green-700':'bg-blue-50 text-blue-700'}">${prod.status}</span>`:`<select onchange="changeProdStatus('${prod.id}', this.value)" class="bg-white border rounded px-1 py-0.5 text-[10px]"><option value="进行中" ${prod.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${prod.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5 mt-2 pl-6">
+                        ${getBadge('财务BOM',bomD,'bomOk','财务BOM')}
+                        ${getBadge('详情页',detD,'detailOk','详情页')}
+                        ${getBadge('69编码',sapD,'sapOk','69编码')}
+                    </div>
+
+                    ${prod.remark ? `<div class="bg-amber-50 text-amber-800 border px-2 py-1 rounded text-[10px] mt-2">📝 备注: ${escapeHtml(prod.remark)}</div>` : ''}
+                    ${noteHtml}
+
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t">
+                        <div class="flex gap-3 text-[11px] font-medium ml-auto">
+                            <button type="button" onclick="openLogsModal('${prod.id}')" class="text-blue-600 cursor-pointer">📜 追溯</button>
+                            ${!isReadOnlyMode&&!isArch?`<button type="button" onclick="openEditModal('${prod.id}')" class="text-gray-600 cursor-pointer">编辑</button>`:''}
+                            ${isArch&&!isReadOnlyMode?`<button type="button" onclick="restoreProductFromArchive('${prod.id}')" class="text-emerald-600 font-bold cursor-pointer">恢复</button>`:''}
+                            ${!isReadOnlyMode?`<button type="button" onclick="removeProduct('${prod.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}
+                        </div>
+                    </div>
+                    ${mSubHtml}
+                `;
+                mContainer.appendChild(mCard);
             });
 
-            document.getElementById("stat-total").innerText = products.length; document.getElementById("stat-delay").innerText = countDelay; document.getElementById("stat-urgent").innerText = countUrgent; document.getElementById("stat-running").innerText = countRunning; document.getElementById("stat-archived").innerText = countArchived; document.getElementById("tab-count-running").innerText = countRunning; document.getElementById("tab-count-archived").innerText = countArchived; document.getElementById("nav-count-matrix").innerText = products.length;
+            document.getElementById("stat-total").innerText = products.length; 
+            document.getElementById("stat-delay").innerText = countDelay; 
+            document.getElementById("stat-urgent").innerText = countUrgent; 
+            document.getElementById("stat-running").innerText = countRunning; 
+            document.getElementById("stat-archived").innerText = countArchived; 
+            document.getElementById("tab-count-running").innerText = countRunning; 
+            document.getElementById("tab-count-archived").innerText = countArchived; 
+            document.getElementById("nav-count-matrix").innerText = products.length;
+            updateSelectAllCheckboxState();
         }
 
-        function triggerBatchColumnCheck(prodId, key, label) {
-            if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p || !p.skus.length) return;
-            const targetVal = !p.skus.every(s => s[key]);
-            pendingCheck = { prodId: String(prodId), skuIds: p.skus.map(s => String(s.id)), key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "⚡" : "↩️"; document.getElementById("check-modal-title").innerText = targetVal ? `批量标记全部【${label}】完成` : `批量取消全部【${label}】`; document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 影响 ${p.skus.length} 个规格`; document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true);
+        // ================= 辅助 & 交互函数 =================
+        function updateCategoryFilterOptions() {
+            const select = document.getElementById("filter-category"); if (!select) return;
+            const currentVal = select.value;
+            const categories = new Set(products.map(p => p.category).filter(Boolean));
+            select.innerHTML = '<option value="ALL">全部品类</option>';
+            categories.forEach(c => { const opt = document.createElement("option"); opt.value = c; opt.innerText = c; select.appendChild(opt); });
+            if (categories.has(currentVal)) select.value = currentVal;
         }
 
-        function triggerSkuNodeCheck(prodId, skuId, key, label, cbEl) {
-            if (isReadOnlyMode) { cbEl.checked = !cbEl.checked; return; }
-            const p = products.find(x => String(x.id) === String(prodId)); const sku = p?.skus.find(s => String(s.id) === String(skuId)); if (!sku) return;
-            const targetVal = cbEl.checked; cbEl.checked = !targetVal;
-            pendingCheck = { prodId: String(prodId), skuIds: [String(skuId)], key, label, targetVal };
-            document.getElementById("check-action-icon").innerText = targetVal ? "✅" : "↩️"; document.getElementById("check-modal-title").innerText = targetVal ? `确认完成【${label}】` : `取消完成【${label}】`; document.getElementById("check-modal-subtitle").innerText = `系列: ${p.name} ｜ 规格: ${sku.name}`; document.getElementById("check-remark-input").value = "";
-            document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true);
+        function resetAllFilters() {
+            if (document.getElementById("filter-category")) document.getElementById("filter-category").value = "ALL";
+            if (document.getElementById("filter-health")) document.getElementById("filter-health").value = "ALL";
+            if (document.getElementById("filter-bignote")) document.getElementById("filter-bignote").value = "ALL";
+            if (document.getElementById("search-input")) document.getElementById("search-input").value = "";
+            renderTable();
         }
 
-        function confirmNodeCheckChange() {
-            const { prodId, skuIds, key, label, targetVal } = pendingCheck; const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            const remark = document.getElementById("check-remark-input")?.value.trim() || ""; const t = getNowString();
-            p.skus.forEach(s => { if (skuIds.includes(String(s.id))) { s[key] = targetVal; s.nodeRecords[key] = { status: targetVal, time: t, remark }; } });
-            p.historyLogs.unshift({ time: t, type: targetVal ? "NODE_DONE" : "NODE_CANCEL", desc: (skuIds.length===1 ? `规格节点【${label}】${targetVal?'完成':'取消'}` : `批量${targetVal?'完成':'取消'} ${skuIds.length} 个【${label}】`) + (remark ? ` ｜ 备注: ${remark}` : '') });
-            closeCheckModal(); renderTable(); syncMatrixToCloud();
+        function restoreProductFromArchive(prodId) {
+            if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
+            p.status = "进行中"; p.archivedAt = null;
+            p.historyLogs.unshift({ time: getNowString(), type: "STATUS", desc: "从归档库恢复为【进行中】" });
+            switchTab('RUNNING'); renderTable(); syncMatrixToCloud();
         }
-
-        function closeCheckModal() { document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
-
-        function openBigNoteModal(prodId) {
-            currentBigNoteProdId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
-            document.getElementById("big-note-prod-name").innerText = `【${p.name}】`; document.getElementById("big-note-textarea").value = p.bigNote || ""; updateBigNoteLivePreview();
-            document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true);
-        }
-        function closeBigNoteModal() { document.getElementById("big-note-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveBigNoteChanges() {
-            const p = products.find(x => String(x.id) === String(currentBigNoteProdId));
-            if (p) { p.bigNote = document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新了大备注资料" }); closeBigNoteModal(); renderTable(); syncMatrixToCloud(); }
-        }
-        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML = renderFormattedText(document.getElementById("big-note-textarea").value); }
-        function insertStrikeThrough() { document.getElementById("big-note-textarea").value += "~~作废内容~~"; updateBigNoteLivePreview(); }
-        function insertFileLinkPrompt() { const link = prompt("链接:"); if (link) { document.getElementById("big-note-textarea").value += ` 🔗 ${link} `; updateBigNoteLivePreview(); } }
-        function insertTimestamp() { document.getElementById("big-note-textarea").value += ` [${getNowString().substring(5, 16)}] `; updateBigNoteLivePreview(); }
-
-        function renderBarcodeTable() {
-            const tbody = document.getElementById("barcode-table-body"); if (!tbody) return; tbody.innerHTML = "";
-            const kw = document.getElementById("barcode-search-input")?.value.trim().toLowerCase() || ""; let matched = 0;
-            globalBarcodes.forEach((b, idx) => {
-                if (barcodeBatchQueryList.length > 0 && !barcodeBatchQueryList.some(q => [b.barcode, b.sapCode, b.name].some(x => String(x||'').toLowerCase().includes(q.toLowerCase())))) return;
-                if (kw && ![b.name, b.sapCode, b.barcode].some(x => String(x||'').toLowerCase().includes(kw))) return;
-                matched++;
-                const tr = document.createElement("tr"); tr.className = "hover:bg-indigo-50/40 transition";
-                tr.innerHTML = `<td class="p-3 font-bold text-gray-900">${escapeHtml(b.name)}</td><td class="p-3 font-mono text-gray-700">${escapeHtml(b.sapCode || '-')}</td><td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode)}</td><td class="p-3 text-gray-500">${escapeHtml(b.remark || '-')}</td><td class="p-3 text-right space-x-2 font-medium">${!isReadOnlyMode ? `<button type="button" onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline cursor-pointer">修改</button><button type="button" onclick="removeBarcode(${idx})" class="text-red-500 hover:underline cursor-pointer">删除</button>` : '-'}</td>`;
-                tbody.appendChild(tr);
-            });
-            document.getElementById("barcode-table-count").innerText = `筛选 ${matched} 条 / 共 ${globalBarcodes.length} 条`; document.getElementById("nav-count-barcodes").innerText = globalBarcodes.length;
-        }
-
-        function copyReadOnlyShareLink() {
-            const o = cleanConfigString(localStorage.getItem("wb_owner")); const r = cleanConfigString(localStorage.getItem("wb_repo")); const b = cleanConfigString(localStorage.getItem("wb_gist_barcodes")); const tr = (localStorage.getItem("wb_token_repo") || "").trim(); const tg = (localStorage.getItem("wb_token_gist") || "").trim();
-            const url = `${window.location.origin}${window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(b)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`;
-            const modal = document.getElementById("readonly-share-modal"); document.getElementById("readonly-url-textarea").value = url; modal.classList.remove("hidden"); lockBodyScroll(true);
-        }
-        function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmCopyReadonlyUrl() { const ta = document.getElementById("readonly-url-textarea"); ta.select(); try { document.execCommand('copy'); alert("🎉 链接已成功复制！"); } catch(e) { alert("请手动复制链接！"); } }
 
         function addProductWithBatchSkus() {
-            if (isReadOnlyMode) return; const batchText = document.getElementById("p-skus-batch").value.trim(); if (!batchText && !document.getElementById("p-name").value.trim()) return alert("请填写内容！");
+            if (isReadOnlyMode) return;
+            const batchText = document.getElementById("p-skus-batch").value.trim();
+            if (!batchText && !document.getElementById("p-name").value.trim()) return alert("请填写内容！");
             let skus = Array.from(new Set(batchText.split('\n').map(l => l.trim()).filter(Boolean)));
-            const seriesName = document.getElementById("p-name").value.trim() || extractCommonPrefix(skus) || "新品";
+            const seriesName = document.getElementById("p-name").value.trim() || extractCommonPrefix(skus) || "新品系列";
             const skusList = skus.length ? skus.map((s,i) => ({ id: "S_"+Date.now()+"_"+i, name: s, bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} })) : [{ id: "S_"+Date.now(), name: seriesName+" 标配", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }];
-            products.unshift({ id: "P_" + Date.now(), name: seriesName, category: document.getElementById("p-category").value.trim() || "常规", prodDate: normalizeDate(document.getElementById("p-prod-date").value), remark: "", bigNote: "", status: "进行中", archivedAt: null, createdAt: getNowString(), historyLogs: [{ time: getNowString(), type: "CREATE", desc: `创建系列【${seriesName}】` }], skus: skusList });
+            
+            products.unshift({
+                id: "P_" + Date.now(),
+                name: seriesName,
+                category: document.getElementById("p-category").value.trim() || "常规新品",
+                prodDate: normalizeDate(document.getElementById("p-prod-date").value),
+                remark: "", bigNote: "", status: "进行中", archivedAt: null, createdAt: getNowString(),
+                historyLogs: [{ time: getNowString(), type: "CREATE", desc: `创建系列【${seriesName}】` }],
+                skus: skusList
+            });
+
             document.getElementById("p-name").value = ""; document.getElementById("p-skus-batch").value = "";
-            expandedRows[products[0].id] = true; switchTab('RUNNING'); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud();
+            expandedRows[products[0].id] = true;
+            switchTab('RUNNING');
+            updateCategoryFilterOptions();
+            renderTable();
+            syncMatrixToCloud();
         }
 
-        function openLogsModal(prodId) { const p = products.find(x => String(x.id) === String(prodId)); if (!p) return; document.getElementById("logs-title").innerText = `【${p.name}】`; document.getElementById("logs-container").innerHTML = p.historyLogs.length ? p.historyLogs.map(l => `<div class="bg-white p-3 rounded-xl shadow-xs"><div class="text-xs text-gray-800 break-words">${escapeHtml(l.desc)}</div><div class="text-[10px] text-gray-400 mt-1 font-mono">${l.time}</div></div>`).join('') : '<div class="text-gray-400 text-center py-4">无记录</div>'; document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function extractCommonPrefix(arr) {
+            if (!arr || !arr.length) return "";
+            let p = arr[0];
+            for (let i = 1; i < arr.length; i++) {
+                while (arr[i].indexOf(p) !== 0) { p = p.substring(0, p.length - 1); if (!p) return ""; }
+            }
+            return p.replace(/[\s\-_/]+$/, "").trim();
+        }
+
+        function openLogsModal(prodId) {
+            const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
+            document.getElementById("logs-title").innerText = `【${p.name}】`;
+            document.getElementById("logs-container").innerHTML = p.historyLogs.length ? p.historyLogs.map(l => `<div class="bg-white p-3 rounded-xl shadow-xs"><div class="text-xs text-gray-800 break-words">${escapeHtml(l.desc)}</div><div class="text-[10px] text-gray-400 mt-1 font-mono">${l.time}</div></div>`).join('') : '<div class="text-gray-400 text-center py-4">无记录</div>';
+            document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true);
+        }
         function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
 
-        function openEditModal(prodId) { currentEditingId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return; document.getElementById("edit-name").value = p.name || ""; document.getElementById("edit-category").value = p.category || ""; document.getElementById("edit-prod-date").value = normalizeDate(p.prodDate); document.getElementById("edit-reason").value = p.remark || ""; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function openEditModal(prodId) {
+            currentEditingId = String(prodId); const p = products.find(x => String(x.id) === String(prodId)); if (!p) return;
+            document.getElementById("edit-name").value = p.name || ""; document.getElementById("edit-category").value = p.category || "";
+            document.getElementById("edit-prod-date").value = normalizeDate(p.prodDate); document.getElementById("edit-reason").value = p.remark || "";
+            document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true);
+        }
         function closeEditModal() { document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveEditChanges() { const p = products.find(x => String(x.id) === String(currentEditingId)); if (!p) return; p.name = document.getElementById("edit-name").value.trim(); p.category = document.getElementById("edit-category").value.trim(); p.prodDate = normalizeDate(document.getElementById("edit-prod-date").value); p.remark = document.getElementById("edit-reason").value.trim(); p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新排期/基础信息" }); closeEditModal(); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud(); }
+        function saveEditChanges() {
+            const p = products.find(x => String(x.id) === String(currentEditingId)); if (!p) return;
+            p.name = document.getElementById("edit-name").value.trim(); p.category = document.getElementById("edit-category").value.trim();
+            p.prodDate = normalizeDate(document.getElementById("edit-prod-date").value); p.remark = document.getElementById("edit-reason").value.trim();
+            p.historyLogs.unshift({ time: getNowString(), type: "UPDATE", desc: "更新排期/基础信息" });
+            closeEditModal(); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud();
+        }
 
         function toggleExpand(id) { expandedRows[id] = !expandedRows[id]; renderTable(); }
-        function changeProdStatus(prodId, val) { if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p || p.status === val) return; p.status = val; p.archivedAt = (val === "已归档") ? getNowString() : null; p.historyLogs.unshift({ time: getNowString(), type: "STATUS", desc: `状态变更为【${val}】` }); renderTable(); syncMatrixToCloud(); }
+        function changeProdStatus(prodId, val) {
+            if (isReadOnlyMode) return; const p = products.find(x => String(x.id) === String(prodId)); if (!p || p.status === val) return;
+            p.status = val; p.archivedAt = (val === "已归档") ? getNowString() : null; p.historyLogs.unshift({ time: getNowString(), type: "STATUS", desc: `状态变更为【${val}】` });
+            renderTable(); syncMatrixToCloud();
+        }
         function removeProduct(prodId) { if (confirm("彻底删除该产品系列？")) { products = products.filter(p => String(p.id) !== String(prodId)); updateCategoryFilterOptions(); renderTable(); syncMatrixToCloud(); } }
         function removeSku(prodId, skuId) { if (confirm("彻底删除规格？")) { const p = products.find(x => String(x.id) === String(prodId)); p.skus = p.skus.filter(s => String(s.id) !== String(skuId)); renderTable(); syncMatrixToCloud(); } }
         function quickEditSkuName(prodId, skuId) { const p = products.find(x => String(x.id) === String(prodId)); const s = p?.skus.find(x => String(x.id) === String(skuId)); if (s) { const n = prompt("修改规格名:", s.name); if (n && n.trim() !== s.name) { s.name = n.trim(); renderTable(); syncMatrixToCloud(); } } }
         function addNewSkuToProd(prodId) { const p = products.find(x => String(x.id) === String(prodId)); const n = prompt("新规格名称:"); if (n && n.trim()) { p.skus.push({ id: "S_"+Date.now(), name: n.trim(), bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }); renderTable(); syncMatrixToCloud(); } }
         function quickEditSeriesName(prodId) { const p = products.find(x => String(x.id) === String(prodId)); if (p) { const n = prompt("修改系列名:", p.name); if (n && n.trim() !== p.name) { p.name = n.trim(); renderTable(); syncMatrixToCloud(); } } }
-        function findMatchedBarcode(name) { const n = String(name||'').replace(/[\s-_米]/g, '').toLowerCase(); return globalBarcodes.find(b => { const bn = String(b.name||'').replace(/[\s-_米]/g, '').toLowerCase(); return bn.includes(n) || n.includes(bn); }); }
-        function quickApplyMatchedBarcode(prodId, skuId) { const p = products.find(x => String(x.id) === String(prodId)); const s = p?.skus.find(x => String(x.id) === String(skuId)); if (s) { s.sapOk = true; s.nodeRecords.sapOk = { status: true, time: getNowString(), remark: "自动联动匹配" }; p.historyLogs.unshift({ time: getNowString(), type: "SYNC", desc: `规格【${s.name}】联动点亮【69编码】` }); renderTable(); syncMatrixToCloud(); } }
+        function quickApplyMatchedBarcode(prodId, skuId) { const p = products.find(x => String(x.id) === String(prodId)); const s = p?.skus.find(x => String(x.id) === String(skuId)); if (s) { s.sapOk = true; s.nodeRecords.sapOk = { status: true, time: getNowString(), remark: "自动匹配联动" }; p.historyLogs.unshift({ time: getNowString(), type: "SYNC", desc: `规格【${s.name}】联动点亮【69编码】` }); renderTable(); syncMatrixToCloud(); } }
         function toggleProductSelect(id, checked) { checked ? selectedProductIds.add(String(id)) : selectedProductIds.delete(String(id)); updateSelectAllCheckboxState(); }
         function toggleSelectAll(checked) { products.forEach(p => { const isArch = (p.status === "已归档"); if ((currentTab === 'RUNNING' && !isArch) || (currentTab === 'ARCHIVED' && isArch)) { checked ? selectedProductIds.add(String(p.id)) : selectedProductIds.delete(String(p.id)); } }); renderTable(); }
         function updateSelectAllCheckboxState() { const tabProds = products.filter(p => currentTab === 'RUNNING' ? p.status !== '已归档' : p.status === '已归档'); const selCount = tabProds.filter(p => selectedProductIds.has(String(p.id))).length; const isAll = (tabProds.length > 0 && selCount === tabProds.length); const sEl = document.getElementById("select-all-checkbox"); const msEl = document.getElementById("mobile-select-all"); if (sEl) { sEl.checked = isAll; sEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } if (msEl) { msEl.checked = isAll; msEl.indeterminate = (selCount > 0 && selCount < tabProds.length); } const mcEl = document.getElementById("mobile-selected-count"); if (mcEl) mcEl.innerText = `已选 ${selCount} 项`; }
@@ -771,8 +845,9 @@
         function closeBatchNodeModal() { document.getElementById("batch-node-modal").classList.add("hidden"); lockBodyScroll(false); }
         function confirmBatchNode() { const p = products.find(x => String(x.id) === String(currentBatchProdId)); if(!p) return; const sIds = Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(cb => cb.value); if (!sIds.length) return alert("请勾选规格！"); const type = document.getElementById("batch-node-type").value; const isOk = document.getElementById("batch-node-status").value === "true"; const rem = document.getElementById("batch-node-remark").value.trim(); const t = getNowString(); const lbs = { bomOk: "财务BOM", detailOk: "详情页", sapOk: "69编码" }; p.skus.forEach(s => { if (sIds.includes(String(s.id))) { s[type] = isOk; s.nodeRecords[type] = { status: isOk, time: t, remark: rem }; } }); p.historyLogs.unshift({ time: t, type: "BATCH", desc: `批量更新 ${sIds.length} 个规格的【${lbs[type]}】为${isOk?'完成':'取消'}` + (rem ? ` ｜ 备注: ${rem}` : '') }); closeBatchNodeModal(); renderTable(); syncMatrixToCloud(); }
 
+        // ================= 69码交互 =================
         function toggleBarcodeBatchImportModal() { const m = document.getElementById("barcode-batch-import-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
-        function analyzeBarcodeBatchImport() { const t = document.getElementById("barcode-batch-import-text").value.trim(); document.getElementById("barcode-analysis-stats").innerText = `已输入 ${t ? t.split('\n').length : 0} 行数据，点击确认即可无脑追加导入。重复数据会自动覆盖或丢弃。`; }
+        function analyzeBarcodeBatchImport() { const t = document.getElementById("barcode-batch-import-text").value.trim(); document.getElementById("barcode-analysis-stats").innerText = `已输入 ${t ? t.split('\n').length : 0} 行数据，确认即可导入。`; }
         function confirmBarcodeBatchImport() { const t = document.getElementById("barcode-batch-import-text").value.trim(); if(!t) return; t.split('\n').forEach(l => { let p = l.split(/[\t]+/).map(x => x.trim()); if(p.length < 2) p = l.split(/\s{2,}/).map(x => x.trim()); if (p.length >= 2) globalBarcodes.unshift({ name: p[0], sapCode: p.length>3 ? p[1] : "", barcode: p[p.length-1] || p[1], remark: "批量导入" }); }); toggleBarcodeBatchImportModal(); renderBarcodeTable(); renderTable(); syncBarcodesToGist(); alert("批量导入成功！"); }
         function addNewBarcodePrompt() { const n = prompt("输入产品名称/规格型号:"); if (!n) return; const s = prompt("输入 SKU 产品编码 (选填):") || ""; const c = prompt("输入 69 商品条形码 (必填):"); if (!c) return; globalBarcodes.unshift({ name: n.trim(), sapCode: s.trim(), barcode: c.trim(), remark: "手动录入" }); renderBarcodeTable(); renderTable(); syncBarcodesToGist(); }
         function openBarcodeEditModal(idx) { currentEditingBarcodeIdx = idx; const b = globalBarcodes[idx]; if (!b) return; document.getElementById("edit-bar-name").value = b.name || ""; document.getElementById("edit-bar-sap").value = b.sapCode || ""; document.getElementById("edit-bar-code").value = b.barcode || ""; document.getElementById("edit-bar-remark").value = b.remark || ""; document.getElementById("barcode-edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
@@ -784,16 +859,23 @@
         function copyMissingBarcodes() { if(barcodeMissingList.length) { navigator.clipboard.writeText(barcodeMissingList.join('\n')); alert("已复制缺失条码！"); } }
         function generateMissingUrgeMessage() { if(barcodeMissingList.length) { navigator.clipboard.writeText(`Hi，以下货品暂未在 69 码库中检索到有效编码，急需协助补充维护：\n${barcodeMissingList.join('\n')}`); alert("已复制催办话术！"); } }
 
-        function toggleMemoPanel() { isMemoPanelOpen = !isMemoPanelOpen; document.getElementById("memo-panel-body").style.display = isMemoPanelOpen ? "block" : "none"; document.getElementById("memo-toggle-btn").innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼"; }
-        function addMemoItem() { if (isReadOnlyMode) return; const input = document.getElementById("memo-input"); const text = input.value.trim(); if (!text) return alert("请输入备忘内容！"); globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) }); input.value = ""; renderMemos(); syncMatrixToCloud(); }
+        // ================= 备忘板 =================
+        function toggleMemoPanel() { isMemoPanelOpen = !isMemoPanelOpen; document.getElementById("memo-panel-body").classList.toggle("hidden", !isMemoPanelOpen); document.getElementById("memo-toggle-btn").innerText = isMemoPanelOpen ? "折叠 ▲" : "展开 ▼"; }
+        function addMemoItem() { if (isReadOnlyMode) return; const input = document.getElementById("memo-input"); const text = input.value.trim(); if (!text) return alert("请输入备忘！"); globalMemos.unshift({ id: "M_" + Date.now(), text: text, priority: document.getElementById("memo-priority").value, done: false, createdAt: getNowString().substring(5, 16) }); input.value = ""; renderMemos(); syncMatrixToCloud(); }
         function toggleMemoDone(id, isDone) { if (isReadOnlyMode) return; const m = globalMemos.find(item => item.id === id); if (m) { m.done = isDone; renderMemos(); syncMatrixToCloud(); } }
         function deleteMemo(id) { if (isReadOnlyMode) return; globalMemos = globalMemos.filter(item => item.id !== id); renderMemos(); syncMatrixToCloud(); }
         function clearDoneMemos() { if (isReadOnlyMode) return; if (confirm("确定清理已完成事项吗？")) { globalMemos = globalMemos.filter(m => !m.done); renderMemos(); syncMatrixToCloud(); } }
-        function renderMemos() { const container = document.getElementById("memo-list-container"); if (!container) return; container.innerHTML = ""; const pending = globalMemos.filter(m => !m.done).length; document.getElementById("memo-count-tag").innerText = `${pending} 项提醒`; if (globalMemos.length === 0) { container.innerHTML = `<div class="text-gray-400 text-center py-4 text-xs">暂无备忘事项~</div>`; return; } globalMemos.forEach(memo => { let badgeClass = memo.priority.includes("紧急") ? "bg-red-50 text-red-700 border-red-200 font-bold" : (memo.priority.includes("常规") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200"); const item = document.createElement("div"); item.className = `flex items-start space-x-2 p-2 rounded-lg border ${memo.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`; item.innerHTML = `<input type="checkbox" onchange="toggleMemoDone('${memo.id}', this.checked)" ${memo.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer"><div class="flex-1 min-w-0"><div class="${memo.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(memo.text)}</div><div class="flex items-center space-x-2 mt-1"><span class="text-[10px] ${memo.done ? 'text-gray-400' : (memo.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${memo.priority}</span><span class="text-[10px] text-gray-400 font-mono">${memo.createdAt}</span></div></div>${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${memo.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}`; container.appendChild(item); }); }
+        function renderMemos() { const container = document.getElementById("memo-list-container"); if (!container) return; container.innerHTML = ""; const pending = globalMemos.filter(m => !m.done).length; document.getElementById("memo-count-tag").innerText = `${pending} 项提醒`; if (globalMemos.length === 0) { container.innerHTML = `<div class="text-gray-400 text-center py-4 text-xs">暂无备忘事项~</div>`; return; } globalMemos.forEach(memo => { let bClass = memo.priority.includes("紧急") ? "bg-red-50 text-red-700 border-red-200 font-bold" : (memo.priority.includes("常规") ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-amber-50 text-amber-700 border-amber-200"); const item = document.createElement("div"); item.className = `flex items-start space-x-2 p-2 rounded-lg border ${memo.done ? 'bg-gray-50 border-gray-200' : 'bg-white border-amber-100 hover:border-amber-300'} transition`; item.innerHTML = `<input type="checkbox" onchange="toggleMemoDone('${memo.id}', this.checked)" ${memo.done ? 'checked' : ''} ${isReadOnlyMode ? 'disabled' : ''} class="mt-1 w-4 h-4 rounded text-amber-600 border-gray-300 cursor-pointer"><div class="flex-1 min-w-0"><div class="${memo.done ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'} text-xs break-words">${escapeHtml(memo.text)}</div><div class="flex items-center space-x-2 mt-1"><span class="text-[10px] ${memo.done ? 'text-gray-400' : (memo.priority.includes('紧急') ? 'text-red-500 font-bold' : 'text-amber-600')}">${memo.priority}</span><span class="text-[10px] text-gray-400 font-mono">${memo.createdAt}</span></div></div>${!isReadOnlyMode ? `<button type="button" onclick="deleteMemo('${memo.id}')" class="text-gray-300 hover:text-red-500 text-xs cursor-pointer px-1">✕</button>` : ''}`; container.appendChild(item); }); }
 
+        // ================= AI 助手功能 =================
         function applyQuickPrompt(type) { const input = document.getElementById("ai-user-prompt"); if (!input) return; if (type === 'DIAGNOSE') input.value = "帮我诊断当前进行中项目有哪些卡点，并列出延期风险最高的 Top 3。"; if (type === 'SPEECH_PRODUCT') input.value = "帮我写一段话术，催促产品经理尽快提供缺少 69 码的商品资料。"; if (type === 'REPORT_DELAY') input.value = "根据目前已延期的项目，生成一份向总监汇报的延期说明文案，说明原因及后续推进计划。"; }
         function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML = `<div class="flex items-start space-x-2"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div><div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">已清空上下文。</div></div>`; }
         function submitUserDemandToAI() { const input = document.getElementById("ai-user-prompt"); const msg = document.getElementById("ai-chat-messages"); const text = input.value.trim(); if (!text) return; input.value = ""; msg.innerHTML += `<div class="flex items-start space-x-2 justify-end mt-3"><div class="ai-chat-bubble-user p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">${escapeHtml(text)}</div></div>`; msg.scrollTop = msg.scrollHeight; setTimeout(() => { msg.innerHTML += `<div class="flex items-start space-x-2 mt-3"><div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">WB</div><div class="ai-chat-bubble-bot p-3 rounded-xl max-w-[88%] text-xs leading-relaxed shadow-xs">收到指令: “${escapeHtml(text)}”。<br>当前进行中系列 ${products.filter(p=>p.status!=='已归档').length} 个，69 码库映射共 ${globalBarcodes.length} 条。请在“云端配置”绑定 Token 以启用完整深度分析。</div></div>`; msg.scrollTop = msg.scrollHeight; }, 600); }
+
+        function exportLocalBackupSnapshot() { const backupData = { version: "2026.1", exportTime: getNowString(), products, memos: globalMemos, barcodes: globalBarcodes }; const b = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json;charset=utf-8;" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `WorkBuddy备份_${new Date().toISOString().split('T')[0]}.json`; a.click(); }
+        function importLocalBackupSnapshot(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const p = JSON.parse(evt.target.result); if (p.products) { let n = normalizeMatrixData(p); products = n.products; globalMemos = n.memos; localStorage.setItem("wb_local_matrix", JSON.stringify({ products, memos: globalMemos })); } if (p.barcodes) { globalBarcodes = normalizeBarcodesData(p.barcodes); localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); } alert("🎉 快照恢复成功！"); toggleConfigModal(); renderTable(); renderBarcodeTable(); renderMemos(); syncMatrixToCloud(); syncBarcodesToGist(); } catch(err) { alert("解析失败: " + err.message); } }; reader.readAsText(file); }
+        function exportBarcodesToCsv() { if (!globalBarcodes.length) return alert("暂无数据可导出！"); let csvRows = ["产品名称,SKU编码,69条码,备注"]; globalBarcodes.forEach(b => { csvRows.push(`"${b.name}","${b.sapCode}","${b.barcode}","${b.remark}"`); }); const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `69码库_${new Date().toISOString().split('T')[0]}.csv`; a.click(); }
+        function handleBarcodeExcelUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const data = new Uint8Array(evt.target.result); const wb = XLSX.read(data, { type: 'array' }); let list = []; wb.SheetNames.forEach(sheet => { const json = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: "" }); json.forEach(row => { let name = "", sap = "", bar = "", rem = ""; for (let k in row) { let key = k.toLowerCase(), v = String(row[k]).trim(); if (!v) continue; if (key.includes("名称") || key.includes("型号")) name = v; else if (key.includes("sku") || key.includes("编码")) sap = v; else if (key.includes("69") || key.includes("条码")) bar = v; else if (key.includes("备注")) rem = v; } if (name || bar) list.push({ name, sapCode: sap, barcode: bar, remark: rem }); }); }); if (!list.length) return alert("未解析出有效数据！"); globalBarcodes = list; renderBarcodeTable(); renderTable(); syncBarcodesToGist(); alert(`成功导入 ${list.length} 条数据！`); } catch(err) { alert("导入失败：" + err.message); } }; reader.readAsArrayBuffer(file); }
     </script>
 </body>
 </html>
