@@ -68,19 +68,19 @@
                 <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测)</h2>
                 <div class="mb-2.5">
                     <label class="block text-gray-700 font-semibold mb-1 text-xs">子变体 / SKU 列表 <span class="text-red-500">*</span></label>
-                    <textarea id="p-skus-batch" rows="2" placeholder="支持多行粘贴" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
+                    <textarea id="p-skus-batch" rows="2" placeholder="支持多行粘贴" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-                    <div><label class="block text-gray-600 mb-1">主产品型号 / 系列名</label><input type="text" id="p-name" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:bg-white focus:outline-none focus:ring-1"></div>
-                    <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:bg-white focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:bg-white focus:outline-none"></div>
+                    <div><label class="block text-gray-600 mb-1">主产品型号 / 系列名</label><input type="text" id="p-name" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1"></div>
+                    <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
                 </div>
             </div>
 
             <div class="flex items-center space-x-2">
-                <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer"><span>⚡ 进行中看板</span></button>
-                <button type="button" onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 hover:text-gray-900 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"><span>📦 已归档库</span></button>
+                <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer"><span>⚡ 进行中看板</span><span id="tab-count-running" class="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">0</span></button>
+                <button type="button" onclick="switchTab('ARCHIVED')" id="tab-btn-archived" class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"><span>📦 已归档库</span><span id="tab-count-archived" class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span></button>
             </div>
 
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm text-xs">
@@ -109,7 +109,7 @@
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                             <tr>
-                                <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 border-gray-300 cursor-pointer"></th>
+                                <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 cursor-pointer"></th>
                                 <th class="p-3 w-10 text-center">展开</th>
                                 <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
@@ -128,8 +128,6 @@
             <div class="mobile-card-view space-y-3">
                 <div id="mobile-cards-container" class="space-y-3"></div>
             </div>
-            
-            <div id="global-memo-box-anchor"></div>
         </div>
 
         <!-- ================= 模块 2：🔄 老品回厂进度 ================= -->
@@ -234,6 +232,9 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 全局备忘板挂载点 -->
+        <div id="global-memo-box-anchor"></div>
     </div>
 
     <!-- ================= 全局弹窗层 (直属 BODY) ================= -->
@@ -355,7 +356,7 @@
         function lockBodyScroll(l){ document.body.style.overflow=l?"hidden":""; }
 
         function normalizeMatrixData(raw) {
-            let p=[],m=[],r=[]; if(Array.isArray(raw))p=raw; else if(raw&&typeof raw==='object'){p=raw.products||[];m=raw.memos||[];r=raw.oldReturns||[];}
+            let p=[],m=[],r=[]; if(Array.isArray(raw))p=raw; else if(raw&&typeof raw==='object'){p=raw.products||raw.items||raw.data||[];m=raw.memos||[];r=raw.oldReturns||[];}
             return {
                 products: p.map(x=>({id:String(x.id||"P_"+Math.random()), name:x.name||"未命名", category:x.category||"常规", prodDate:x.prodDate||"", remark:x.remark||"", bigNote:x.bigNote||"", status:x.status||"进行中", archivedAt:x.archivedAt||null, createdAt:x.createdAt||"", historyLogs:x.historyLogs||[], skus:(x.skus||[]).map((s,i)=>({id:String(s.id||"S_"+i), name:s.name||"标配", shopInfo:s.shopInfo||"", bomOk:!!s.bomOk, detailOk:!!s.detailOk, sapOk:!!s.sapOk, nodeRecords:s.nodeRecords||{}}))})),
                 oldReturns: r.map(x=>({id:String(x.id||"R_"+Math.random()), name:x.name||"未命名", etaDate:x.etaDate||"", skus:x.skus||"", status:x.status||"进行中", bigNote:x.bigNote||"", createdAt:x.createdAt||"", historyLogs:x.historyLogs||[]})),
@@ -422,20 +423,21 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        // ================= 智能截取分离算法 (解决粘贴错列) =================
-        function smartParseBarcodeLine(l, i) {
-            let n="", s="", b="", r="", p=l.includes('\t')?l.split('\t').map(x=>x.trim()):l.split(/\s+/).filter(Boolean);
-            if(l.includes('\t') && p.length>=3){ n=p[0]||""; s=p[1]||""; b=p[2]||""; r=p.slice(3).join(" "); if(!b&&/^\d{12,14}$/.test(s)){b=s;s="";} }
-            else {
-                let nA=[], rA=[], ns=0;
-                p.forEach(x=>{
-                    if(ns===0){ if(/^(69\d{11}|\d{13,14})$/.test(x)&&!b){b=x;ns=1;} else if(/^\d{6,12}$/.test(x)&&!s){s=x;ns=1;} else nA.push(x); }
-                    else { if(/^(69\d{11}|\d{13,14})$/.test(x)&&!b)b=x; else if(/^\d{6,12}$/.test(x)&&!s)s=x; else rA.push(x); }
-                });
-                n=nA.join(" "); r=rA.join(" ");
+        // ================= 智能截取分离算法 (解决粘贴错列问题) =================
+        function smartParseBarcodeLine(line, index) {
+            let tokens = line.split(/[\t\s]+/).filter(Boolean);
+            let nameTokens = [], sap = "", barcode = "", remark = "";
+            for (let i = 0; i < tokens.length; i++) {
+                let t = tokens[i];
+                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) { barcode = t; }
+                else if (/^\d{6,12}$/.test(t) && !sap) { sap = t; }
+                else if (/[\u4e00-\u9fa5]/.test(t) && (sap || barcode)) { remark = tokens.slice(i).join(" "); break; }
+                else if (/^\d{1,2}-\d{1,2}-\d{1,2}$/.test(t) || t.includes("/")) { remark = tokens.slice(i).join(" "); break; }
+                else { if (sap || barcode) { remark = tokens.slice(i).join(" "); break; } else { nameTokens.push(t); } }
             }
-            if(!n&&(s||b)) n=`导入_${i+1}`;
-            return {n, s, b, r};
+            let name = nameTokens.join(" ");
+            if (!name && (sap || barcode)) name = `导入_${index + 1}`;
+            return { name, sap, barcode, remark };
         }
 
         function analyzeBarcodeBatchImport() {
@@ -446,7 +448,7 @@
             let bmS={}, bmB={}, bmN={};
 
             ls.forEach((l,i)=>{
-                let {n,s,b,r} = smartParseBarcodeLine(l, i); if(!n)return;
+                let {name:n, sap:s, barcode:b, remark:r} = smartParseBarcodeLine(l, i); if(!n)return;
                 let nl=n.toLowerCase(), sl=s.toLowerCase(), bl=b.toLowerCase(), ic=false;
                 
                 if(sl){ let ex=esM[sl]||bmS[sl]; if(ex&&(ex.name||'').toLowerCase()!==nl){cf.push(`SKU [${s}] 已被 [${ex.name}] 占用`); ic=true;} }
@@ -464,17 +466,40 @@
             if(dp.length) dE.innerHTML+=`<div class="text-gray-500 mt-2">⚠️ 完全重复跳过 ${dp.length} 项</div>`;
         }
 
-        // ================= 各模块渲染引擎 =================
+        // ================= 各模块独立且健壮的渲染引擎 =================
+        function updateGlobalStatsUI(type) {
+            if(type === 'MATRIX') {
+                let t=products.length, r=products.filter(p=>p.status!=='已归档').length, a=products.filter(p=>p.status==='已归档').length, tD=new Date().toISOString().split('T')[0];
+                let d=products.filter(p=>p.status!=='已归档'&&p.prodDate&&Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000)<0).length;
+                if(document.getElementById("stat-total")) document.getElementById("stat-total").innerText = t;
+                if(document.getElementById("stat-running")) document.getElementById("stat-running").innerText = r;
+                if(document.getElementById("stat-delay")) document.getElementById("stat-delay").innerText = d;
+                if(document.getElementById("nav-count-matrix")) document.getElementById("nav-count-matrix").innerText = t;
+                if(document.getElementById("tab-count-running")) document.getElementById("tab-count-running").innerText = r;
+                if(document.getElementById("tab-count-archived")) document.getElementById("tab-count-archived").innerText = a;
+            } else if (type === 'RETURNS') {
+                let t=globalReturns.length, doC=globalReturns.filter(r=>r.status==="已完成"||r.status==="✅ 已完成").length, tD=new Date().toISOString().split('T')[0];
+                let d=globalReturns.filter(r=>r.status!=="已完成"&&r.status!=="✅ 已完成"&&r.etaDate&&Math.ceil((new Date(r.etaDate)-new Date(tD))/86400000)<0).length;
+                if(document.getElementById("stat-returns-total")) document.getElementById("stat-returns-total").innerText = t;
+                if(document.getElementById("stat-returns-done")) document.getElementById("stat-returns-done").innerText = doC;
+                if(document.getElementById("stat-returns-delay")) document.getElementById("stat-returns-delay").innerText = d;
+                if(document.getElementById("nav-count-returns")) document.getElementById("nav-count-returns").innerText = t;
+            }
+        }
+
         function renderTable() {
             const tb=document.getElementById("product-table-body"), mb=document.getElementById("mobile-cards-container"); if(!tb||!mb)return; tb.innerHTML=""; mb.innerHTML="";
+            updateGlobalStatsUI('MATRIX');
+            
             let kw=(document.getElementById("search-input")?.value||"").trim().toLowerCase(), fc=document.getElementById("filter-category")?.value||"ALL", fh=document.getElementById("filter-health")?.value||"ALL", fb=document.getElementById("filter-bignote")?.value||"ALL";
             const cs=document.getElementById("filter-category"); if(cs&&cs.options.length<=1){cs.innerHTML='<option value="ALL">全部品类</option>'+Array.from(new Set(products.map(p=>p.category).filter(Boolean))).map(c=>`<option value="${c}">${c}</option>`).join("");cs.value=fc;}
-            let tD=new Date().toISOString().split('T')[0], dC=0,uC=0,rC=0;
+            let tD=new Date().toISOString().split('T')[0];
 
             products.forEach(p=>{
-                let arc=(p.status==="已归档"); if(!arc){rC++; if(p.status==="紧急重要")uC++;}
+                let arc=(p.status==="已归档"); 
                 if((currentTab==='RUNNING'&&arc)||(currentTab==='ARCHIVED'&&!arc))return;
-                let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999, dly=(!arc&&p.prodDate&&df<0); if(dly)dC++;
+                
+                let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999, dly=(!arc&&p.prodDate&&df<0);
                 if(fc!=="ALL"&&p.category!==fc)return; if(currentTab==='RUNNING'){if(fh==="DELAY"&&!dly)return; if(fh==="URGENT_DAYS"&&(dly||df>7))return;}
                 if(fb==="HAS_NOTE"&&!p.bigNote)return; if(fb==="NO_NOTE"&&p.bigNote)return;
                 if(kw&&!(p.name.toLowerCase().includes(kw)||p.category.toLowerCase().includes(kw)||(p.remark||"").toLowerCase().includes(kw)||p.skus.some(s=>s.name.toLowerCase().includes(kw))))return;
@@ -499,24 +524,25 @@
                     sh+=`</div></div></td>`; st.innerHTML=sh; tb.appendChild(st);
                 }
             });
-            document.getElementById("stat-total").innerText=products.length; document.getElementById("stat-delay").innerText=dC; document.getElementById("stat-running").innerText=rC; document.getElementById("nav-count-matrix").innerText=products.length; updateSelectAllCheckboxState();
+            updateSelectAllCheckboxState();
         }
 
         function renderReturnsTable() {
             const tb=document.getElementById("returns-table-body"); if(!tb)return; tb.innerHTML="";
-            let kw=(document.getElementById("search-returns-input")?.value||"").trim().toLowerCase(), dC=0,doC=0, tD=new Date().toISOString().split('T')[0];
+            updateGlobalStatsUI('RETURNS');
+            let kw=(document.getElementById("search-returns-input")?.value||"").trim().toLowerCase(), tD=new Date().toISOString().split('T')[0];
+            
             globalReturns.forEach(r=>{
-                if(r.status==="已完成")doC++; let df=r.etaDate?Math.ceil((new Date(r.etaDate)-new Date(tD))/86400000):999, dly=(r.status!=="已完成"&&r.etaDate&&df<0); if(dly)dC++;
+                let df=r.etaDate?Math.ceil((new Date(r.etaDate)-new Date(tD))/86400000):999;
                 if(kw&&!(r.name.toLowerCase().includes(kw)||(r.skus||'').toLowerCase().includes(kw)))return;
                 let exp=!!expandedReturnRows[r.id];
-                let hB=r.etaDate?(r.status==="已完成"?`<span class="text-gray-400">${r.etaDate}</span>`:(df<0?`<span class="text-red-600 font-bold">${r.etaDate} 🚨超期</span>`:`<span class="text-green-700">${r.etaDate}</span>`)):'-';
+                let hB=r.etaDate?(r.status==="已完成"||r.status==="✅ 已完成"?`<span class="text-gray-400">${r.etaDate}</span>`:(df<0?`<span class="text-red-600 font-bold">${r.etaDate} 🚨超期</span>`:`<span class="text-green-700">${r.etaDate}</span>`)):'-';
                 let bn=r.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="line-clamp-2 rich-note">${renderFormattedText(r.bigNote)}</div><button onclick="openBigNoteModal('${r.id}')" class="text-indigo-600 mt-0.5 cursor-pointer">✏️编辑备注</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${r.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 添加跟进备注</button>`:''}`;
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${r.status==='紧急'?'bg-red-50/60':''}`;
-                tr.innerHTML=`<td class="p-3 text-center"><button onclick="toggleReturnExpand('${r.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(r.name)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3">${bn}</td><td class="p-3"><select onchange="changeReturnStatus('${r.id}',this.value)" class="border rounded text-xs px-1 py-0.5" ${isReadOnlyMode?'disabled':''}><option value="进行中" ${r.status==='进行中'?'selected':''}>进行中</option><option value="紧急" ${r.status==='紧急'?'selected':''}>🔥紧急</option><option value="已完成" ${r.status==='已完成'?'selected':''}>✅ 已完成</option></select></td><td class="p-3 text-right"><button onclick="openLogsModal('${r.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode?`| <button onclick="removeReturnItem('${r.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
+                tr.innerHTML=`<td class="p-3 text-center"><button onclick="toggleReturnExpand('${r.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(r.name)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3">${bn}</td><td class="p-3"><select onchange="changeReturnStatus('${r.id}',this.value)" class="border rounded text-xs px-1 py-0.5" ${isReadOnlyMode?'disabled':''}><option value="进行中" ${r.status==='进行中'?'selected':''}>进行中</option><option value="紧急" ${r.status==='紧急'?'selected':''}>🔥紧急</option><option value="已完成" ${(r.status==='已完成'||r.status==='✅ 已完成')?'selected':''}>✅ 已完成</option></select></td><td class="p-3 text-right"><button onclick="openLogsModal('${r.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode?`| <button onclick="removeReturnItem('${r.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
                 if(exp){ let st=document.createElement("tr"); st.className="bg-gray-50/90"; st.innerHTML=`<td colspan="6" class="p-3 pl-12"><div class="bg-white p-3 border rounded shadow-sm text-xs font-mono whitespace-pre-wrap">${escapeHtml(r.skus)||'暂无明细'}</div></td>`; tb.appendChild(st); }
             });
-            document.getElementById("stat-returns-total").innerText=globalReturns.length; document.getElementById("stat-returns-delay").innerText=dC; document.getElementById("stat-returns-done").innerText=doC; document.getElementById("nav-count-returns").innerText=globalReturns.length;
         }
 
         function renderBarcodeTable() {
@@ -528,7 +554,8 @@
                 mc++; let tr=document.createElement("tr"); tr.className="hover:bg-indigo-50/40 border-b";
                 tr.innerHTML=`<td class="p-3 font-bold">${escapeHtml(b.name)}</td><td class="p-3 font-mono">${escapeHtml(b.sapCode)}</td><td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode)}</td><td class="p-3 text-gray-500">${escapeHtml(b.remark)} <div class="text-[9px] text-gray-400 mt-1">${b.createdAt||''}</div></td><td class="p-3 text-right">${!isReadOnlyMode?`<button onclick="openBarcodeEditModal(${i})" class="text-blue-600 cursor-pointer">修改</button> | <button onclick="removeBarcode(${i})" class="text-red-500 cursor-pointer">删除</button>`:'-'}</td>`; tb.appendChild(tr);
             });
-            document.getElementById("barcode-table-count").innerText=`筛选 ${mc} / 共 ${globalBarcodes.length}`; document.getElementById("nav-count-barcodes").innerText=globalBarcodes.length;
+            if(document.getElementById("barcode-table-count")) document.getElementById("barcode-table-count").innerText=`筛选 ${mc} / 共 ${globalBarcodes.length}`; 
+            if(document.getElementById("nav-count-barcodes")) document.getElementById("nav-count-barcodes").innerText=globalBarcodes.length;
         }
 
         // ================= 基本操作封装 =================
@@ -538,7 +565,7 @@
         function toggleExpand(id){ expandedRows[id]=!expandedRows[id]; renderTable(); }
         function toggleProductSelect(id,c){ c?selectedProductIds.add(id):selectedProductIds.delete(id); updateSelectAllCheckboxState(); }
         function toggleSelectAll(c){ products.forEach(p=>{if(p.status!=='已归档'){c?selectedProductIds.add(p.id):selectedProductIds.delete(p.id)}}); renderTable(); }
-        function updateSelectAllCheckboxState(){ let tp=products.filter(p=>p.status!=='已归档'), sc=tp.filter(p=>selectedProductIds.has(p.id)).length; document.getElementById("select-all-checkbox").checked=(tp.length>0&&sc===tp.length); }
+        function updateSelectAllCheckboxState(){ let tp=products.filter(p=>p.status!=='已归档'), sc=tp.filter(p=>selectedProductIds.has(p.id)).length; if(document.getElementById("select-all-checkbox")) document.getElementById("select-all-checkbox").checked=(tp.length>0&&sc===tp.length); }
         function quickEditSeriesName(id){ let p=products.find(x=>x.id===id), n=prompt("系列名:",p.name); if(n&&n!==p.name){p.name=n; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:`更名:${n}`}); renderTable(); syncMatrixToCloud();} }
         function openEditModal(id){ currentEditingId=id; let p=products.find(x=>x.id===id); document.getElementById("edit-name").value=p.name; document.getElementById("edit-category").value=p.category; document.getElementById("edit-prod-date").value=p.prodDate; document.getElementById("edit-reason").value=p.remark; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeEditModal(){ document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
@@ -564,8 +591,6 @@
         function removeReturnItem(id){ if(confirm("删除此回厂任务？")){globalReturns=globalReturns.filter(x=>x.id!==id); renderReturnsTable(); syncMatrixToCloud();} }
         function toggleReturnExpand(id){ expandedReturnRows[id]=!expandedReturnRows[id]; renderReturnsTable(); }
 
-        function toggleBarcodeBatchImportModal(){ let m=document.getElementById("barcode-batch-import-modal"); m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); if(!m.classList.contains("hidden")){ document.getElementById("barcode-batch-import-text").value=""; document.getElementById("barcode-analysis-stats").innerText="等待数据..."; document.getElementById("barcode-analysis-duplicates").innerHTML=""; } }
-        function confirmBarcodeBatchImport(){ if(isReadOnlyMode)return; if(!pendingImportBarcodes.length)return alert("无可用新增数据！"); globalBarcodes=pendingImportBarcodes.concat(globalBarcodes); toggleBarcodeBatchImportModal(); renderBarcodeTable(); syncBarcodesToGist(); alert("批量导入成功！"); }
         function executeBarcodeBatchSearch(){ let rt=document.getElementById("barcode-batch-search-input").value; if(!rt.trim())return; let qi=Array.from(new Set(rt.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean))); barcodeBatchQueryList=qi; let mS=new Set(), ms=[]; qi.forEach(q=>{ let ql=q.toLowerCase(); let f=globalBarcodes.some(b=>(b.barcode||'').toLowerCase()===ql||(b.sapCode||'').toLowerCase()===ql||(b.name||'').toLowerCase().includes(ql)); if(f)mS.add(q); else ms.push(q); }); barcodeMissingList=ms; document.getElementById("barcode-missing-box").classList.remove("hidden"); document.getElementById("barcode-missing-summary").innerText=`共: ${qi.length} | 匹配: ${mS.size} | 缺失: ${ms.length}`; document.getElementById("barcode-missing-list").innerHTML=ms.length?ms.map(m=>`<span class="bg-red-100 text-red-800 px-2 rounded">❌ ${escapeHtml(m)}</span>`).join(''):`<span class="text-green-700 font-bold">全部找到！</span>`; renderBarcodeTable(); }
         function clearBarcodeBatchSearch(){ document.getElementById("barcode-batch-search-input").value=""; document.getElementById("barcode-missing-box").classList.add("hidden"); barcodeBatchQueryList=[]; barcodeMissingList=[]; renderBarcodeTable(); }
         function copyMissingBarcodes(){ if(!barcodeMissingList.length)return alert("没有缺失项！"); copyTextToClipboard(barcodeMissingList.join('\n')); }
@@ -575,16 +600,56 @@
         function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
         function removeBarcode(idx){ if(confirm("删除此69码？")){globalBarcodes.splice(idx,1); renderBarcodeTable(); syncBarcodesToGist();} }
 
-        // ================= 其他复用组件 =================
-        function exportSelectedToExcel(){ let tp=products.filter(p=>currentTab==='RUNNING'?p.status!=='已归档':p.status==='已归档'), sel=selectedProductIds.size>0?tp.filter(p=>selectedProductIds.has(p.id)):tp; if(!sel.length)return alert("无数据"); let rows=["系列,子规格,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,备注,大备注"]; sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${s.name}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);})); let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"}); let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${new Date().toISOString().split('T')[0]}.csv`; a.click(); }
-        function copyReadOnlyShareLink(){ let o=localStorage.getItem("wb_owner")||"", r=localStorage.getItem("wb_repo")||"", gb=localStorage.getItem("wb_gist_barcodes")||"", tr=localStorage.getItem("wb_token_repo")||"", tg=localStorage.getItem("wb_token_gist")||""; let u=`${window.location.origin+window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(gb)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`; if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(u).then(()=>openReadonlyModal(u)).catch(()=>openReadonlyModal(u)); else openReadonlyModal(u); }
-        function openReadonlyModal(u){ document.getElementById("readonly-url-textarea").value=u; document.getElementById("readonly-share-modal").classList.remove("hidden"); lockBodyScroll(true); }
-        function closeReadonlyModal(){ document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmCopyReadonlyUrl(){ let t=document.getElementById("readonly-url-textarea"); t.select(); try{document.execCommand('copy'); alert("已复制！");}catch(e){} closeReadonlyModal(); }
-        function toggleAIChatDrawer(){ let d=document.getElementById("ai-chat-drawer"); d.classList.toggle("hidden"); lockBodyScroll(!d.classList.contains("hidden")); }
-        function applyQuickPrompt(t){ let i=document.getElementById("ai-user-prompt"); if(t==='DIAGNOSE')i.value="诊断卡点并列出延期最高Top 3"; if(t==='SPEECH_PRODUCT')i.value="催促产品提供缺少69码的话术"; if(t==='REPORT_DELAY')i.value="生成延期汇报文案"; }
-        function submitUserDemandToAI(){ let i=document.getElementById("ai-user-prompt"), m=document.getElementById("ai-chat-messages"), txt=i.value.trim(); if(!txt)return; i.value=""; m.innerHTML+=`<div class="flex justify-end mt-3"><div class="bg-blue-600 text-white p-3 rounded-xl max-w-[88%] text-xs shadow">${escapeHtml(txt)}</div></div>`; m.scrollTop=m.scrollHeight; setTimeout(()=>{m.innerHTML+=`<div class="flex gap-2 mt-3"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs max-w-[88%]">已收到指令。</div></div>`; m.scrollTop=m.scrollHeight;},600); }
-        function clearAIChatHistory(){ document.getElementById("ai-chat-messages").innerHTML=`<div class="flex gap-2"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs">已清空上下文。</div></div>`; }
+        // ================= 大备注组件 =================
+        function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").innerText=`【${p.name}】`; document.getElementById("big-note-textarea").value=p.bigNote||""; updateBigNoteLivePreview(); document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function saveBigNoteChanges() { let p=findGlobalItem(currentBigNoteId); if(p){p.bigNote=document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新大备注"}); closeBigNoteModal(); if(currentMainView==='MATRIX')renderTable();else if(currentMainView==='RETURNS')renderReturnsTable(); syncMatrixToCloud(); } }
+        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML=renderFormattedText(document.getElementById("big-note-textarea").value); }
+        function insertStrikeThrough() { let ta=document.getElementById("big-note-textarea"), s=ta.selectionStart, e=ta.selectionEnd, v=ta.value; ta.value=(s!==e)?v.substring(0,s)+`~~${v.substring(s,e)}~~`+v.substring(e):v+`~~作废内容~~`; updateBigNoteLivePreview(); }
+        function insertFileLinkPrompt() { let l=prompt("文档链接:"); if(l){document.getElementById("big-note-textarea").value+=` 🔗链接: ${l.trim()} `; updateBigNoteLivePreview();} }
+        function insertTimestamp() { document.getElementById("big-note-textarea").value+=` [${getNowString().substring(5,16)}] `; updateBigNoteLivePreview(); }
+        function closeBigNoteModal() { document.getElementById("big-note-modal").classList.add("hidden"); lockBodyScroll(false); }
+
+        function openLogsModal(id) { let p=findGlobalItem(id); document.getElementById("logs-title").innerText=`【${p.name}】`; let c=document.getElementById("logs-container"); c.innerHTML=""; (p.historyLogs||[]).forEach(l=>{c.innerHTML+=`<div class="bg-white p-3 rounded-xl border flex gap-2"><span class="border px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 h-max mt-0.5">流转</span><div class="flex-1 text-xs text-gray-800">${escapeHtml(l.desc)}<div class="text-[10px] text-gray-400 mt-1">${l.time}</div></div></div>`;}); document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
+
+        // ================= 导出与只读链接 =================
+        function exportSelectedToExcel() {
+            let tp=products.filter(p=>currentTab==='RUNNING'?p.status!=='已归档':p.status==='已归档');
+            let sel=selectedProductIds.size>0?tp.filter(p=>selectedProductIds.has(p.id)):tp;
+            if(!sel.length) return alert("无数据");
+            let rows=["系列,子规格,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,备注,大备注"];
+            sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${s.name}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
+            let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+            let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+        }
+        function copyReadOnlyShareLink() {
+            let o=localStorage.getItem("wb_owner")||"", r=localStorage.getItem("wb_repo")||"", gb=localStorage.getItem("wb_gist_barcodes")||"", tr=localStorage.getItem("wb_token_repo")||"", tg=localStorage.getItem("wb_token_gist")||"";
+            let u=`${window.location.origin+window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(gb)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`;
+            if(navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(u).then(()=>openReadonlyModal(u)).catch(()=>openReadonlyModal(u)); } else openReadonlyModal(u);
+        }
+        function openReadonlyModal(u) { document.getElementById("readonly-url-textarea").value=u; document.getElementById("readonly-share-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
+        function confirmCopyReadonlyUrl() { let t=document.getElementById("readonly-url-textarea"); t.select(); try{document.execCommand('copy'); alert("已复制！");}catch(e){} closeReadonlyModal(); }
+
+        // ================= 智能小助手 =================
+        function toggleAIChatDrawer() { let d=document.getElementById("ai-chat-drawer"); d.classList.toggle("hidden"); lockBodyScroll(!d.classList.contains("hidden")); }
+        function applyQuickPrompt(t) { let i=document.getElementById("ai-user-prompt"); if(t==='DIAGNOSE')i.value="诊断卡点并列出延期最高Top 3"; if(t==='SPEECH_PRODUCT')i.value="催促产品提供缺少69码的话术"; if(t==='REPORT_DELAY')i.value="生成延期汇报文案"; }
+        function submitUserDemandToAI() { let i=document.getElementById("ai-user-prompt"), m=document.getElementById("ai-chat-messages"), txt=i.value.trim(); if(!txt)return; i.value=""; m.innerHTML+=`<div class="flex justify-end mt-3"><div class="bg-blue-600 text-white p-3 rounded-xl max-w-[88%] text-xs shadow">${escapeHtml(txt)}</div></div>`; m.scrollTop=m.scrollHeight; setTimeout(()=>{m.innerHTML+=`<div class="flex gap-2 mt-3"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs max-w-[88%]">收到: “${escapeHtml(txt)}”。<br>当前新品: ${products.length} 个，老品回厂: ${globalReturns.length} 个，条码库: ${globalBarcodes.length} 条。数据已喂入AI模型待您配置后端。</div></div>`; m.scrollTop=m.scrollHeight;},600); }
+        function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML=`<div class="flex gap-2"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs">已清空上下文。</div></div>`; }
+        
+        // ================= 备忘录 =================
+        function renderMemos() {
+            const list = document.getElementById("memo-list-container"), count = document.getElementById("memo-count-tag");
+            if (!list) return; let ms=Array.isArray(globalMemos)?globalMemos:[];
+            if(count) count.innerText = `${ms.filter(m=>!m.done).length} 项提醒`;
+            if(!ms.length) { list.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">暂无备忘</div>'; return; }
+            list.innerHTML = ms.map((m,i)=>`<div class="flex gap-2 bg-white p-2 border rounded ${m.done?'opacity-50':''}"><input type="checkbox" ${m.done?'checked':''} onchange="toggleMemoDone(${i})" class="w-4 h-4 mt-0.5 shrink-0"><div class="flex-1"><div class="flex gap-2 text-[10px]"><span class="bg-amber-50 text-amber-700 px-1 rounded">${escapeHtml(m.priority)}</span><span class="text-gray-400">${m.createdAt}</span></div><div class="text-xs mt-1 ${m.done?'line-through':''}">${escapeHtml(m.text)}</div></div><button onclick="removeMemoItem(${i})" class="text-gray-300 hover:text-red-500">✕</button></div>`).join("");
+        }
+        function addMemoItem() { let v=document.getElementById("memo-input").value.trim(); if(!v)return; globalMemos.unshift({id:"M_"+Date.now(), text:v, priority:document.getElementById("memo-priority").value, done:false, createdAt:getNowString().substring(5,16)}); document.getElementById("memo-input").value=""; renderMemos(); syncMatrixToCloud(); }
+        function toggleMemoDone(i) { globalMemos[i].done=!globalMemos[i].done; renderMemos(); syncMatrixToCloud(); }
+        function removeMemoItem(i) { globalMemos.splice(i,1); renderMemos(); syncMatrixToCloud(); }
+        function clearDoneMemos() { globalMemos=globalMemos.filter(m=>!m.done); renderMemos(); syncMatrixToCloud(); }
+        function toggleMemoPanel() { isMemoPanelOpen=!isMemoPanelOpen; document.getElementById("memo-panel-body").classList.toggle("hidden",!isMemoPanelOpen); document.getElementById("memo-toggle-btn").innerText=isMemoPanelOpen?"折叠 ▲":"展开 ▼"; }
     </script>
 </body>
 </html>
