@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>电商运营超级工作台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 依赖用于 Excel 解析 -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         html, body { overflow-x: hidden; width: 100%; -webkit-tap-highlight-color: transparent; }
@@ -19,8 +20,7 @@
         .rich-note s, .rich-note del, .rich-note strike { text-decoration: line-through; color: #94a3b8; }
         .rich-note a { color: #2563eb; text-decoration: underline; word-break: break-all; }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        @media (max-width: 860px) { .desktop-table-view { display: none !important; } .mobile-card-view { display: block !important; } }
-        @media (min-width: 861px) { .desktop-table-view { display: block !important; } .mobile-card-view { display: none !important; } }
+        /* 移除之前导致移动端白屏的 display: none, 统一走表格自适应横向滚动 */
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
@@ -124,10 +124,6 @@
                     </table>
                 </div>
             </div>
-
-            <div class="mobile-card-view space-y-3">
-                <div id="mobile-cards-container" class="space-y-3"></div>
-            </div>
         </div>
 
         <!-- ================= 模块 2：🔄 老品回厂进度 ================= -->
@@ -170,10 +166,6 @@
                         <tbody id="returns-table-body" class="divide-y divide-gray-200 font-normal"></tbody>
                     </table>
                 </div>
-            </div>
-            
-            <div class="mobile-card-view space-y-3">
-                <div id="mobile-returns-container" class="space-y-3"></div>
             </div>
         </div>
 
@@ -237,7 +229,7 @@
         <div id="global-memo-box-anchor"></div>
     </div>
 
-    <!-- ================= 全局弹窗层 (直属 BODY) ================= -->
+    <!-- ================= 全局弹窗层 ================= -->
     <!-- ⚙️ 云端配置 -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
@@ -256,7 +248,7 @@
     <!-- 🏷️ 69码批量粘贴 -->
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border p-5 rounded-2xl w-full max-w-xl shadow-2xl text-xs flex flex-col max-h-[90vh] relative">
-            <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">📋 批量粘贴导入 69 码</span><button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
+            <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">📋 批量粘贴/导入 69 码</span><button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
             <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" placeholder="支持直接从表格整列复制粘贴..." class="w-full bg-gray-50 border rounded-lg p-2.5 focus:outline-none font-mono"></textarea>
             <div class="mt-3 p-3 bg-gray-50 rounded-xl border space-y-1.5 flex-1 log-scroll">
                 <div class="font-bold">📊 数据预审诊断：</div>
@@ -445,6 +437,31 @@
             if (!name && (sap || barcode)) name = `导入_${index + 1}`;
             return { name, sap, barcode, remark };
         }
+        
+        // 修复1：补充缺失的 Excel 上传解析函数
+        function handleBarcodeExcelUpload(event) {
+            if(isReadOnlyMode) return alert("只读模式下无法导入");
+            let file = event.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data = new Uint8Array(e.target.result);
+                    let workbook = XLSX.read(data, {type: 'array'});
+                    let worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    // 将表格行转为以制表符分隔的纯文本，复用已有的正则粘贴逻辑
+                    let text = json.map(row => row.join('\t')).join('\n');
+                    document.getElementById("barcode-batch-import-text").value = text;
+                    toggleBarcodeBatchImportModal();
+                    analyzeBarcodeBatchImport();
+                } catch(err) {
+                    alert("解析Excel失败，请确保格式正确: " + err.message);
+                }
+                event.target.value = ''; // 重置文件选择框
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
         function toggleBarcodeBatchImportModal() {
             let modal = document.getElementById("barcode-batch-import-modal");
@@ -478,6 +495,25 @@
             if(dp.length) dE.innerHTML+=`<div class="text-gray-500 mt-2">⚠️ 完全重复跳过 ${dp.length} 项</div>`;
         }
 
+        // 修复2：补充批量导入的确认函数
+        function confirmBarcodeBatchImport() {
+            if(!pendingImportBarcodes || pendingImportBarcodes.length === 0) {
+                return alert("没有可导入的新增数据！");
+            }
+            // 拼接新数据至库中
+            globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
+            pendingImportBarcodes = [];
+            
+            // 清理状态
+            document.getElementById("barcode-batch-import-text").value = "";
+            toggleBarcodeBatchImportModal();
+            
+            // 更新视图并推至云端
+            renderBarcodeTable();
+            syncBarcodesToGist();
+            alert("批量导入成功！");
+        }
+
         // ================= 各模块独立渲染引擎 =================
         function updateGlobalStatsUI(type) {
             if(type === 'MATRIX') {
@@ -499,8 +535,9 @@
             }
         }
 
+        // 修复3：修正表单渲染（移除废弃未完成的移动端代码 mb，依赖自动滚动条）
         function renderTable() {
-            const tb=document.getElementById("product-table-body"), mb=document.getElementById("mobile-cards-container"); if(!tb||!mb)return; tb.innerHTML=""; mb.innerHTML="";
+            const tb=document.getElementById("product-table-body"); if(!tb)return; tb.innerHTML="";
             updateGlobalStatsUI('MATRIX');
             
             let kw=(document.getElementById("search-input")?.value||"").trim().toLowerCase(), fc=document.getElementById("filter-category")?.value||"ALL", fh=document.getElementById("filter-health")?.value||"ALL", fb=document.getElementById("filter-bignote")?.value||"ALL";
@@ -625,30 +662,44 @@
 
         function executeBarcodeBatchSearch(){ let rt=document.getElementById("barcode-batch-search-input").value; if(!rt.trim())return; let qi=Array.from(new Set(rt.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean))); barcodeBatchQueryList=qi; let mS=new Set(), ms=[]; qi.forEach(q=>{ let ql=q.toLowerCase(); let f=globalBarcodes.some(b=>(b.barcode||'').toLowerCase()===ql||(b.sapCode||'').toLowerCase()===ql||(b.name||'').toLowerCase().includes(ql)); if(f)mS.add(q); else ms.push(q); }); barcodeMissingList=ms; document.getElementById("barcode-missing-box").classList.remove("hidden"); document.getElementById("barcode-missing-summary").innerText=`共: ${qi.length} | 匹配: ${mS.size} | 缺失: ${ms.length}`; document.getElementById("barcode-missing-list").innerHTML=ms.length?ms.map(m=>`<span class="bg-red-100 text-red-800 px-2 rounded">❌ ${escapeHtml(m)}</span>`).join(''):`<span class="text-green-700 font-bold">全部找到！</span>`; renderBarcodeTable(); }
         function clearBarcodeBatchSearch(){ document.getElementById("barcode-batch-search-input").value=""; document.getElementById("barcode-missing-box").classList.add("hidden"); barcodeBatchQueryList=[]; barcodeMissingList=[]; renderBarcodeTable(); }
+        
+        // 修复4：补充调用系统剪贴板拷贝的函数
+        function copyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("已成功复制到剪贴板！");
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+        function fallbackCopyTextToClipboard(text) {
+            let textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert("已成功复制到剪贴板！");
+            } catch (err) {
+                alert("复制失败，请手动选择文字进行复制。");
+            }
+            document.body.removeChild(textArea);
+        }
+
         function copyMissingBarcodes(){ if(!barcodeMissingList.length)return alert("没有缺失项！"); copyTextToClipboard(barcodeMissingList.join('\n')); }
+        
         function addNewBarcodePrompt(){ if(isReadOnlyMode)return; let n=prompt("产品名称:"); if(!n)return; let s=prompt("SKU编码(选填):")||"", b=prompt("69码(必填):"); if(!b)return; let nl=n.trim().toLowerCase(), sl=s.trim().toLowerCase(), bl=b.trim().toLowerCase(); if(sl){let ex=globalBarcodes.find(x=>(x.sapCode||'').toLowerCase()===sl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`SKU被占用`);} if(bl){let ex=globalBarcodes.find(x=>(x.barcode||'').toLowerCase()===bl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`69码被占用`);} let exN=globalBarcodes.find(x=>(x.name||'').toLowerCase()===nl&&((x.barcode||'').toLowerCase()!==bl||(x.sapCode||'').toLowerCase()!==sl)); if(exN){ if(bl&&exN.barcode&&exN.barcode.toLowerCase()!==bl)return alert(`已绑69码`); if(sl&&exN.sapCode&&exN.sapCode.toLowerCase()!==sl)return alert(`已绑SKU`); } globalBarcodes.unshift({name:n.trim(),sapCode:s.trim(),barcode:b.trim(),remark:"手工录入",createdAt:getNowString()}); renderBarcodeTable(); syncBarcodesToGist(); }
         function openBarcodeEditModal(idx){ currentEditingBarcodeIdx=idx; let b=globalBarcodes[idx]; document.getElementById("edit-bar-name").value=b.name; document.getElementById("edit-bar-sap").value=b.sapCode; document.getElementById("edit-bar-code").value=b.barcode; document.getElementById("edit-bar-remark").value=b.remark; document.getElementById("barcode-edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeBarcodeEditModal(){ document.getElementById("barcode-edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
         function removeBarcode(idx){ if(confirm("删除此69码？")){globalBarcodes.splice(idx,1); renderBarcodeTable(); syncBarcodesToGist();} }
-
-        function confirmBarcodeBatchImport() {
-            if(!pendingImportBarcodes || pendingImportBarcodes.length === 0) {
-                return alert("没有可导入的新增数据！");
-            }
-            // 拼接新数据至库中
-            globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
-            pendingImportBarcodes = [];
-            
-            // 清理状态
-            document.getElementById("barcode-batch-import-text").value = "";
-            toggleBarcodeBatchImportModal();
-            
-            // 更新视图并推至云端
-            renderBarcodeTable();
-            syncBarcodesToGist();
-            alert("批量导入成功！");
-        }
 
         // ================= 大备注组件 =================
         function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").innerText=`【${p.name}】`; document.getElementById("big-note-textarea").value=p.bigNote||""; updateBigNoteLivePreview(); document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true); }
