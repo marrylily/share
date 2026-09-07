@@ -330,7 +330,7 @@
         </div>
     </div>
 
-    <!-- ================= 全局弹窗层 (直属 BODY，避免任何父级溢出隐藏或阻止点击) ================= -->
+    <!-- ================= 全局弹窗层 (直属 BODY) ================= -->
 
     <!-- ⚙️ 1. 云端配置弹窗 -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
@@ -363,7 +363,6 @@
                 </div>
             </div>
 
-            <!-- 本地快照备份与恢复 -->
             <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="font-bold text-gray-700">☁️ 云端连接状态</span>
@@ -417,7 +416,7 @@
                 </div>
                 <button type="button" onclick="toggleAIChatDrawer()" class="text-gray-400 hover:text-gray-800 text-lg font-bold px-2 py-1 rounded-lg hover:bg-white transition cursor-pointer">✕</button>
             </div>
-
+            
             <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center space-x-1.5 overflow-x-auto custom-scroll flex-shrink-0">
                 <span class="text-gray-400 text-[10px] whitespace-nowrap">快捷指令:</span>
                 <button type="button" onclick="applyQuickPrompt('DIAGNOSE')" class="bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-full text-[10px] whitespace-nowrap cursor-pointer">📊 诊断看板卡点</button>
@@ -469,7 +468,7 @@
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-2xl w-full max-w-xl shadow-2xl text-gray-800 text-xs flex flex-col max-h-[90vh] relative">
             <h2 class="text-sm font-bold text-gray-900 mb-2 flex items-center justify-between">
-                <span>📋 批量粘贴导入 69 码 (内置防重检测)</span>
+                <span>📋 批量粘贴导入 69 码 (支持智能分列与去重)</span>
                 <button type="button" onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 hover:text-gray-700 text-lg cursor-pointer">✕</button>
             </h2>
             <p class="text-[11px] text-gray-500 mb-2">支持从 Excel 复制整行整列粘贴。格式支持：【产品名称 \t SKU产品编码 \t 69码 \t 备注】</p>
@@ -483,7 +482,7 @@
             </div>
 
             <div class="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
-                <span class="text-[11px] text-gray-400">💡 自动过滤 69 码完全重复的数据</span>
+                <span class="text-[11px] text-gray-400">💡 相同产品导入新编码会生成新版本并自动排前</span>
                 <div class="space-x-2">
                     <button type="button" onclick="toggleBarcodeBatchImportModal()" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium cursor-pointer">取消</button>
                     <button type="button" id="btn-confirm-barcode-import" onclick="confirmBarcodeBatchImport()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition shadow-sm cursor-pointer">🚀 确认导入并保存</button>
@@ -509,7 +508,7 @@
                     <input type="text" id="edit-bar-sap" class="w-full border border-gray-300 rounded p-2 text-gray-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">69 商品条形码 <span class="text-red-500">*</span></label>
+                    <label class="block text-gray-600 font-medium mb-1 font-bold text-indigo-700">69 商品条形码</label>
                     <input type="text" id="edit-bar-code" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-2 text-gray-900 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 </div>
                 <div>
@@ -733,6 +732,7 @@
                     skus: (item.skus || item.variants || []).map((s, idx) => ({
                         id: String(s.id || "S_" + idx),
                         name: s.name || s.skuName || "标配",
+                        shopInfo: s.shopInfo || "", // 增加分铺信息
                         bomOk: !!s.bomOk,
                         detailOk: !!s.detailOk,
                         sapOk: !!s.sapOk,
@@ -755,11 +755,13 @@
                 let sapCode = item.sapCode || item.skuCode || item.productCode || item.code || item.sap || item['SKU产品编码'] || item['SKU编码'] || item['产品编码'] || item['SAP编码'] || item['物料号'] || item['商品编码'] || '';
                 let barcode = item.barcode || item.code69 || item.barcode69 || item.ean || item['69码'] || item['条形码'] || item['条码'] || '';
                 let remark = item.remark || item.note || item.status || item['备注'] || '';
+                let createdAt = item.createdAt || ''; // 新增时间戳
                 return { 
                     name: String(name).trim(), 
                     sapCode: String(sapCode).trim(), 
                     barcode: String(barcode).trim(), 
-                    remark: String(remark).trim() 
+                    remark: String(remark).trim(),
+                    createdAt: String(createdAt).trim()
                 };
             }).filter(item => item.name || item.barcode || item.sapCode);
         }
@@ -777,14 +779,14 @@
                     createdAt: "2026-09-01 10:00:00",
                     historyLogs: [{ time: "2026-09-01 10:00:00", type: "CREATE", desc: "初始化创建系列" }],
                     skus: [
-                        { id: "S_101", name: "HD-LD22-H 枪灰色 1.3M", bomOk: true, detailOk: false, sapOk: true, nodeRecords: {} },
-                        { id: "S_102", name: "HD-LD22-H 奶白色 1.3M", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }
+                        { id: "S_101", name: "HD-LD22-H 枪灰色 1.3M", shopInfo: "已铺设京东/天猫", bomOk: true, detailOk: false, sapOk: true, nodeRecords: {} },
+                        { id: "S_102", name: "HD-LD22-H 奶白色 1.3M", shopInfo: "仅线下专供", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }
                     ]
                 }
             ];
             globalBarcodes = [
-                { name: "HD-LD22-H 枪灰色 1.3M", sapCode: "320243181001", barcode: "6941123400012", remark: "标准款" },
-                { name: "HD-LD22-H 奶白色 1.3M", sapCode: "320243181002", barcode: "6941123400029", remark: "标准款" }
+                { name: "HD-LD22-H 枪灰色 1.3M", sapCode: "320243181001", barcode: "6941123400012", remark: "标准款", createdAt: "2026-09-01 10:00:00" },
+                { name: "HD-LD22-H 奶白色 1.3M", sapCode: "320243181002", barcode: "6941123400029", remark: "标准款", createdAt: "2026-09-01 10:00:00" }
             ];
             globalMemos = [
                 { id: "M_1", text: "核对本周新品排产计划与 GTN 确认函", priority: "🔥 紧急重要", done: false, createdAt: "09-01 10:12" }
@@ -1489,7 +1491,7 @@
                             }
 
                             if (name || barcode || sapCode) {
-                                parsedList.push({ name, sapCode, barcode, remark: remark || sheetName });
+                                parsedList.push({ name, sapCode, barcode, remark: remark || sheetName, createdAt: getNowString() });
                             }
                         });
                     });
@@ -1503,11 +1505,13 @@
                     if (isOverwrite) {
                         globalBarcodes = parsedList;
                     } else {
-                        const existingMap = new Set(globalBarcodes.map(b => (b.barcode || '').toLowerCase()));
+                        // 防重检测：仅当 名字、SKU编码、69码 全部一致时才跳过
+                        const existingMap = new Set(globalBarcodes.map(b => `${(b.name||'').trim()}_${(b.sapCode||'').trim()}_${(b.barcode||'').trim()}`.toLowerCase()));
                         let added = 0;
                         parsedList.forEach(item => {
-                            if (!existingMap.has(item.barcode.toLowerCase())) {
-                                globalBarcodes.push(item);
+                            const barKey = `${(item.name||'').trim()}_${(item.sapCode||'').trim()}_${(item.barcode||'').trim()}`.toLowerCase();
+                            if (!existingMap.has(barKey)) {
+                                globalBarcodes.unshift(item); // 最新导入放在最前面
                                 added++;
                             }
                         });
@@ -1654,45 +1658,58 @@
             let duplicateExisting = [];
             let duplicateInBatch = new Set();
 
-            const existingBarcodesMap = new Set(globalBarcodes.map(b => (b.barcode || '').trim().toLowerCase()));
+            // 新防重逻辑：如果名称、SKU编码、69码完全一样，才算是真的重复，否则是更新/新增版本
+            const existingBarcodesMap = new Set(globalBarcodes.map(b => `${(b.name||'').trim()}_${(b.sapCode||'').trim()}_${(b.barcode||'').trim()}`.toLowerCase()));
 
             lines.forEach((line, idx) => {
-                let parts = line.split(/[\t,]+/).map(p => p.trim());
-                if (parts.length === 1) parts = line.split(/\s{2,}/).map(p => p.trim());
+                // 如果包含 Tab 键，大概率是从 Excel 复制过来的，严格按 Tab 分隔以保留空列
+                let parts = line.includes('\t') ? line.split('\t').map(p => p.trim()) : line.split(/\s{2,}/).map(p => p.trim());
 
                 let name = parts[0] || `导入规格_${idx + 1}`;
                 let sapCode = parts[1] || "";
-                let barcode = parts[2] || parts[0];
-                let remark = parts[3] || "批量导入";
+                let barcode = parts[2] || "";
+                let remark = parts[3] || "";
 
-                if (parts.length === 2) {
-                    if (/^\d{10,14}$/.test(parts[1])) {
+                // 智能纠错与缺列偏移处理 (判断是否为备注)
+                if (parts.length === 3) {
+                    // 假如用户粘贴的是 [名称, SKU编码, 备注] (缺 69 码)，第三列有中文或特殊符号通常为备注
+                    if (/[^\x00-\xff]/.test(parts[2]) || parts[2].includes("-") || parts[2].includes("/") || parts[2].includes("编码") || parts[2].includes("（") || parts[2].includes("(")) {
+                        remark = parts[2];
+                        barcode = "";
+                    } else if (/^\d{12,14}$/.test(parts[2])) {
+                        barcode = parts[2];
+                    }
+                } else if (parts.length === 2) {
+                    if (/^\d{12,14}$/.test(parts[1])) {
                         barcode = parts[1];
+                        sapCode = "";
+                    } else if (/[^\x00-\xff]/.test(parts[1])) {
+                        remark = parts[1];
                         sapCode = "";
                     } else {
                         sapCode = parts[1];
-                        barcode = parts[0];
+                        barcode = "";
                     }
                 }
 
-                const barKey = String(barcode).trim().toLowerCase();
+                const barKey = `${name}_${sapCode}_${barcode}`.toLowerCase();
 
                 if (existingBarcodesMap.has(barKey)) {
-                    duplicateExisting.push(`【${name}】条码: ${barcode} (已存在库中)`);
+                    duplicateExisting.push(`【${name}】SKU: ${sapCode||'-'} / 条码: ${barcode||'-'} (库中已存在完全一致记录)`);
                 } else if (duplicateInBatch.has(barKey)) {
-                    duplicateExisting.push(`【${name}】条码: ${barcode} (本次粘贴中重复)`);
+                    duplicateExisting.push(`【${name}】SKU: ${sapCode||'-'} / 条码: ${barcode||'-'} (本次粘贴数据内重复)`);
                 } else {
                     duplicateInBatch.add(barKey);
-                    parsed.push({ name, sapCode, barcode, remark });
+                    parsed.push({ name, sapCode, barcode, remark, createdAt: getNowString() });
                 }
             });
 
             pendingImportBarcodes = parsed;
-            statsEl.innerHTML = `总粘贴行数: <strong>${lines.length}</strong> 行 ｜ 可新增导入: <strong class="text-green-600">${parsed.length}</strong> 条 ｜ 发现重复/冲突: <strong class="text-amber-600">${duplicateExisting.length}</strong> 条`;
+            statsEl.innerHTML = `总粘贴行数: <strong>${lines.length}</strong> 行 ｜ 可新增导入: <strong class="text-green-600">${parsed.length}</strong> 条 ｜ 完全重复(跳过): <strong class="text-amber-600">${duplicateExisting.length}</strong> 条`;
 
             if (duplicateExisting.length > 0) {
                 dupEl.innerHTML = `
-                    <div class="font-bold text-red-600 mt-1">⚠️ 自动过滤以下重复/冲突项（将跳过）：</div>
+                    <div class="font-bold text-red-600 mt-1">⚠️ 以下由于信息完全重复将被过滤（同一名称的更新编码允许导入）：</div>
                     ${duplicateExisting.slice(0, 8).map(d => `<div>• ${escapeHtml(d)}</div>`).join('')}
                     ${duplicateExisting.length > 8 ? `<div class="text-gray-400">...等共 ${duplicateExisting.length} 项重复</div>` : ''}
                 `;
@@ -1708,7 +1725,7 @@
             renderBarcodeTable();
             renderTable();
             syncBarcodesToGist();
-            alert(`🎉 成功批量导入 ${pendingImportBarcodes.length} 条全新编码！`);
+            alert(`🎉 成功批量导入 ${pendingImportBarcodes.length} 条全新编码映射！`);
         }
 
         function executeBarcodeBatchSearch() {
@@ -1801,13 +1818,14 @@
             if (!code69) return alert("条形码不能为空！");
 
             const exists = globalBarcodes.some(b => b.barcode === code69.trim());
-            if (exists && !confirm(`⚠️ 69条码【${code69.trim()}】在库中已存在，确定强制录入吗？`)) return;
+            if (exists && !confirm(`⚠️ 69条码【${code69.trim()}】在库中已存在其他记录，确定强制录入新版本吗？`)) return;
 
             globalBarcodes.unshift({
                 name: name.trim(),
                 sapCode: sap.trim(),
                 barcode: code69.trim(),
-                remark: "手动录入"
+                remark: "手动录入",
+                createdAt: getNowString()
             });
             renderBarcodeTable();
             renderTable();
@@ -1855,8 +1873,7 @@
             const newRemark = document.getElementById("edit-bar-remark").value.trim();
 
             if (!newName) return alert("产品名称不能为空！");
-            if (!newCode) return alert("69商品条形码不能为空！");
-
+            
             b.name = newName;
             b.sapCode = newSap;
             b.barcode = newCode;
@@ -1906,7 +1923,8 @@
                     const matchName = (b.name || "").toLowerCase().includes(keyword);
                     const matchSap = (b.sapCode || "").toLowerCase().includes(keyword);
                     const matchBar = (b.barcode || "").toLowerCase().includes(keyword);
-                    if (!matchName && !matchSap && !matchBar) return;
+                    const matchRemark = (b.remark || "").toLowerCase().includes(keyword);
+                    if (!matchName && !matchSap && !matchBar && !matchRemark) return;
                 }
 
                 matched++;
@@ -1916,8 +1934,11 @@
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-gray-900">${escapeHtml(b.name)}</td>
                     <td class="p-3 font-mono text-gray-700">${escapeHtml(b.sapCode || '-')}</td>
-                    <td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode)}</td>
-                    <td class="p-3 text-gray-500">${escapeHtml(b.remark || '-')}</td>
+                    <td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode || '-')}</td>
+                    <td class="p-3 text-gray-500">
+                        ${escapeHtml(b.remark || '-')}
+                        ${b.createdAt ? `<div class="text-[9px] text-gray-400 mt-0.5" title="导入时间">🕒 ${b.createdAt}</div>` : ''}
+                    </td>
                     <td class="p-3 text-right space-x-2 font-medium">
                         ${!isReadOnlyMode ? `
                             <button type="button" onclick="openBarcodeEditModal(${idx})" class="text-blue-600 hover:underline cursor-pointer">修改</button>
@@ -1935,6 +1956,16 @@
         }
 
         // ================= 📊 子变体 SKU 操作与留痕 =================
+        function updateSkuShopInfo(prodId, skuId, val) {
+            if (isReadOnlyMode) return;
+            const p = products.find(item => String(item.id) === String(prodId));
+            const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
+            if (sku) {
+                sku.shopInfo = val.trim();
+                syncMatrixToCloud();
+            }
+        }
+
         function quickEditSkuName(prodId, skuId) {
             const p = products.find(item => String(item.id) === String(prodId));
             const sku = p ? p.skus.find(s => String(s.id) === String(skuId)) : null;
@@ -1960,6 +1991,7 @@
             p.skus.push({
                 id: "S_" + Date.now(),
                 name: name.trim(),
+                shopInfo: "", // 增加分铺信息初始化
                 bomOk: false,
                 detailOk: false,
                 sapOk: false,
@@ -2362,13 +2394,19 @@
 
                         subHtml += `
                             <div class="flex items-center justify-between bg-gray-50/80 p-2.5 rounded-lg border border-gray-200 text-xs flex-wrap gap-2 hover:bg-white transition">
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
-                                    ${!isReadOnlyMode && !isArchived ? `
-                                        <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[10px] cursor-pointer" title="修改规格名称">✏️</button>
-                                        <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[10px] cursor-pointer" title="删除规格">🗑️</button>
-                                    ` : ''}
-                                    ${autoLinkTag}
+                                <div class="flex flex-col space-y-1 sm:w-1/3">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-semibold text-gray-800">${escapeHtml(sku.name)}</span>
+                                        ${!isReadOnlyMode && !isArchived ? `
+                                            <button type="button" onclick="quickEditSkuName('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-blue-600 text-[10px] cursor-pointer" title="修改规格名称">✏️</button>
+                                            <button type="button" onclick="removeSku('${prod.id}', '${sku.id}')" class="text-gray-400 hover:text-red-500 text-[10px] cursor-pointer" title="删除规格">🗑️</button>
+                                        ` : ''}
+                                        ${autoLinkTag}
+                                    </div>
+                                    <div class="flex items-center mt-1.5 w-full sm:w-auto">
+                                        <span class="text-gray-500 text-[10px] mr-1.5 whitespace-nowrap">分铺信息:</span>
+                                        <input type="text" ${isReadOnlyMode ? 'disabled' : ''} value="${escapeHtml(sku.shopInfo || '')}" onchange="updateSkuShopInfo('${prod.id}', '${sku.id}', this.value)" placeholder="输入铺货/分铺说明..." class="flex-1 sm:w-48 bg-white border border-gray-300 rounded px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    </div>
                                 </div>
                                 <div class="flex items-center space-x-6">
                                     ${renderNodeBadge('bomOk', '财务BOM', sku.bomOk)}
@@ -2430,6 +2468,10 @@
                                     ` : ''}
                                 </div>
                                 ${autoLinkTag}
+                                <div class="flex items-center mt-1.5 w-full">
+                                    <span class="text-gray-500 text-[10px] mr-1.5 whitespace-nowrap">分铺:</span>
+                                    <input type="text" ${isReadOnlyMode ? 'disabled' : ''} value="${escapeHtml(sku.shopInfo || '')}" onchange="updateSkuShopInfo('${prod.id}', '${sku.id}', this.value)" placeholder="输入分铺说明..." class="flex-1 bg-white border border-gray-300 rounded px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
                                 <div class="grid grid-cols-3 gap-1 mt-1.5 pt-1.5 border-t border-gray-100">
                                     ${renderNodeBadgeM('bomOk', '财务BOM', sku.bomOk)}
                                     ${renderNodeBadgeM('detailOk', '详情页', sku.detailOk)}
@@ -2660,8 +2702,8 @@
             let manualName = document.getElementById("p-name").value.trim();
             let seriesName = manualName || (validSkus.length > 0 ? extractCommonPrefix(validSkus) : "新品系列");
 
-            let skusList = validSkus.map((skuLine, i) => ({ id: "S_" + Date.now() + "_" + i, name: skuLine, bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }));
-            if (skusList.length === 0) skusList = [{ id: "S_" + Date.now(), name: seriesName + " (标配)", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }];
+            let skusList = validSkus.map((skuLine, i) => ({ id: "S_" + Date.now() + "_" + i, name: skuLine, shopInfo: "", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }));
+            if (skusList.length === 0) skusList = [{ id: "S_" + Date.now(), name: seriesName + " (标配)", shopInfo: "", bomOk: false, detailOk: false, sapOk: false, nodeRecords: {} }];
 
             const nowTime = getNowString();
             const newProd = {
@@ -2770,10 +2812,10 @@
             let targetProducts = selectedProductIds.size > 0 ? currentTabProducts.filter(p => selectedProductIds.has(String(p.id))) : currentTabProducts;
             if (targetProducts.length === 0) return alert("当前视图无数据可导出！");
 
-            let csvRows = ["产品系列,子变体SKU,品类,量产时间,状态,财务BOM,详情页,69编码,备注,大备注"];
+            let csvRows = ["产品系列,子变体SKU,分铺信息,品类,量产时间,状态,财务BOM,详情页,69编码,备注,大备注"];
             targetProducts.forEach(prod => {
                 (prod.skus || []).forEach(sku => {
-                    csvRows.push(`"${prod.name}","${sku.name}","${prod.category}","${normalizeDate(prod.prodDate)}","${prod.status}","${sku.bomOk ? '已完成' : '未完成'}","${sku.detailOk ? '已完成' : '未完成'}","${sku.sapOk ? '已完成' : '未完成'}","${prod.remark || ''}","${(prod.bigNote || '').replace(/"/g, '""')}"`);
+                    csvRows.push(`"${prod.name}","${sku.name}","${sku.shopInfo||''}","${prod.category}","${normalizeDate(prod.prodDate)}","${prod.status}","${sku.bomOk ? '已完成' : '未完成'}","${sku.detailOk ? '已完成' : '未完成'}","${sku.sapOk ? '已完成' : '未完成'}","${prod.remark || ''}","${(prod.bigNote || '').replace(/"/g, '""')}"`);
                 });
             });
             const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
