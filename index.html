@@ -88,7 +88,7 @@
                     <select id="filter-category" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部品类</option></select>
                     <div id="filter-health-box"><select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部排期</option><option value="DELAY">🚨 仅看延期</option><option value="URGENT_DAYS">⚠️ 7天内</option></select></div>
                     <select id="filter-bignote" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"><option value="ALL">全部大备注</option><option value="HAS_NOTE">📌 仅看有</option><option value="NO_NOTE">⚪ 仅看无</option></select>
-                    <input type="text" id="search-input" oninput="renderTable()" placeholder="搜型号/变体/备注..." class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                    <input type="text" id="search-input" autocomplete="off" oninput="renderTable()" placeholder="搜型号/变体/备注..." class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none">
                 </div>
             </div>
 
@@ -151,7 +151,7 @@
                     <span>🚨 超期: <strong id="stat-returns-delay" class="text-red-600 font-bold">0</strong></span>
                     <span>✅ 已完成: <strong id="stat-returns-done" class="text-green-600 font-bold">0</strong></span>
                 </div>
-                <input type="text" id="search-returns-input" oninput="renderReturnsTable()" placeholder="搜产品/SKU..." class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs w-48 focus:outline-none">
+                <input type="text" id="search-returns-input" autocomplete="off" oninput="renderReturnsTable()" placeholder="搜产品/SKU..." class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs w-48 focus:outline-none">
             </div>
 
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
@@ -210,7 +210,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <input type="text" id="barcode-search-input" oninput="renderBarcodeTable()" placeholder="单条快速过滤..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none">
+                    <input type="text" id="barcode-search-input" autocomplete="off" oninput="renderBarcodeTable()" placeholder="单条快速过滤..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none">
                     <div class="text-right text-gray-400 self-center text-[11px]" id="barcode-table-count"></div>
                 </div>
             </div>
@@ -367,6 +367,12 @@
         function findGlobalItem(id){ return products.find(x=>x.id===id)||globalReturns.find(x=>x.id===id); }
 
         window.onload = function() {
+            // 彻底清除浏览器的幽灵填充
+            ['search-input', 'search-returns-input', 'barcode-search-input'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.value = "";
+            });
+
             try {
                 let cm=localStorage.getItem("wb_local_matrix"), cb=localStorage.getItem("wb_local_barcodes");
                 if(cm){let n=normalizeMatrixData(JSON.parse(cm)); products=n.products; globalReturns=n.oldReturns; globalMemos=n.memos;}
@@ -423,7 +429,7 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        // ================= 新版智能分离解析引擎 (完美适配所有空格与错列) =================
+        // ================= 智能截取分离算法 (解决粘贴错列问题) =================
         function smartParseBarcodeLine(line, index) {
             let tokens = line.split(/[\t\s]+/).filter(Boolean);
             let nameTokens = [], sap = "", barcode = "", remark = "";
