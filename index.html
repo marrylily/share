@@ -104,10 +104,12 @@
                 </div>
             </div>
 
+            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-x-auto custom-scroll w-full">
+                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
+                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 cursor-pointer"></th>
                                 <th class="p-3 w-10 text-center">展开</th>
@@ -150,10 +152,12 @@
                 <input type="text" id="search-returns-input" autocomplete="off" oninput="renderReturnsTable()" placeholder="搜产品/SKU..." class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs w-48 focus:outline-none">
             </div>
 
+            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-x-auto custom-scroll w-full">
+                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[800px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
+                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 w-10 text-center">展开</th>
                                 <th class="p-3 min-w-[150px]">产品名称</th>
@@ -207,10 +211,12 @@
                 </div>
             </div>
 
+            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-xs">
-                <div class="overflow-x-auto custom-scroll">
+                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
                     <table class="w-full text-left text-gray-700 min-w-[750px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
+                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 min-w-[160px]">产品名称 / 规格</th>
                                 <th class="p-3 min-w-[140px]">SKU 编码</th>
