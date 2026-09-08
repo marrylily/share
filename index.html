@@ -104,9 +104,9 @@
                 </div>
             </div>
 
-            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
+            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
+                <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
                         <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -152,9 +152,9 @@
                 <input type="text" id="search-returns-input" autocomplete="off" oninput="renderReturnsTable()" placeholder="搜产品/SKU..." class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs w-48 focus:outline-none">
             </div>
 
-            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
+            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
+                <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[800px]">
                         <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -211,9 +211,9 @@
                 </div>
             </div>
 
-            <!-- 修改点：引入 max-h-[calc(100vh-320px)] 和 overflow-auto -->
+            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-xs">
-                <div class="overflow-auto custom-scroll w-full max-h-[calc(100vh-320px)]">
+                <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-gray-700 min-w-[750px]">
                         <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -391,14 +391,14 @@
         function switchMainView(v) {
             currentMainView=v;
             document.getElementById("module-matrix").classList.toggle("hidden",v!=='MATRIX'); document.getElementById("module-returns").classList.toggle("hidden",v!=='RETURNS'); document.getElementById("module-barcodes").classList.toggle("hidden",v!=='BARCODES');
-            const act="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 cursor-pointer";
-            const ina="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 cursor-pointer";
+            const act="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
+            const ina="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
             document.getElementById("nav-btn-matrix").className=(v==='MATRIX')?act:ina; document.getElementById("nav-btn-returns").className=(v==='RETURNS')?act:ina; document.getElementById("nav-btn-barcodes").className=(v==='BARCODES')?act:ina;
             
             let anc=document.getElementById("global-memo-box-anchor"); if(anc){ anc.innerHTML=document.getElementById("memo-panel-template").innerHTML; if(isReadOnlyMode)document.querySelectorAll('.admin-create-panel').forEach(e=>e.classList.add('hidden')); renderMemos(); }
             if(v==='MATRIX')renderTable(); if(v==='RETURNS')renderReturnsTable(); if(v==='BARCODES')renderBarcodeTable();
         }
-        function switchTab(t) { currentTab=t; document.getElementById("tab-btn-running").className=(t==='RUNNING')?"px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600"; document.getElementById("tab-btn-archived").className=(t==='ARCHIVED')?"px-4 py-2 rounded-xl text-xs font-bold bg-green-600 text-white shadow-sm":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600"; document.getElementById("filter-health-box").style.display=(t==='RUNNING')?"block":"none"; renderTable(); }
+        function switchTab(t) { currentTab=t; document.getElementById("tab-btn-running").className=(t==='RUNNING')?"px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("tab-btn-archived").className=(t==='ARCHIVED')?"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("filter-health-box").style.display=(t==='RUNNING')?"block":"none"; renderTable(); }
 
         // ================= 云端通讯 =================
         async function fetchAllDualTokenData() {
@@ -652,7 +652,8 @@
 
         function quickApplyMatchedBarcode(pid,sid){ let p=products.find(x=>x.id===pid), s=p?.skus.find(x=>x.id===sid); if(s){s.sapOk=true; s.nodeRecords.sapOk={status:true,time:getNowString(),remark:"自动点亮"}; p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`[${s.name}]联动点亮69码`}); renderTable(); syncMatrixToCloud();} }
 
-        function triggerSkuNodeCheck(pid,sid,k,lbl,el){ if(isReadOnlyMode){el.checked=!el.checked;return;} pendingCheck={prodId:pid,skuIds:[sid],key:k,label:lbl,targetVal:!el.checked}; document.getElementById("check-action-icon").innerText=pendingCheck.targetVal?"✅":"↩️"; document.getElementById("check-modal-title").innerText=`${pendingCheck.targetVal?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`单个操作`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        // 修复1：修正选择状态同步逻辑
+        function triggerSkuNodeCheck(pid,sid,k,lbl,el){ if(isReadOnlyMode){el.checked=!el.checked;return;} let targetVal=el.checked; el.checked=!targetVal; pendingCheck={prodId:pid,skuIds:[sid],key:k,label:lbl,targetVal:targetVal}; document.getElementById("check-action-icon").innerText=pendingCheck.targetVal?"✅":"↩️"; document.getElementById("check-modal-title").innerText=`${pendingCheck.targetVal?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`单个操作`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function triggerBatchColumnCheck(pid,k,lbl){ if(isReadOnlyMode)return; let p=products.find(x=>x.id===pid), tg=!p.skus.every(s=>s[k]); pendingCheck={prodId:pid,skuIds:p.skus.map(s=>s.id),key:k,label:lbl,targetVal:tg}; document.getElementById("check-action-icon").innerText=tg?"⚡":"↩️"; document.getElementById("check-modal-title").innerText=`批量${tg?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`影响 ${p.skus.length} 项`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeCheckModal(){ document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
         function confirmNodeCheckChange(){ let p=products.find(x=>x.id===pendingCheck.prodId), rm=document.getElementById("check-remark-input").value; p.skus.forEach(s=>{if(pendingCheck.skuIds.includes(s.id)){s[pendingCheck.key]=pendingCheck.targetVal;s.nodeRecords[pendingCheck.key]={status:pendingCheck.targetVal,time:getNowString(),remark:rm};}}); p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`【${pendingCheck.label}】状态变 ${rm}`}); closeCheckModal(); renderTable(); syncMatrixToCloud(); }
