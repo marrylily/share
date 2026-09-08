@@ -19,8 +19,7 @@
         .btn-export-excel:hover { background-color: #047857 !important; }
         .rich-note s, .rich-note del, .rich-note strike { text-decoration: line-through; color: #94a3b8; }
         .rich-note a { color: #2563eb; text-decoration: underline; word-break: break-all; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        /* 移除之前导致移动端白屏的 display: none, 统一走表格自适应横向滚动 */
+        /* 移除原有的 line-clamp-2，依靠 maxHeight 滚动 */
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
@@ -104,11 +103,9 @@
                 </div>
             </div>
 
-            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
-                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 cursor-pointer"></th>
@@ -152,11 +149,9 @@
                 <input type="text" id="search-returns-input" autocomplete="off" oninput="renderReturnsTable()" placeholder="搜产品/SKU..." class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs w-48 focus:outline-none">
             </div>
 
-            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
                 <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-xs text-gray-700 min-w-[800px]">
-                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 w-10 text-center">展开</th>
@@ -211,11 +206,9 @@
                 </div>
             </div>
 
-            <!-- 修改点：引入固定高度以支持内部横向滚动 -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-xs">
                 <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
                     <table class="w-full text-left text-gray-700 min-w-[750px]">
-                        <!-- 修改点：引入 sticky top-0 z-10 固定表头 -->
                         <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3 min-w-[160px]">产品名称 / 规格</th>
@@ -236,7 +229,6 @@
     </div>
 
     <!-- ================= 全局弹窗层 ================= -->
-    <!-- ⚙️ 云端配置 -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
             <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold">⚙️ 多源云端独立配置</h2><button onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
@@ -251,7 +243,6 @@
         </div>
     </div>
 
-    <!-- 🏷️ 69码批量粘贴 -->
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border p-5 rounded-2xl w-full max-w-xl shadow-2xl text-xs flex flex-col max-h-[90vh] relative">
             <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">📋 批量粘贴/导入 69 码</span><button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
@@ -265,7 +256,7 @@
         </div>
     </div>
 
-    <!-- 📌 各类小型交互弹窗整合 -->
+    <!-- 📌 大备注相关组件弹窗 -->
     <div id="big-note-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3" onclick="if(event.target===this) closeBigNoteModal()">
         <div class="bg-white p-5 rounded-2xl w-full max-w-xl text-xs flex flex-col relative shadow-2xl">
             <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">📌 大备注备忘与资料留痕 <span id="big-note-prod-name" class="text-indigo-600"></span></span><button onclick="closeBigNoteModal()" class="text-lg text-gray-400 cursor-pointer">✕</button></div>
@@ -330,8 +321,14 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mt-4">
             <div class="flex justify-between items-center pb-3 border-b"><div class="font-bold text-gray-900">📌 备忘速记 <span id="memo-count-tag" class="ml-2 text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">0 项</span></div><button onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-gray-500 cursor-pointer">折叠 ▲</button></div>
             <div id="memo-panel-body" class="pt-3 space-y-3">
-                <div class="flex gap-2 admin-create-panel"><select id="memo-priority" class="border rounded px-2 text-xs"><option>🔥 紧急重要</option><option selected>⚡ 常规跟进</option></select><input type="text" id="memo-input" class="flex-1 border rounded px-2 text-xs"><button onclick="addMemoItem()" class="bg-amber-600 text-white px-3 rounded cursor-pointer">添加</button></div>
-                <div id="memo-list-container" class="space-y-2 max-h-64 log-scroll"></div>
+                <!-- 优化调整：改为多行输入区域，增加按钮自适应高度 -->
+                <div class="flex gap-2 admin-create-panel items-start">
+                    <select id="memo-priority" class="border rounded px-2 text-xs py-1.5"><option>🔥 紧急重要</option><option selected>⚡ 常规跟进</option></select>
+                    <textarea id="memo-input" rows="2" class="flex-1 border rounded px-2 py-1.5 text-xs custom-scroll focus:outline-none" placeholder="输入多行备忘..."></textarea>
+                    <button onclick="addMemoItem()" class="bg-amber-600 text-white px-3 py-1.5 rounded cursor-pointer self-stretch">添加</button>
+                </div>
+                <!-- 优化调整：增加 max-h-96 放大高度 -->
+                <div id="memo-list-container" class="space-y-2 max-h-96 log-scroll mt-2"></div>
                 <div class="text-[11px] text-gray-400 text-right"><button onclick="clearDoneMemos()" class="hover:text-red-500 cursor-pointer admin-create-panel">清理已完成事项</button></div>
             </div>
         </div>
@@ -427,7 +424,7 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        // ================= 智能截取分离算法 (解决粘贴错列问题) =================
+        // ================= 智能截取分离算法 =================
         function smartParseBarcodeLine(line, index) {
             let tokens = line.split(/[\t\s]+/).filter(Boolean);
             let nameTokens = [], sap = "", barcode = "", remark = "";
@@ -444,7 +441,6 @@
             return { name, sap, barcode, remark };
         }
         
-        // 修复1：补充缺失的 Excel 上传解析函数
         function handleBarcodeExcelUpload(event) {
             if(isReadOnlyMode) return alert("只读模式下无法导入");
             let file = event.target.files[0];
@@ -456,7 +452,6 @@
                     let workbook = XLSX.read(data, {type: 'array'});
                     let worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     let json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                    // 将表格行转为以制表符分隔的纯文本，复用已有的正则粘贴逻辑
                     let text = json.map(row => row.join('\t')).join('\n');
                     document.getElementById("barcode-batch-import-text").value = text;
                     toggleBarcodeBatchImportModal();
@@ -464,7 +459,7 @@
                 } catch(err) {
                     alert("解析Excel失败，请确保格式正确: " + err.message);
                 }
-                event.target.value = ''; // 重置文件选择框
+                event.target.value = '';
             };
             reader.readAsArrayBuffer(file);
         }
@@ -501,20 +496,16 @@
             if(dp.length) dE.innerHTML+=`<div class="text-gray-500 mt-2">⚠️ 完全重复跳过 ${dp.length} 项</div>`;
         }
 
-        // 修复2：补充批量导入的确认函数
         function confirmBarcodeBatchImport() {
             if(!pendingImportBarcodes || pendingImportBarcodes.length === 0) {
                 return alert("没有可导入的新增数据！");
             }
-            // 拼接新数据至库中
             globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
             pendingImportBarcodes = [];
             
-            // 清理状态
             document.getElementById("barcode-batch-import-text").value = "";
             toggleBarcodeBatchImportModal();
             
-            // 更新视图并推至云端
             renderBarcodeTable();
             syncBarcodesToGist();
             alert("批量导入成功！");
@@ -541,7 +532,6 @@
             }
         }
 
-        // 修复3：修正表单渲染（移除废弃未完成的移动端代码 mb，依赖自动滚动条）
         function renderTable() {
             const tb=document.getElementById("product-table-body"); if(!tb)return; tb.innerHTML="";
             updateGlobalStatsUI('MATRIX');
@@ -565,7 +555,8 @@
                 let exp=!!expandedRows[p.id];
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${p.status==='紧急重要'?'bg-red-50/60':''}`;
-                tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="line-clamp-2 rich-note">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
+                // 优化修改：引入大备注局部滚动 max-h-20
+                tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
                 
                 if(exp){
                     let st=document.createElement("tr"); st.className="bg-gray-50/90";
@@ -592,7 +583,8 @@
                 if(kw&&!(r.name.toLowerCase().includes(kw)||(r.skus||'').toLowerCase().includes(kw)))return;
                 let exp=!!expandedReturnRows[r.id];
                 let hB=r.etaDate?(r.status==="已完成"||r.status==="✅ 已完成"?`<span class="text-gray-400">${r.etaDate}</span>`:(df<0?`<span class="text-red-600 font-bold">${r.etaDate} 🚨超期</span>`:`<span class="text-green-700">${r.etaDate}</span>`)):'-';
-                let bn=r.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="line-clamp-2 rich-note">${renderFormattedText(r.bigNote)}</div><button onclick="openBigNoteModal('${r.id}')" class="text-indigo-600 mt-0.5 cursor-pointer">✏️编辑备注</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${r.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 添加跟进备注</button>`:''}`;
+                // 优化修改：引入大备注局部滚动 max-h-20
+                let bn=r.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(r.bigNote)}</div><button onclick="openBigNoteModal('${r.id}')" class="text-indigo-600 mt-0.5 cursor-pointer">✏️编辑备注</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${r.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 添加跟进备注</button>`:''}`;
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${r.status==='紧急'?'bg-red-50/60':''}`;
                 tr.innerHTML=`<td class="p-3 text-center"><button onclick="toggleReturnExpand('${r.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(r.name)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3">${bn}</td><td class="p-3"><select onchange="changeReturnStatus('${r.id}',this.value)" class="border rounded text-xs px-1 py-0.5" ${isReadOnlyMode?'disabled':''}><option value="进行中" ${r.status==='进行中'?'selected':''}>进行中</option><option value="紧急" ${r.status==='紧急'?'selected':''}>🔥紧急</option><option value="已完成" ${(r.status==='已完成'||r.status==='✅ 已完成')?'selected':''}>✅ 已完成</option></select></td><td class="p-3 text-right"><button onclick="openLogsModal('${r.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode?`| <button onclick="removeReturnItem('${r.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
@@ -634,15 +626,11 @@
             let s = products.find(x => x.id === pid)?.skus.find(x => x.id === sid);
             if (s) {
                 s.shopInfo = v.trim();
-                
-                // 1. 优先本地保存，防止刷新丢失
                 localStorage.setItem("wb_local_matrix", JSON.stringify({
                     products, 
                     oldReturns: globalReturns, 
                     memos: globalMemos
                 }));
-                
-                // 2. 防抖 1.5 秒后同步到云端
                 clearTimeout(syncTimer);
                 syncTimer = setTimeout(() => {
                     syncMatrixToCloud();
@@ -652,7 +640,6 @@
 
         function quickApplyMatchedBarcode(pid,sid){ let p=products.find(x=>x.id===pid), s=p?.skus.find(x=>x.id===sid); if(s){s.sapOk=true; s.nodeRecords.sapOk={status:true,time:getNowString(),remark:"自动点亮"}; p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`[${s.name}]联动点亮69码`}); renderTable(); syncMatrixToCloud();} }
 
-        // 修复1：修正选择状态同步逻辑
         function triggerSkuNodeCheck(pid,sid,k,lbl,el){ if(isReadOnlyMode){el.checked=!el.checked;return;} let targetVal=el.checked; el.checked=!targetVal; pendingCheck={prodId:pid,skuIds:[sid],key:k,label:lbl,targetVal:targetVal}; document.getElementById("check-action-icon").innerText=pendingCheck.targetVal?"✅":"↩️"; document.getElementById("check-modal-title").innerText=`${pendingCheck.targetVal?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`单个操作`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function triggerBatchColumnCheck(pid,k,lbl){ if(isReadOnlyMode)return; let p=products.find(x=>x.id===pid), tg=!p.skus.every(s=>s[k]); pendingCheck={prodId:pid,skuIds:p.skus.map(s=>s.id),key:k,label:lbl,targetVal:tg}; document.getElementById("check-action-icon").innerText=tg?"⚡":"↩️"; document.getElementById("check-modal-title").innerText=`批量${tg?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`影响 ${p.skus.length} 项`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeCheckModal(){ document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
@@ -670,7 +657,6 @@
         function executeBarcodeBatchSearch(){ let rt=document.getElementById("barcode-batch-search-input").value; if(!rt.trim())return; let qi=Array.from(new Set(rt.split(/[\r\n,]+/).map(s=>s.trim()).filter(Boolean))); barcodeBatchQueryList=qi; let mS=new Set(), ms=[]; qi.forEach(q=>{ let ql=q.toLowerCase(); let f=globalBarcodes.some(b=>(b.barcode||'').toLowerCase()===ql||(b.sapCode||'').toLowerCase()===ql||(b.name||'').toLowerCase().includes(ql)); if(f)mS.add(q); else ms.push(q); }); barcodeMissingList=ms; document.getElementById("barcode-missing-box").classList.remove("hidden"); document.getElementById("barcode-missing-summary").innerText=`共: ${qi.length} | 匹配: ${mS.size} | 缺失: ${ms.length}`; document.getElementById("barcode-missing-list").innerHTML=ms.length?ms.map(m=>`<span class="bg-red-100 text-red-800 px-2 rounded">❌ ${escapeHtml(m)}</span>`).join(''):`<span class="text-green-700 font-bold">全部找到！</span>`; renderBarcodeTable(); }
         function clearBarcodeBatchSearch(){ document.getElementById("barcode-batch-search-input").value=""; document.getElementById("barcode-missing-box").classList.add("hidden"); barcodeBatchQueryList=[]; barcodeMissingList=[]; renderBarcodeTable(); }
         
-        // 修复4：补充调用系统剪贴板拷贝的函数
         function copyTextToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -745,13 +731,15 @@
         function submitUserDemandToAI() { let i=document.getElementById("ai-user-prompt"), m=document.getElementById("ai-chat-messages"), txt=i.value.trim(); if(!txt)return; i.value=""; m.innerHTML+=`<div class="flex justify-end mt-3"><div class="bg-blue-600 text-white p-3 rounded-xl max-w-[88%] text-xs shadow">${escapeHtml(txt)}</div></div>`; m.scrollTop=m.scrollHeight; setTimeout(()=>{m.innerHTML+=`<div class="flex gap-2 mt-3"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs max-w-[88%]">已收到指令。</div></div>`; m.scrollTop=m.scrollHeight;},600); }
         function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML=`<div class="flex gap-2"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs">已清空上下文。</div></div>`; }
         
-        // ================= 备忘录 =================
+        // ================= 备忘录 (已优化换行与多行支持) =================
         function renderMemos() {
             const list = document.getElementById("memo-list-container"), count = document.getElementById("memo-count-tag");
             if (!list) return; let ms=Array.isArray(globalMemos)?globalMemos:[];
             if(count) count.innerText = `${ms.filter(m=>!m.done).length} 项提醒`;
             if(!ms.length) { list.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">暂无备忘</div>'; return; }
-            list.innerHTML = ms.map((m,i)=>`<div class="flex gap-2 bg-white p-2 border rounded ${m.done?'opacity-50':''}"><input type="checkbox" ${m.done?'checked':''} onchange="toggleMemoDone(${i})" class="w-4 h-4 mt-0.5 shrink-0"><div class="flex-1"><div class="flex gap-2 text-[10px]"><span class="bg-amber-50 text-amber-700 px-1 rounded">${escapeHtml(m.priority)}</span><span class="text-gray-400">${m.createdAt}</span></div><div class="text-xs mt-1 ${m.done?'line-through':''}">${escapeHtml(m.text)}</div></div><button onclick="removeMemoItem(${i})" class="text-gray-300 hover:text-red-500">✕</button></div>`).join("");
+            
+            // 优化修改：引入 whitespace-pre-wrap break-all 允许换行和长文本折行，min-w-0 解决flex溢出
+            list.innerHTML = ms.map((m,i)=>`<div class="flex gap-2 bg-white p-2 border rounded ${m.done?'opacity-50':''}"><input type="checkbox" ${m.done?'checked':''} onchange="toggleMemoDone(${i})" class="w-4 h-4 mt-0.5 shrink-0"><div class="flex-1 min-w-0"><div class="flex gap-2 text-[10px]"><span class="bg-amber-50 text-amber-700 px-1 rounded">${escapeHtml(m.priority)}</span><span class="text-gray-400">${m.createdAt}</span></div><div class="text-xs mt-1 ${m.done?'line-through':''} whitespace-pre-wrap break-all">${escapeHtml(m.text)}</div></div><button onclick="removeMemoItem(${i})" class="text-gray-300 hover:text-red-500 shrink-0">✕</button></div>`).join("");
         }
         function addMemoItem() { let v=document.getElementById("memo-input").value.trim(); if(!v)return; globalMemos.unshift({id:"M_"+Date.now(), text:v, priority:document.getElementById("memo-priority").value, done:false, createdAt:getNowString().substring(5,16)}); document.getElementById("memo-input").value=""; renderMemos(); syncMatrixToCloud(); }
         function toggleMemoDone(i) { globalMemos[i].done=!globalMemos[i].done; renderMemos(); syncMatrixToCloud(); }
