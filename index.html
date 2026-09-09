@@ -320,13 +320,11 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mt-4">
             <div class="flex justify-between items-center pb-3 border-b"><div class="font-bold text-gray-900">📌 备忘速记 <span id="memo-count-tag" class="ml-2 text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">0 项</span></div><button onclick="toggleMemoPanel()" id="memo-toggle-btn" class="text-gray-500 cursor-pointer">折叠 ▲</button></div>
             <div id="memo-panel-body" class="pt-3 space-y-3">
-                <!-- 优化调整：改为多行输入区域，增加按钮自适应高度 -->
                 <div class="flex gap-2 admin-create-panel items-start">
                     <select id="memo-priority" class="border rounded px-2 text-xs py-1.5"><option>🔥 紧急重要</option><option selected>⚡ 常规跟进</option></select>
                     <textarea id="memo-input" rows="2" class="flex-1 border rounded px-2 py-1.5 text-xs custom-scroll focus:outline-none" placeholder="输入多行备忘..."></textarea>
                     <button onclick="addMemoItem()" class="bg-amber-600 text-white px-3 py-1.5 rounded cursor-pointer self-stretch">添加</button>
                 </div>
-                <!-- 优化调整：增加 max-h-96 放大高度 -->
                 <div id="memo-list-container" class="space-y-2 max-h-96 log-scroll mt-2"></div>
                 <div class="text-[11px] text-gray-400 text-right"><button onclick="clearDoneMemos()" class="hover:text-red-500 cursor-pointer admin-create-panel">清理已完成事项</button></div>
             </div>
@@ -339,8 +337,10 @@
         let fileSha="", expandedRows={}, expandedReturnRows={}, selectedProductIds=new Set();
         let currentEditingId=null, currentBigNoteId=null, currentEditingBarcodeIdx=null, currentBatchProdId=null;
         let isReadOnlyMode=false, isMemoPanelOpen=true, currentTab='RUNNING', currentMainView='MATRIX';
-        let barcodeBatchQueryList=[], barcodeMissingList=[], pendingImportBarcodes=[], pendingCheck={};
-        let syncTimer=null; // 防抖定时器
+        
+        // 增加用于追踪更新操作的全局数组
+        let barcodeBatchQueryList=[], barcodeMissingList=[], pendingImportBarcodes=[], pendingUpdateBarcodes=[], pendingCheck={};
+        let syncTimer=null;
 
         function cleanConfigString(s){ return String(s||"").trim().match(/([a-f0-9]{32})/i)?.[1] || String(s||"").trim(); }
         function safeBase64Decode(s){ try{return decodeURIComponent(escape(atob(s.replace(/\s/g,''))))}catch(e){return atob(s.replace(/\s/g,''))} }
@@ -358,7 +358,10 @@
                 memos: m
             };
         }
-        function normalizeBarcodesData(raw){ return (Array.isArray(raw)?raw:(raw?.barcodes||raw?.items||[])).map(x=>({name:String(x.name||x.productName||'').trim(),sapCode:String(x.sapCode||x.skuCode||'').trim(),barcode:String(x.barcode||x.code69||'').trim(),remark:String(x.remark||x.note||'').trim(),createdAt:String(x.createdAt||'').trim()})).filter(x=>x.name||x.barcode||x.sapCode); }
+        
+        // 白名单机制，确保原有云端的自定义业务字段(brand等)不丢失
+        function normalizeBarcodesData(raw){ return (Array.isArray(raw)?raw:(raw?.barcodes||raw?.items||[])).map(x=>({...x, name:String(x.name||x.productName||'').trim(),sapCode:String(x.sapCode||x.skuCode||'').trim(),barcode:String(x.barcode||x.code69||'').trim(),remark:String(x.remark||x.note||'').trim(),createdAt:String(x.createdAt||'').trim(),brand:String(x.brand||'').trim(),series:String(x.series||'').trim(),sheet:String(x.sheet||'').trim(),region:String(x.region||'').trim()})).filter(x=>x.name||x.barcode||x.sapCode); }
+        
         function findGlobalItem(id){ return products.find(x=>x.id===id)||globalReturns.find(x=>x.id===id); }
 
         window.onload = function() {
@@ -401,42 +404,95 @@
             const o=cleanConfigString(localStorage.getItem("wb_owner")), r=cleanConfigString(localStorage.getItem("wb_repo")), tR=(localStorage.getItem("wb_token_repo")||"").trim(), gB=cleanConfigString(localStorage.getItem("wb_gist_barcodes")), tG=(localStorage.getItem("wb_token_gist")||"").trim();
             document.getElementById("sync-status").innerText="拉取数据..."; let ts=[];
             if(o&&r&&tR) ts.push(fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:{"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json"}}).then(r=>r.json()).then(d=>{if(d.content){let n=normalizeMatrixData(JSON.parse(safeBase64Decode(d.content)));products=n.products;globalReturns=n.oldReturns;globalMemos=n.memos;fileSha=d.sha;localStorage.setItem("wb_local_matrix",JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos}));}}));
-            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=Object.keys(d.files)[0];globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes));}));
+            
+            // 锁定双源拉取特定的文件名，防止云端多文件时的崩溃错乱
+            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0]; globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes));}));
+            
             await Promise.all(ts); document.getElementById("sync-status").innerText="已同步 ✅"; document.getElementById("auth-dot").className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"; document.getElementById("auth-tag-text").innerText="双源连接"; switchMainView(currentMainView);
         }
+        
         async function fetchFromDualTokenCustom(o,r,gB,tR,tG) {
             document.getElementById("sync-status").innerText="拉取只读数据..."; let ts=[];
             if(o&&r&&tR) ts.push(fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:{"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json"}}).then(r=>r.json()).then(d=>{let n=normalizeMatrixData(JSON.parse(safeBase64Decode(d.content)));products=n.products;globalReturns=n.oldReturns;globalMemos=n.memos;}));
-            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=Object.keys(d.files)[0];globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));}));
+            
+            // 锁定双源拉取特定的文件名
+            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0]; globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));}));
+            
             await Promise.all(ts); document.getElementById("sync-status").innerText="只读模式加载毕"; switchMainView(currentMainView);
         }
+        
         async function syncMatrixToCloud() {
             if(isReadOnlyMode)return; const o=cleanConfigString(localStorage.getItem("wb_owner")), r=cleanConfigString(localStorage.getItem("wb_repo")), tR=(localStorage.getItem("wb_token_repo")||"").trim();
             localStorage.setItem("wb_local_matrix",JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos})); if(!o||!r||!tR)return;
             try{ let h={"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; let c=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:h}); if(c.ok){let cd=await c.json();fileSha=cd.sha;} let b64=btoa(unescape(encodeURIComponent(JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos},null,2)))); let u=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{method:"PUT",headers:h,body:JSON.stringify({message:`Update`,content:b64,sha:fileSha})}); if(u.ok){let ud=await u.json();fileSha=ud.content.sha;} }catch(e){}
         }
+
+        // "读-合并-写"机制，防止双平台共用同一Gist互相覆盖
         async function syncBarcodesToGist() {
             if(isReadOnlyMode)return; const gB=cleanConfigString(localStorage.getItem("wb_gist_barcodes")), tG=(localStorage.getItem("wb_token_gist")||"").trim();
             localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes)); if(!gB||!tG)return;
-            try{ let h={"Authorization":`Bearer ${tG}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; let gd=await fetch(`https://api.github.com/gists/${gB}`,{headers:h}).then(r=>r.json()); let fn=Object.keys(gd.files)[0]; await fetch(`https://api.github.com/gists/${gB}`,{method:"PATCH",headers:h,body:JSON.stringify({files:{[fn]:{content:JSON.stringify(globalBarcodes,null,2)}}})}); }catch(e){}
+            try{ 
+                let h={"Authorization":`Bearer ${tG}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; 
+                let gd=await fetch(`https://api.github.com/gists/${gB}`,{headers:h}).then(r=>r.json()); 
+                
+                let fn = gd.files["69code_data.json"] ? "69code_data.json" : Object.keys(gd.files)[0];
+                let cloudData = normalizeBarcodesData(JSON.parse(gd.files[fn].content));
+                
+                let mergedMap = new Map();
+                cloudData.forEach(b => { let k = b.sapCode || b.barcode || b.name; if(k) mergedMap.set(k, b); });
+                globalBarcodes.forEach(b => { 
+                    let k = b.sapCode || b.barcode || b.name; 
+                    if(k) { 
+                        let ex = mergedMap.get(k) || {}; 
+                        mergedMap.set(k, {...ex, ...b}); 
+                    } 
+                });
+                
+                globalBarcodes = Array.from(mergedMap.values());
+                localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
+                if (currentMainView === 'BARCODES') renderBarcodeTable();
+                
+                await fetch(`https://api.github.com/gists/${gB}`,{method:"PATCH",headers:h,body:JSON.stringify({files:{"69code_data.json":{content:JSON.stringify(globalBarcodes,null,2)}}})}); 
+            }catch(e){}
         }
+
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
         // ================= 智能截取分离算法 =================
         function smartParseBarcodeLine(line, index) {
-            let tokens = line.split(/[\t\s]+/).filter(Boolean);
-            let nameTokens = [], sap = "", barcode = "", remark = "";
-            for (let i = 0; i < tokens.length; i++) {
-                let t = tokens[i];
-                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) { barcode = t; }
-                else if (/^\d{6,12}$/.test(t) && !sap) { sap = t; }
-                else if (/[^\x00-\xff]/.test(t) && (sap || barcode)) { remark = tokens.slice(i).join(" "); break; }
-                else if ((/^\d{1,2}-\d{1,2}-\d{1,2}$/.test(t) || t.includes("/")) && (sap || barcode)) { remark = tokens.slice(i).join(" "); break; }
-                else { if (sap || barcode) { remark = tokens.slice(i).join(" "); break; } else { nameTokens.push(t); } }
+            // 兼容 Excel 复制(Tab制表符) 和 空格分隔
+            let tokens = line.includes('\t') ? line.split('\t').map(s=>s.trim()) : line.split(/[\s,]+/).filter(Boolean);
+            
+            let nameTokens = [], sap = "", barcode = "", remarkTokens = [];
+            
+            for (let t of tokens) {
+                if (!t) continue;
+                
+                // 特征 1：识别 69 码 (13 或 14 位纯数字，或者 69 开头的 13 位)
+                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) { 
+                    barcode = t; 
+                }
+                // 特征 2：识别 SKU/SAP 编码 (6 到 12 位纯数字)
+                else if (/^\d{6,12}$/.test(t) && !sap) { 
+                    sap = t; 
+                }
+                // 特征 3：识别日期格式放入备注 (如 2026-09-10)
+                else if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(t) || /^\d{1,2}-\d{1,2}-\d{1,2}$/.test(t)) {
+                    remarkTokens.push(t);
+                }
+                // 特征 4：其余带有字母/中文/符号的文本，全部拼装为产品名称
+                else { 
+                    nameTokens.push(t); 
+                }
             }
+        
             let name = nameTokens.join(" ");
+            let remark = remarkTokens.join(" ");
+            
+            // 如果只有编码没有名字，做个兜底
             if (!name && (sap || barcode)) name = `导入_${index + 1}`;
+            
             return { name, sap, barcode, remark };
         }
         
@@ -469,45 +525,154 @@
             lockBodyScroll(!modal.classList.contains("hidden"));
         }
 
+        // ================= 数据预审诊断与三项校验规则 =================
         function analyzeBarcodeBatchImport() {
-            let txt=document.getElementById("barcode-batch-import-text").value.trim(), sE=document.getElementById("barcode-analysis-stats"), dE=document.getElementById("barcode-analysis-duplicates");
-            if(!txt){ sE.innerText="等待输入数据..."; pendingImportBarcodes=[]; dE.innerHTML=""; return; }
-            let ls=txt.split('\n').map(l=>l.trim()).filter(Boolean), ps=[], dp=[], cf=[], sB=new Set(), esM={}, ebM={}, enM={};
-            globalBarcodes.forEach(b=>{ let nl=(b.name||'').trim().toLowerCase(), sl=(b.sapCode||'').trim().toLowerCase(), bl=(b.barcode||'').trim().toLowerCase(); if(sl)esM[sl]=b; if(bl)ebM[bl]=b; if(nl){enM[nl]=enM[nl]||[]; enM[nl].push(b);} });
-            let bmS={}, bmB={}, bmN={};
+            let txt = document.getElementById("barcode-batch-import-text").value.trim();
+            let sE = document.getElementById("barcode-analysis-stats");
+            let dE = document.getElementById("barcode-analysis-duplicates");
+            
+            if(!txt){ 
+                sE.innerText="等待输入数据..."; 
+                pendingImportBarcodes=[]; 
+                pendingUpdateBarcodes=[]; 
+                dE.innerHTML=""; 
+                return; 
+            }
+            
+            let ls = txt.split('\n').map(l=>l.trim()).filter(Boolean);
+            let ps = [], pu = [], dp = [], cf = []; 
+            let sB = new Set(), esM = {}, ebM = {}, enM = {};
 
-            ls.forEach((l,i)=>{
-                let {name:n, sap:s, barcode:b, remark:r} = smartParseBarcodeLine(l, i); if(!n)return;
-                let nl=n.toLowerCase(), sl=s.toLowerCase(), bl=b.toLowerCase(), ic=false;
+            globalBarcodes.forEach((b, i) => { 
+                let nl = (b.name||'').trim().toLowerCase();
+                let sl = (b.sapCode||'').trim().toLowerCase();
+                let bl = (b.barcode||'').trim().toLowerCase();
                 
-                if(sl){ let ex=esM[sl]||bmS[sl]; if(ex&&(ex.name||'').toLowerCase()!==nl){cf.push(`SKU [${s}] 已被 [${ex.name}] 占用`); ic=true;} }
-                if(!ic&&bl){ let ex=ebM[bl]||bmB[bl]; if(ex&&(ex.name||'').toLowerCase()!==nl){cf.push(`69码 [${b}] 已被 [${ex.name}] 占用`); ic=true;} }
-                if(!ic&&nl){ let exs=(enM[nl]||[]).concat(bmN[nl]||[]); for(let ex of exs){ if(bl&&ex.barcode&&ex.barcode.toLowerCase()!==bl){cf.push(`产品 [${n}] 已有69码 [${ex.barcode}]，拦截新69码`); ic=true; break;} } }
-                if(ic)return;
-
-                let bk=`${nl}_${sl}_${bl}`;
-                if(globalBarcodes.some(x=>(x.name||'').toLowerCase()===nl&&(x.sapCode||'').toLowerCase()===sl&&(x.barcode||'').toLowerCase()===bl)) dp.push(`[${n}] 库中已存`);
-                else if(sB.has(bk)) dp.push(`[${n}] 本次黏贴重复`);
-                else { sB.add(bk); if(sl)bmS[sl]={name:n,sapCode:s,barcode:b}; if(bl)bmB[bl]={name:n,sapCode:s,barcode:b}; if(nl){bmN[nl]=bmN[nl]||[]; bmN[nl].push({name:n,sapCode:s,barcode:b});} ps.push({name:n,sapCode:s,barcode:b,remark:r,createdAt:getNowString()}); }
+                if(sl) esM[sl] = {...b, _idx: i}; 
+                if(bl) ebM[bl] = {...b, _idx: i}; 
+                if(nl){ 
+                    enM[nl] = enM[nl] || []; 
+                    enM[nl].push({...b, _idx: i}); 
+                } 
             });
-            pendingImportBarcodes=ps; sE.innerHTML=`共 <strong>${ls.length}</strong> 行 ｜ 新增: <strong class="text-green-600">${ps.length}</strong> ｜ 跳过完全重复: <strong>${dp.length}</strong> ｜ <strong class="text-red-600">严重冲突拦截: ${cf.length}</strong>`;
-            dE.innerHTML = cf.length?`<div class="text-red-600 font-bold mt-2">🚫 强制拦截：</div><div class="text-red-500">${cf.map(c=>`• ${escapeHtml(c)}`).join('<br>')}</div>`:``;
-            if(dp.length) dE.innerHTML+=`<div class="text-gray-500 mt-2">⚠️ 完全重复跳过 ${dp.length} 项</div>`;
+            
+            let bmS = {}, bmB = {}, bmN = {}; 
+
+            ls.forEach((l, i) => {
+                let {name:n, sap:s, barcode:b, remark:r} = smartParseBarcodeLine(l, i); 
+                if(!n) return;
+                
+                let nl = n.toLowerCase(), sl = s.toLowerCase(), bl = b.toLowerCase(), ic = false;
+                
+                // 【拦截规则 1】同一个 SKU 不能对应不同的产品
+                if(sl){ 
+                    let ex = esM[sl] || bmS[sl]; 
+                    if(ex && (ex.name||'').toLowerCase() !== nl){
+                        cf.push(`SKU [${s}] 已绑定产品 [${ex.name}]，不允许对应新产品 [${n}]`); 
+                        ic = true;
+                    } 
+                }
+                
+                // (常规拦截) 69码被其他产品占用
+                if(!ic && bl){ 
+                    let ex = ebM[bl] || bmB[bl]; 
+                    if(ex && (ex.name||'').toLowerCase() !== nl){
+                        cf.push(`69码 [${b}] 已被其他产品 [${ex.name}] 占用`); 
+                        ic = true;
+                    } 
+                }
+                
+                // 【拦截规则 2】同一个产品只能一个 69 编码
+                if(!ic && nl){ 
+                    let exs = (enM[nl]||[]).concat(bmN[nl]||[]); 
+                    for(let ex of exs){ 
+                        if(bl && ex.barcode && ex.barcode.toLowerCase() !== bl){
+                            cf.push(`产品 [${n}] 已有69码 [${ex.barcode}]，禁止变更为 [${b}]`); 
+                            ic = true; break;
+                        } 
+                    } 
+                }
+                
+                if(ic) return;
+
+                let bk = `${nl}_${sl}_${bl}`;
+                
+                // 【规则 3】多次更新切换SKU 的判定逻辑
+                let exactMatch = false;
+                let updateMatch = null;
+                let existingProds = enM[nl] || [];
+                
+                for (let ex of existingProds) {
+                    let exSl = (ex.sapCode || '').toLowerCase();
+                    let exBl = (ex.barcode || '').toLowerCase();
+                    
+                    if (exSl === sl && exBl === bl) { 
+                        exactMatch = true; break; 
+                    }
+                    if (exBl === bl && exSl !== sl) { 
+                        updateMatch = ex; 
+                    } 
+                }
+
+                if (exactMatch) {
+                    dp.push(`[${n}] 库中完全一致，跳过`);
+                } else if (sB.has(bk)) {
+                    dp.push(`[${n}] 本次粘贴列表中重复`);
+                } else if (updateMatch) {
+                    sB.add(bk);
+                    pu.push({ _idx: updateMatch._idx, sapCode: s, remark: r || updateMatch.remark });
+                    
+                    if(sl) bmS[sl] = {name:n, sapCode:s, barcode:b}; 
+                    if(bl) bmB[bl] = {name:n, sapCode:s, barcode:b}; 
+                    if(nl){ bmN[nl] = bmN[nl] || []; bmN[nl].push({name:n, sapCode:s, barcode:b}); }
+                } else {
+                    sB.add(bk); 
+                    if(sl) bmS[sl] = {name:n, sapCode:s, barcode:b}; 
+                    if(bl) bmB[bl] = {name:n, sapCode:s, barcode:b}; 
+                    if(nl){ bmN[nl] = bmN[nl] || []; bmN[nl].push({name:n, sapCode:s, barcode:b}); } 
+                    ps.push({name:n, sapCode:s, barcode:b, remark:r || '批量导入', createdAt:getNowString()}); 
+                }
+            });
+            
+            pendingImportBarcodes = ps; 
+            pendingUpdateBarcodes = pu; 
+            
+            sE.innerHTML = `共 <strong>${ls.length}</strong> 行 ｜ 新增: <strong class="text-green-600">${ps.length}</strong> ｜ 更新SKU: <strong class="text-blue-600">${pu.length}</strong> ｜ 跳过重复: <strong>${dp.length}</strong> ｜ <strong class="text-red-600">强制拦截: ${cf.length}</strong>`;
+            
+            dE.innerHTML = cf.length ? `<div class="text-red-600 font-bold mt-2">🚫 冲突拦截 (违反唯一性规则)：</div><div class="text-red-500 text-xs leading-relaxed">${cf.map(c=>`• ${escapeHtml(c)}`).join('<br>')}</div>` : ``;
+            if(dp.length) dE.innerHTML += `<div class="text-gray-500 mt-2 text-xs">⚠️ 完全重复跳过 ${dp.length} 项</div>`;
         }
 
         function confirmBarcodeBatchImport() {
-            if(!pendingImportBarcodes || pendingImportBarcodes.length === 0) {
-                return alert("没有可导入的新增数据！");
+            let hasAdds = pendingImportBarcodes && pendingImportBarcodes.length > 0;
+            let hasUpdates = pendingUpdateBarcodes && pendingUpdateBarcodes.length > 0;
+
+            if (!hasAdds && !hasUpdates) {
+                return alert("没有可导入的新增或更新数据！");
             }
-            globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
+            
+            if (hasUpdates) {
+                pendingUpdateBarcodes.forEach(u => {
+                    if (globalBarcodes[u._idx]) {
+                        globalBarcodes[u._idx].sapCode = u.sapCode; 
+                        if (u.remark) globalBarcodes[u._idx].remark = u.remark;
+                    }
+                });
+            }
+
+            if (hasAdds) {
+                globalBarcodes = pendingImportBarcodes.concat(globalBarcodes);
+            }
+            
             pendingImportBarcodes = [];
+            pendingUpdateBarcodes = [];
             
             document.getElementById("barcode-batch-import-text").value = "";
             toggleBarcodeBatchImportModal();
             
             renderBarcodeTable();
             syncBarcodesToGist();
-            alert("批量导入成功！");
+            alert("导入与更新完毕！");
         }
 
         // ================= 各模块独立渲染引擎 =================
@@ -554,7 +719,6 @@
                 let exp=!!expandedRows[p.id];
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${p.status==='紧急重要'?'bg-red-50/60':''}`;
-                // 优化修改：引入大备注局部滚动 max-h-20
                 tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
                 
                 if(exp){
@@ -582,7 +746,6 @@
                 if(kw&&!(r.name.toLowerCase().includes(kw)||(r.skus||'').toLowerCase().includes(kw)))return;
                 let exp=!!expandedReturnRows[r.id];
                 let hB=r.etaDate?(r.status==="已完成"||r.status==="✅ 已完成"?`<span class="text-gray-400">${r.etaDate}</span>`:(df<0?`<span class="text-red-600 font-bold">${r.etaDate} 🚨超期</span>`:`<span class="text-green-700">${r.etaDate}</span>`)):'-';
-                // 优化修改：引入大备注局部滚动 max-h-20
                 let bn=r.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(r.bigNote)}</div><button onclick="openBigNoteModal('${r.id}')" class="text-indigo-600 mt-0.5 cursor-pointer">✏️编辑备注</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${r.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 添加跟进备注</button>`:''}`;
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${r.status==='紧急'?'bg-red-50/60':''}`;
@@ -737,7 +900,6 @@
             if(count) count.innerText = `${ms.filter(m=>!m.done).length} 项提醒`;
             if(!ms.length) { list.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">暂无备忘</div>'; return; }
             
-            // 优化修改：引入 whitespace-pre-wrap break-all 允许换行和长文本折行，min-w-0 解决flex溢出
             list.innerHTML = ms.map((m,i)=>`<div class="flex gap-2 bg-white p-2 border rounded ${m.done?'opacity-50':''}"><input type="checkbox" ${m.done?'checked':''} onchange="toggleMemoDone(${i})" class="w-4 h-4 mt-0.5 shrink-0"><div class="flex-1 min-w-0"><div class="flex gap-2 text-[10px]"><span class="bg-amber-50 text-amber-700 px-1 rounded">${escapeHtml(m.priority)}</span><span class="text-gray-400">${m.createdAt}</span></div><div class="text-xs mt-1 ${m.done?'line-through':''} whitespace-pre-wrap break-all">${escapeHtml(m.text)}</div></div><button onclick="removeMemoItem(${i})" class="text-gray-300 hover:text-red-500 shrink-0">✕</button></div>`).join("");
         }
         function addMemoItem() { let v=document.getElementById("memo-input").value.trim(); if(!v)return; globalMemos.unshift({id:"M_"+Date.now(), text:v, priority:document.getElementById("memo-priority").value, done:false, createdAt:getNowString().substring(5,16)}); document.getElementById("memo-input").value=""; renderMemos(); syncMatrixToCloud(); }
