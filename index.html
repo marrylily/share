@@ -19,7 +19,6 @@
         .btn-export-excel:hover { background-color: #047857 !important; }
         .rich-note s, .rich-note del, .rich-note strike { text-decoration: line-through; color: #94a3b8; }
         .rich-note a { color: #2563eb; text-decoration: underline; word-break: break-all; }
-        /* 移除原有的 line-clamp-2，依靠 maxHeight 滚动 */
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
@@ -483,7 +482,7 @@
                 
                 if(sl){ let ex=esM[sl]||bmS[sl]; if(ex&&(ex.name||'').toLowerCase()!==nl){cf.push(`SKU [${s}] 已被 [${ex.name}] 占用`); ic=true;} }
                 if(!ic&&bl){ let ex=ebM[bl]||bmB[bl]; if(ex&&(ex.name||'').toLowerCase()!==nl){cf.push(`69码 [${b}] 已被 [${ex.name}] 占用`); ic=true;} }
-                if(!ic&&nl){ let exs=(enM[nl]||[]).concat(bmN[nl]||[]); for(let ex of exs){ if(bl&&ex.barcode&&ex.barcode.toLowerCase()!==bl){cf.push(`产品 [${n}] 已有69码 [${ex.barcode}]，拦截新码`); ic=true; break;} if(sl&&ex.sapCode&&ex.sapCode.toLowerCase()!==sl){cf.push(`产品 [${n}] 已有SKU [${ex.sapCode}]，拦截新码`); ic=true; break;} } }
+                if(!ic&&nl){ let exs=(enM[nl]||[]).concat(bmN[nl]||[]); for(let ex of exs){ if(bl&&ex.barcode&&ex.barcode.toLowerCase()!==bl){cf.push(`产品 [${n}] 已有69码 [${ex.barcode}]，拦截新69码`); ic=true; break;} } }
                 if(ic)return;
 
                 let bk=`${nl}_${sl}_${bl}`;
@@ -688,7 +687,7 @@
 
         function copyMissingBarcodes(){ if(!barcodeMissingList.length)return alert("没有缺失项！"); copyTextToClipboard(barcodeMissingList.join('\n')); }
         
-        function addNewBarcodePrompt(){ if(isReadOnlyMode)return; let n=prompt("产品名称:"); if(!n)return; let s=prompt("SKU编码(选填):")||"", b=prompt("69码(必填):"); if(!b)return; let nl=n.trim().toLowerCase(), sl=s.trim().toLowerCase(), bl=b.trim().toLowerCase(); if(sl){let ex=globalBarcodes.find(x=>(x.sapCode||'').toLowerCase()===sl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`SKU被占用`);} if(bl){let ex=globalBarcodes.find(x=>(x.barcode||'').toLowerCase()===bl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`69码被占用`);} let exN=globalBarcodes.find(x=>(x.name||'').toLowerCase()===nl&&((x.barcode||'').toLowerCase()!==bl||(x.sapCode||'').toLowerCase()!==sl)); if(exN){ if(bl&&exN.barcode&&exN.barcode.toLowerCase()!==bl)return alert(`已绑69码`); if(sl&&exN.sapCode&&exN.sapCode.toLowerCase()!==sl)return alert(`已绑SKU`); } globalBarcodes.unshift({name:n.trim(),sapCode:s.trim(),barcode:b.trim(),remark:"手工录入",createdAt:getNowString()}); renderBarcodeTable(); syncBarcodesToGist(); }
+        function addNewBarcodePrompt(){ if(isReadOnlyMode)return; let n=prompt("产品名称:"); if(!n)return; let s=prompt("SKU编码(选填):")||"", b=prompt("69码(必填):"); if(!b)return; let nl=n.trim().toLowerCase(), sl=s.trim().toLowerCase(), bl=b.trim().toLowerCase(); if(sl){let ex=globalBarcodes.find(x=>(x.sapCode||'').toLowerCase()===sl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`SKU被占用`);} if(bl){let ex=globalBarcodes.find(x=>(x.barcode||'').toLowerCase()===bl); if(ex&&(ex.name||'').toLowerCase()!==nl) return alert(`69码被占用`);} let exN=globalBarcodes.find(x=>(x.name||'').toLowerCase()===nl&&(x.barcode||'').toLowerCase()!==bl); if(exN){ if(bl&&exN.barcode&&exN.barcode.toLowerCase()!==bl)return alert(`该型号已绑定其他69码`); } globalBarcodes.unshift({name:n.trim(),sapCode:s.trim(),barcode:b.trim(),remark:"手工录入",createdAt:getNowString()}); renderBarcodeTable(); syncBarcodesToGist(); }
         function openBarcodeEditModal(idx){ currentEditingBarcodeIdx=idx; let b=globalBarcodes[idx]; document.getElementById("edit-bar-name").value=b.name; document.getElementById("edit-bar-sap").value=b.sapCode; document.getElementById("edit-bar-code").value=b.barcode; document.getElementById("edit-bar-remark").value=b.remark; document.getElementById("barcode-edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeBarcodeEditModal(){ document.getElementById("barcode-edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
