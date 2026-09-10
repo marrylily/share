@@ -1,5 +1,6 @@
 /*
  * Surge & Egern 出站模式自动切换（多端侦测修复版）
+ * 修复：解决偶发性连上目标 WiFi 但未切换直连的并发判定失效问题
  */
 
 const isEgern = typeof $egern !== "undefined" || (typeof $environment !== "undefined" && $environment["surge-version"] === undefined);
@@ -31,6 +32,11 @@ const Tool = {
       executed = true;
     }
     return executed;
+  },
+  getMode() {
+    if (isSurge && typeof $surge !== "undefined" && $surge.outboundMode) return $surge.outboundMode;
+    if (isEgern && typeof $egern !== "undefined" && $egern.outboundMode) return $egern.outboundMode;
+    return null;
   }
 };
 
@@ -60,10 +66,9 @@ if (typeof $network !== "undefined" && $network.wifi && $network.wifi.ssid) {
   currentSSID = cleanStr($network.wifi.ssid);
 }
 
-// 3. 读取上次保存的 SSID 并更新记录
+// 3. 读取上次保存的 SSID
 const lastSSIDKey = "ssid_last_connected_wifi";
 const lastSSID = Tool.read(lastSSIDKey) || "";
-Tool.write(currentSSID, lastSSIDKey);
 
 // 4. 判断是否命中目标 WiFi
 const isCurrentTarget = currentSSID ? targetSSIDs.map(x => x.toLowerCase()).includes(currentSSID.toLowerCase()) : false;
@@ -75,27 +80,27 @@ if (isCurrentTarget) {
   targetMode = MODE_HIT;
 } else if (wasLastTarget && !isCurrentTarget) {
   targetMode = currentSSID ? MODE_MISS : MODE_NO_WIFI;
-} else {
-  if (DEBUG) Tool.notify("脚本调试", "网络变动被忽略", `当前连接: ${currentSSID || "蜂窝数据"}`);
-  $done();
+} 
+
+// 核心修复1：仅当网络环境确实发生改变时，才更新 lastSSID，避免被频繁的网络抖动事件覆盖错误状态
+if (currentSSID !== lastSSID) {
+  Tool.write(currentSSID, lastSSIDKey);
 }
 
-// 仅当计算出需要切换模式时，才继续执行
-if (targetMode) {
-  // 5. 判断当前软件实际的出站模式（避免重复切换和弹窗）
-  let currentAppMode = null;
-  if (isSurge && $surge.outboundMode) currentAppMode = $surge.outboundMode;
-  if (isEgern && typeof $egern !== "undefined" && $egern.outboundMode) currentAppMode = $egern.outboundMode;
-  
-  const lastTargetKey = "ssid_last_target_mode";
-  const lastTargetMode = Tool.read(lastTargetKey);
+// 如果不需要切换模式，则直接结束
+if (!targetMode) {
+  if (DEBUG) Tool.notify("脚本调试", "网络变动被忽略", `当前连接: ${currentSSID || "蜂窝数据"}`);
+  $done();
+} else {
+  // 5. 核心修复2：获取当前软件真实的模式。摒弃原先不稳定的 lastTargetMode 本地记录机制
+  const currentAppMode = Tool.getMode();
 
-  // 如果软件当前已经是目标模式，或者软件 API 获取不到但上次已成功切换过，则直接结束
-  if ((currentAppMode && currentAppMode === targetMode) || (!currentAppMode && lastTargetMode === targetMode)) {
+  // 只要系统能明确读取到当前模式，且当前模式已经符合目标模式，才跳过
+  if (currentAppMode && currentAppMode === targetMode) {
     if (DEBUG) Tool.notify("脚本调试", "模式无需改变", `已经是: ${targetMode}`);
     $done();
   } else {
-    // 6. 执行切换
+    // 6. 否则（包括读取不到状态的情况），强制执行切换指令
     const apiSuccess = Tool.setMode(targetMode);
 
     if (!apiSuccess) {
@@ -105,7 +110,6 @@ if (targetMode) {
         `已识别到 ${currentSSID || "网络"}，但不支持通过脚本修改出站模式。`
       );
     } else {
-      Tool.write(targetMode, lastTargetKey);
       Tool.notify(
         "出站模式自动切换",
         `${isCurrentTarget ? "🏠 已连接目标 WiFi" : "🚶 已断开目标 WiFi"} (${currentSSID || "蜂窝数据"})`,
