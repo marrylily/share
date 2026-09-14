@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>电商运营超级工作台</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 依赖用于 Excel 解析 -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         html, body { overflow-x: hidden; width: 100%; -webkit-tap-highlight-color: transparent; }
@@ -68,8 +67,15 @@
                     <label class="block text-gray-700 font-semibold mb-1 text-xs">子变体 / SKU 列表 <span class="text-red-500">*</span></label>
                     <textarea id="p-skus-batch" rows="2" placeholder="支持多行粘贴" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
                     <div><label class="block text-gray-600 mb-1">主产品型号 / 系列名</label><input type="text" id="p-name" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1"></div>
+                    <div>
+                        <label class="block text-gray-600 mb-1">研发类型 <span class="text-red-500">*</span></label>
+                        <select id="p-source-type" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                            <option value="自研">🏭 自研产品</option>
+                            <option value="代发">📦 一件代发</option>
+                        </select>
+                    </div>
                     <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
@@ -82,10 +88,16 @@
             </div>
 
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm text-xs">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <!-- 更新筛选栏，新增排序下拉框 -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     <select id="filter-category" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部品类</option></select>
                     <div id="filter-health-box"><select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部排期</option><option value="DELAY">🚨 仅看延期</option><option value="URGENT_DAYS">⚠️ 7天内</option></select></div>
                     <select id="filter-bignote" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"><option value="ALL">全部大备注</option><option value="HAS_NOTE">📌 仅看有</option><option value="NO_NOTE">⚪ 仅看无</option></select>
+                    <!-- 新增：智能排序功能 -->
+                    <select id="sort-order" onchange="renderTable()" class="bg-blue-50 text-blue-700 font-bold border border-blue-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                        <option value="DEFAULT">默认排序</option>
+                        <option value="URGENT">⏳ 按交期最早优先</option>
+                    </select>
                     <input type="text" id="search-input" autocomplete="off" oninput="renderTable()" placeholder="搜型号/变体/备注..." class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none">
                 </div>
             </div>
@@ -111,9 +123,9 @@
                                 <th class="p-3 w-10 text-center">展开</th>
                                 <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
-                                <th class="p-3 min-w-[140px]">量产截点</th>
+                                <th class="p-3 min-w-[140px]">排期与到货情况</th>
                                 <th class="p-3 min-w-[270px]">三大核心节点进度</th>
-                                <th class="p-3 min-w-[260px]">排期说明 / 大备注</th>
+                                <th class="p-3 min-w-[260px]">全局排期说明 / 大备注</th>
                                 <th class="p-3 min-w-[85px]">状态</th>
                                 <th class="p-3 text-right min-w-[170px]">操作与审计</th>
                             </tr>
@@ -130,12 +142,12 @@
                 <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">🔄 新建老品回厂跟进任务</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs mb-2.5">
                     <div><label class="block text-gray-600 mb-1">产品名称 / 型号 <span class="text-red-500">*</span></label><input type="text" id="r-name" placeholder="如: Q60S" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">预计完成截点 <span class="text-red-500">*</span></label><input type="date" id="r-eta-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="date" id="r-eta-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addReturnTask()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">＋ 建立回厂任务</button></div>
                 </div>
                 <div>
-                    <label class="block text-gray-600 mb-1 text-xs">包含的 SKU 规格明细 (支持多行)</label>
-                    <textarea id="r-skus" rows="2" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 focus:outline-none font-mono text-xs"></textarea>
+                    <label class="block text-gray-600 mb-1 text-xs">包含的 SKU 规格与批次 (支持多行)</label>
+                    <textarea id="r-skus" rows="2" placeholder="例如：\n红色 - 9/20到货\n蓝色 - 缺料待定" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 focus:outline-none font-mono text-xs"></textarea>
                 </div>
             </div>
 
@@ -155,7 +167,7 @@
                             <tr>
                                 <th class="p-3 w-10 text-center">展开</th>
                                 <th class="p-3 min-w-[150px]">产品名称</th>
-                                <th class="p-3 min-w-[120px]">预计完成截点</th>
+                                <th class="p-3 min-w-[120px]">预计整体截点</th>
                                 <th class="p-3 min-w-[260px]">跟进大备注</th>
                                 <th class="p-3 min-w-[100px]">当前状态</th>
                                 <th class="p-3 text-right min-w-[130px]">操作</th>
@@ -169,6 +181,7 @@
 
         <!-- ================= 模块 3：🏷️ 69码与编码库 ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
+            <!-- 结构不变，已在此前版本优化，略去冗余展示以缩减代码体积，直接保留原样 -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
                     <h2 class="font-bold text-sm text-gray-900 flex items-center"><span>🏷️ 69码与产品编码联动库</span></h2>
@@ -227,7 +240,7 @@
         <div id="global-memo-box-anchor"></div>
     </div>
 
-    <!-- ================= 全局弹窗层 ================= -->
+    <!-- ================= 全局弹窗层 (配置保持不变，仅省略展示) ================= -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
             <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold">⚙️ 多源云端独立配置</h2><button onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
@@ -245,7 +258,7 @@
     <div id="barcode-batch-import-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleBarcodeBatchImportModal()">
         <div class="bg-white border p-5 rounded-2xl w-full max-w-xl shadow-2xl text-xs flex flex-col max-h-[90vh] relative">
             <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">📋 批量粘贴/导入 69 码</span><button onclick="toggleBarcodeBatchImportModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
-            <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" placeholder="支持直接从表格整列复制粘贴..." class="w-full bg-gray-50 border rounded-lg p-2.5 focus:outline-none font-mono"></textarea>
+            <textarea id="barcode-batch-import-text" rows="6" oninput="analyzeBarcodeBatchImport()" placeholder="支持直接从Excel整列复制粘贴（名称 SKU 69码 备注）..." class="w-full bg-gray-50 border rounded-lg p-2.5 focus:outline-none font-mono"></textarea>
             <div class="mt-3 p-3 bg-gray-50 rounded-xl border space-y-1.5 flex-1 log-scroll">
                 <div class="font-bold">📊 数据预审诊断：</div>
                 <div id="barcode-analysis-stats" class="text-gray-500">等待输入数据...</div>
@@ -267,7 +280,16 @@
     
     <div id="edit-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3" onclick="if(event.target===this) closeEditModal()">
         <div class="bg-white p-5 rounded-2xl w-full max-w-md text-xs relative"><div class="flex justify-between font-bold text-sm mb-3"><span>✏️ 修改基本信息</span></div>
-            <div class="space-y-2"><input type="text" id="edit-name" class="w-full border p-2 rounded" placeholder="型号"><input type="text" id="edit-category" class="w-full border p-2 rounded" placeholder="品类"><input type="date" id="edit-prod-date" class="w-full border p-2 rounded"><input type="text" id="edit-reason" class="w-full border p-2 rounded" placeholder="备注"></div>
+            <div class="space-y-2">
+                <input type="text" id="edit-name" class="w-full border p-2 rounded" placeholder="型号">
+                <select id="edit-source-type" class="w-full border p-2 rounded">
+                    <option value="自研">🏭 自研产品</option>
+                    <option value="代发">📦 一件代发</option>
+                </select>
+                <input type="text" id="edit-category" class="w-full border p-2 rounded" placeholder="品类">
+                <input type="date" id="edit-prod-date" class="w-full border p-2 rounded">
+                <input type="text" id="edit-reason" class="w-full border p-2 rounded" placeholder="备注">
+            </div>
             <div class="flex justify-end space-x-2 mt-4"><button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存</button></div>
         </div>
     </div>
@@ -349,10 +371,50 @@
         function renderFormattedText(t){ return escapeHtml(t).replace(/~~([^~]+)~~/g,"<s>$1</s>").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>').replace(/\r?\n/g,"<br>"); }
         function lockBodyScroll(l){ document.body.style.overflow=l?"hidden":""; }
 
+        // 【新增】智能提取最紧急时间用于排序
+        function extractEarliestTime(p) {
+            let times = [];
+            // 提取主截点时间
+            if (p.prodDate) times.push(new Date(p.prodDate).getTime());
+            
+            // 提取所有子 SKU 备注里提到的中文/数字时间 (如 9/20, 9-10)
+            (p.skus || []).forEach(s => {
+                let m = (s.skuRemark || '').match(/(?:20\d{2}[-\/年])?(\d{1,2})[-\/月](\d{1,2})/);
+                if (m) {
+                    let y = (s.skuRemark.match(/20\d{2}/) || [new Date().getFullYear()])[0];
+                    times.push(new Date(`${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}T00:00:00`).getTime());
+                }
+            });
+            // 找到所有找到的时间中最靠前的，都没有返回无限大
+            return times.length ? Math.min(...times) : Infinity;
+        }
+
         function normalizeMatrixData(raw) {
             let p=[],m=[],r=[]; if(Array.isArray(raw))p=raw; else if(raw&&typeof raw==='object'){p=raw.products||raw.items||raw.data||[];m=raw.memos||[];r=raw.oldReturns||[];}
             return {
-                products: p.map(x=>({id:String(x.id||"P_"+Math.random()), name:x.name||"未命名", category:x.category||"常规", prodDate:x.prodDate||"", remark:x.remark||"", bigNote:x.bigNote||"", status:x.status||"进行中", archivedAt:x.archivedAt||null, createdAt:x.createdAt||"", historyLogs:x.historyLogs||[], skus:(x.skus||[]).map((s,i)=>({id:String(s.id||"S_"+i), name:s.name||"标配", shopInfo:s.shopInfo||"", bomOk:!!s.bomOk, detailOk:!!s.detailOk, sapOk:!!s.sapOk, nodeRecords:s.nodeRecords||{}}))})),
+                products: p.map(x=>({
+                    id: String(x.id||"P_"+Math.random()), 
+                    name: x.name||"未命名", 
+                    sourceType: x.sourceType || "自研",
+                    category: x.category||"常规", 
+                    prodDate: x.prodDate||"", 
+                    remark: x.remark||"", 
+                    bigNote: x.bigNote||"", 
+                    status: x.status||"进行中", 
+                    archivedAt: x.archivedAt||null, 
+                    createdAt: x.createdAt||"", 
+                    historyLogs: x.historyLogs||[], 
+                    skus: (x.skus||[]).map((s,i)=>({
+                        id: String(s.id||"S_"+i), 
+                        name: s.name||"标配", 
+                        shopInfo: s.shopInfo||"", 
+                        skuRemark: s.skuRemark||"", 
+                        bomOk: !!s.bomOk, 
+                        detailOk: !!s.detailOk, 
+                        sapOk: !!s.sapOk, 
+                        nodeRecords: s.nodeRecords||{}
+                    }))
+                })),
                 oldReturns: r.map(x=>({id:String(x.id||"R_"+Math.random()), name:x.name||"未命名", etaDate:x.etaDate||"", skus:x.skus||"", status:x.status||"进行中", bigNote:x.bigNote||"", createdAt:x.createdAt||"", historyLogs:x.historyLogs||[]})),
                 memos: m
             };
@@ -445,26 +507,43 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        // ================= 智能截取分离算法 =================
         function smartParseBarcodeLine(line, index) {
-            let tokens = line.includes('\t') ? line.split('\t').map(s=>s.trim()) : line.split(/[\s,]+/).filter(Boolean);
+            if (line.includes('\t')) {
+                let parts = line.split('\t').map(s => s.trim());
+                let name = parts[0] || "";
+                let sap = parts[1] || "";
+                let barcode = parts[2] || "";
+                let remark = parts.slice(3).join(" ") || ""; 
+                let barcodeMatch = parts.find(p => /^(69\d{11}|\d{13,14})$/.test(p));
+                if (barcodeMatch && barcode !== barcodeMatch) {
+                    barcode = barcodeMatch;
+                    sap = parts.find(p => /^\d{6,12}$/.test(p) && p !== barcodeMatch) || sap;
+                }
+                if (!name && (sap || barcode)) name = `导入_${index + 1}`;
+                return { name, sap, barcode, remark };
+            }
+            let tokens = line.split(/[\s,]+/).filter(Boolean);
             let nameTokens = [], sap = "", barcode = "", remarkTokens = [];
+            let inRemark = false;
             for (let t of tokens) {
-                if (!t) continue;
-                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) { 
-                    barcode = t; 
-                } else if (/^\d{6,12}$/.test(t) && !sap) { 
-                    sap = t; 
-                } else if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(t) || /^\d{1,2}-\d{1,2}-\d{1,2}$/.test(t)) {
-                    remarkTokens.push(t);
-                } else { 
-                    nameTokens.push(t); 
+                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) {
+                    barcode = t;
+                } else if (/^\d{6,12}$/.test(t) && !sap) {
+                    sap = t;
+                } else {
+                    if (/^\d{4}[\/\-]\d{1,2}/.test(t) || /更新|备注|急|代发/.test(t)) {
+                        inRemark = true;
+                    }
+                    if (inRemark) remarkTokens.push(t);
+                    else nameTokens.push(t);
                 }
             }
-            let name = nameTokens.join(" ");
-            let remark = remarkTokens.join(" ");
-            if (!name && (sap || barcode)) name = `导入_${index + 1}`;
-            return { name, sap, barcode, remark };
+            return { 
+                name: nameTokens.join(" ") || `导入_${index + 1}`, 
+                sap, 
+                barcode, 
+                remark: remarkTokens.join(" ") 
+            };
         }
         
         function handleBarcodeExcelUpload(event) {
@@ -651,25 +730,65 @@
             updateGlobalStatsUI('MATRIX');
             
             let kw=(document.getElementById("search-input")?.value||"").trim().toLowerCase(), fc=document.getElementById("filter-category")?.value||"ALL", fh=document.getElementById("filter-health")?.value||"ALL", fb=document.getElementById("filter-bignote")?.value||"ALL";
+            let so=document.getElementById("sort-order")?.value||"DEFAULT"; // 新增排序依据获取
+            
             const cs=document.getElementById("filter-category"); if(cs&&cs.options.length<=1){cs.innerHTML='<option value="ALL">全部品类</option>'+Array.from(new Set(products.map(p=>p.category).filter(Boolean))).map(c=>`<option value="${c}">${c}</option>`).join("");cs.value=fc;}
             let tD=new Date().toISOString().split('T')[0];
 
-            products.forEach(p=>{
+            // 1. 先进行数据过滤
+            let displayList = products.filter(p => {
                 let arc=(p.status==="已归档"); 
-                if((currentTab==='RUNNING'&&arc)||(currentTab==='ARCHIVED'&&!arc))return;
+                if((currentTab==='RUNNING'&&arc)||(currentTab==='ARCHIVED'&&!arc))return false;
                 
                 let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999, dly=(!arc&&p.prodDate&&df<0);
-                if(fc!=="ALL"&&p.category!==fc)return; if(currentTab==='RUNNING'){if(fh==="DELAY"&&!dly)return; if(fh==="URGENT_DAYS"&&(dly||df>7))return;}
-                if(fb==="HAS_NOTE"&&!p.bigNote)return; if(fb==="NO_NOTE"&&p.bigNote)return;
-                if(kw&&!(p.name.toLowerCase().includes(kw)||p.category.toLowerCase().includes(kw)||(p.remark||"").toLowerCase().includes(kw)||p.skus.some(s=>s.name.toLowerCase().includes(kw))))return;
+                if(fc!=="ALL"&&p.category!==fc)return false; if(currentTab==='RUNNING'){if(fh==="DELAY"&&!dly)return false; if(fh==="URGENT_DAYS"&&(dly||df>7))return false;}
+                if(fb==="HAS_NOTE"&&!p.bigNote)return false; if(fb==="NO_NOTE"&&p.bigNote)return false;
+                if(kw&&!(p.name.toLowerCase().includes(kw)||p.category.toLowerCase().includes(kw)||(p.remark||"").toLowerCase().includes(kw)||p.skus.some(s=>s.name.toLowerCase().includes(kw))))return false;
+                return true;
+            });
+
+            // 2. 判断是否需要按紧急时间排序
+            if (so === 'URGENT') {
+                displayList.sort((a, b) => extractEarliestTime(a) - extractEarliestTime(b));
+            }
+
+            // 3. 渲染
+            displayList.forEach(p => {
+                let arc=(p.status==="已归档"); 
+                let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999;
+                
+                // 【核心改进】根据“最紧急时间”来判定是否属于 7 天内加急标红状态
+                let effTime = extractEarliestTime(p);
+                let effDf = (effTime !== Infinity) ? Math.ceil((effTime - new Date(tD).getTime())/86400000) : 999;
+                let isUrgent = (!arc && effDf <= 7);
 
                 let skC=p.skus.length, bD=0,dD=0,sD=0; p.skus.forEach(s=>{if(s.bomOk)bD++; if(s.detailOk)dD++; if(s.sapOk)sD++;});
-                const bG=(t,c,k,l)=>`<div ${!isReadOnlyMode&&!arc?`onclick="event.stopPropagation();triggerBatchColumnCheck('${p.id}','${k}','${l}')" class="cursor-pointer"`:''} class="inline-flex border px-1.5 py-0.5 rounded text-[10px] ${(skC>0&&c===skC)?'bg-emerald-50 text-emerald-700':(c===0?'bg-gray-50 text-gray-400':'bg-amber-50 text-amber-800')}">${(skC>0&&c===skC)?'✅':(c===0?'⚪':'⏳')} ${t}(${c}/${skC})</div>`;
+                
+                // 【核心改进】进度条胶囊自动响应“最紧急时间”，如果紧急且还没达标，自动标红加粗
+                const bG = (t,c,k,l) => {
+                    let stClass = '';
+                    if (skC > 0 && c === skC) {
+                        stClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    } else if (c === 0) {
+                        stClass = isUrgent ? 'bg-red-50 text-red-600 border-red-300 font-bold shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200';
+                    } else {
+                        stClass = isUrgent ? 'bg-red-50 text-red-600 border-red-300 font-bold shadow-sm' : 'bg-amber-50 text-amber-800 border-amber-200';
+                    }
+                    return `<div ${!isReadOnlyMode&&!arc?`onclick="event.stopPropagation();triggerBatchColumnCheck('${p.id}','${k}','${l}')" class="cursor-pointer"`:''} class="inline-flex border px-1.5 py-0.5 rounded text-[10px] ${stClass}">${(skC>0&&c===skC)?'✅':(c===0?'⚪':'⏳')} ${t}(${c}/${skC})</div>`;
+                };
+
                 let hB=p.prodDate?(arc?p.prodDate:(df<0?`<span class="text-red-600 font-bold">${p.prodDate} 🚨超${Math.abs(df)}天</span>`:(df<=7?`<span class="text-amber-600 font-bold">${p.prodDate} ⚠️剩${df}天</span>`:`<span class="text-green-700">${p.prodDate}</span>`))):'-';
+                
+                // 【核心改进】提取子 SKU 备注/排期，并外显展示在主截点下方
+                let subRemarksHtml = p.skus.filter(s => s.skuRemark).map(s => `<div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded text-[9px] w-max max-w-[200px] truncate shadow-sm" title="${escapeHtml(s.skuRemark)}">${escapeHtml(s.name)}: ${escapeHtml(s.skuRemark)}</div>`).join('');
+                if (subRemarksHtml) {
+                    hB += `<div class="mt-1.5 flex flex-col gap-1">${subRemarksHtml}</div>`;
+                }
+
                 let exp=!!expandedRows[p.id];
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${p.status==='紧急重要'?'bg-red-50/60':''}`;
-                tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
+                tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-normal ${p.sourceType==='代发'?'bg-purple-100 text-purple-700':'bg-blue-100 text-blue-700'}">${p.sourceType==='代发'?'📦 代发':'🏭 自研'}</span> ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 align-top min-w-[140px]">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
                 
                 if(exp){
                     let st=document.createElement("tr"); st.className="bg-gray-50/90";
@@ -683,35 +802,32 @@
                         let mb = globalBarcodes.find(b => {
                             let sap = (b.sapCode || '').trim().toLowerCase();
                             let bar = (b.barcode || '').trim().toLowerCase();
-                            
-                            // 1. 如果SKU名称中刚好带了准确的编码，直接秒杀强行匹配
                             if (sap && sap.length >= 6 && rawS.includes(sap)) return true;
                             if (bar && bar.length >= 12 && rawS.includes(bar)) return true;
-                            
                             let rawB = String(b.name || '').toLowerCase();
                             let bN = rawB.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
                             if (!bN || !cS) return false;
-                            
-                            // 2. 纯净文本完全相同，或 库内名字=系列名+规格名
                             if (bN === cS || bN === cP + cS) return true;
-                            
-                            // 3. 包含关系 (SKU中有多余的字符串，或者库中有多余的批次名)
                             if (bN.includes(cS) || cS.includes(bN)) {
-                                // 防串码：太短的规格必须加上系列名字才能确认
                                 if (cS.length <= 3 || cS.includes('标配') || cS.includes('常规')) return bN.includes(cP);
                                 return true;
                             }
-                            
-                            // 4. 拆词匹配 (系列名匹配上，且剔除了系列名后的核心规格也能匹配上)
                             let coreSku = cS.replace(cP, ''); 
                             if (cP && bN.includes(cP) && coreSku && bN.includes(coreSku)) return true;
-                            
                             return false;
                         });
                         
                         let al=mb&&!s.sapOk&&!isReadOnlyMode&&!arc?`<button onclick="quickApplyMatchedBarcode('${p.id}','${s.id}')" class="bg-emerald-50 text-emerald-700 px-1 rounded text-[10px] cursor-pointer">匹配: ${mb.barcode}</button>`:(mb?`<span class="text-gray-400 text-[10px]">🏷️ ${mb.barcode}</span>`:'');
                         let rb=(k,l,o)=>`<label class="flex items-center space-x-1 cursor-pointer"><input type="checkbox" ${isReadOnlyMode||arc?'disabled':`onchange="triggerSkuNodeCheck('${p.id}','${s.id}','${k}','${l}',this)"`} ${o?'checked':''} class="w-3 h-3 text-blue-600"><span class="text-[11px] ${o?'text-green-700 font-bold':'text-gray-500'}">${l}</span></label>`;
-                        sh+=`<div class="flex items-center justify-between bg-gray-50 p-2 rounded border hover:bg-white"><div class="font-semibold flex items-center gap-2 w-1/3">${escapeHtml(s.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSkuName('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button><button onclick="removeSku('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">🗑️</button>`:''} ${al}</div><div class="w-1/3 flex gap-1 items-center"><span class="text-[10px] text-gray-500">分铺:</span><input type="text" ${isReadOnlyMode?'disabled':''} value="${escapeHtml(s.shopInfo||'')}" onblur="updateSkuShopInfo('${p.id}','${s.id}',this.value)" class="border rounded px-1 text-[10px] w-full max-w-[150px]"></div><div class="flex space-x-4">${rb('bomOk','BOM',s.bomOk)}${rb('detailOk','详情页',s.detailOk)}${rb('sapOk','69码',s.sapOk)}</div></div>`;
+                        
+                        sh+=`<div class="flex items-center justify-between bg-gray-50 p-2 rounded border hover:bg-white">
+                                <div class="font-semibold flex items-center gap-2 w-1/4">${escapeHtml(s.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSkuName('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button><button onclick="removeSku('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">🗑️</button>`:''} ${al}</div>
+                                <div class="w-1/2 flex gap-2 items-center">
+                                    <div class="flex items-center gap-1 w-1/2"><span class="text-[10px] text-gray-500 shrink-0">分铺:</span><input type="text" ${isReadOnlyMode?'disabled':''} value="${escapeHtml(s.shopInfo||'')}" onblur="updateSkuField('${p.id}','${s.id}','shopInfo',this.value)" class="border rounded px-1 text-[10px] w-full"></div>
+                                    <div class="flex items-center gap-1 w-1/2"><span class="text-[10px] text-gray-500 shrink-0">排期/备注:</span><input type="text" placeholder="例: 9/20到货" ${isReadOnlyMode?'disabled':''} value="${escapeHtml(s.skuRemark||'')}" onblur="updateSkuField('${p.id}','${s.id}','skuRemark',this.value)" class="border rounded border-amber-200 bg-amber-50 px-1 text-[10px] w-full"></div>
+                                </div>
+                                <div class="flex space-x-4">${rb('bomOk','BOM',s.bomOk)}${rb('detailOk','详情页',s.detailOk)}${rb('sapOk','69码',s.sapOk)}</div>
+                            </div>`;
                     });
                     sh+=`</div></div></td>`; st.innerHTML=sh; tb.appendChild(st);
                 }
@@ -733,7 +849,18 @@
 
                 let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${r.status==='紧急'?'bg-red-50/60':''}`;
                 tr.innerHTML=`<td class="p-3 text-center"><button onclick="toggleReturnExpand('${r.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(r.name)}</td><td class="p-3 whitespace-nowrap">${hB}</td><td class="p-3">${bn}</td><td class="p-3"><select onchange="changeReturnStatus('${r.id}',this.value)" class="border rounded text-xs px-1 py-0.5" ${isReadOnlyMode?'disabled':''}><option value="进行中" ${r.status==='进行中'?'selected':''}>进行中</option><option value="紧急" ${r.status==='紧急'?'selected':''}>🔥紧急</option><option value="已完成" ${(r.status==='已完成'||r.status==='✅ 已完成')?'selected':''}>✅ 已完成</option></select></td><td class="p-3 text-right"><button onclick="openLogsModal('${r.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode?`| <button onclick="removeReturnItem('${r.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
-                if(exp){ let st=document.createElement("tr"); st.className="bg-gray-50/90"; st.innerHTML=`<td colspan="6" class="p-3 pl-12"><div class="bg-white p-3 border rounded shadow-sm text-xs font-mono whitespace-pre-wrap">${escapeHtml(r.skus)||'暂无明细'}</div></td>`; tb.appendChild(st); }
+                
+                if(exp){ 
+                    let st=document.createElement("tr"); st.className="bg-gray-50/90"; 
+                    st.innerHTML=`<td colspan="6" class="p-3 pl-12"><div class="bg-white p-3 border rounded shadow-sm text-xs relative">
+                        <div class="text-[10px] text-gray-400 mb-1 flex justify-between">
+                            <span>📝 规格与独立时间明细 (支持直接编辑修改)</span>
+                            <span class="text-blue-500">失去焦点自动保存</span>
+                        </div>
+                        <textarea onblur="updateReturnSkus('${r.id}', this.value)" class="w-full bg-gray-50 border border-gray-200 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 custom-scroll font-mono" rows="${Math.max(3, (r.skus||'').split('\n').length)}">${escapeHtml(r.skus)}</textarea>
+                    </div></td>`; 
+                    tb.appendChild(st); 
+                }
             });
         }
 
@@ -750,7 +877,25 @@
             if(document.getElementById("nav-count-barcodes")) document.getElementById("nav-count-barcodes").innerText=globalBarcodes.length;
         }
 
-        function addProductWithBatchSkus(){ if(isReadOnlyMode)return; let txt=document.getElementById("p-skus-batch").value.trim(), pd=document.getElementById("p-prod-date").value, cat=document.getElementById("p-category").value.trim()||"常规新品"; if(!txt)return alert("请填SKU"); let ls=Array.from(new Set(txt.split('\n').map(l=>l.trim()).filter(Boolean))), em={}; products.forEach(p=>(p.skus||[]).forEach(s=>em[s.name.toLowerCase()]=true)); let vs=ls.filter(s=>!em[s.toLowerCase()]); if(!vs.length)return alert("SKU已存在"); let mn=document.getElementById("p-name").value.trim()||vs[0].replace(/[\s\-_].*/,''), t=getNowString(); products.unshift({id:"P_"+Date.now(),name:mn,category:cat,prodDate:normalizeDate(pd),remark:"",bigNote:"",status:"进行中",createdAt:t,historyLogs:[{time:t,type:"CREATE",desc:"新建"}],skus:vs.map((s,i)=>({id:"S_"+Date.now()+"_"+i,name:s,shopInfo:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}))}); document.getElementById("p-skus-batch").value=""; document.getElementById("p-name").value=""; switchTab('RUNNING'); renderTable(); syncMatrixToCloud(); }
+        function addProductWithBatchSkus(){ 
+            if(isReadOnlyMode)return; 
+            let txt=document.getElementById("p-skus-batch").value.trim(), 
+                pd=document.getElementById("p-prod-date").value, 
+                cat=document.getElementById("p-category").value.trim()||"常规新品",
+                srcType = document.getElementById("p-source-type").value;
+            if(!txt)return alert("请填SKU"); 
+            let ls=Array.from(new Set(txt.split('\n').map(l=>l.trim()).filter(Boolean))), em={}; 
+            products.forEach(p=>(p.skus||[]).forEach(s=>em[s.name.toLowerCase()]=true)); 
+            let vs=ls.filter(s=>!em[s.toLowerCase()]); 
+            if(!vs.length)return alert("SKU已存在"); 
+            let mn=document.getElementById("p-name").value.trim()||vs[0].replace(/[\s\-_].*/,''), t=getNowString(); 
+            products.unshift({id:"P_"+Date.now(),name:mn,sourceType:srcType,category:cat,prodDate:normalizeDate(pd),remark:"",bigNote:"",status:"进行中",createdAt:t,historyLogs:[{time:t,type:"CREATE",desc:"新建"}],skus:vs.map((s,i)=>({id:"S_"+Date.now()+"_"+i,name:s,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}))}); 
+            document.getElementById("p-skus-batch").value=""; 
+            document.getElementById("p-name").value=""; 
+            switchTab('RUNNING'); 
+            renderTable(); 
+            syncMatrixToCloud(); 
+        }
         function removeProduct(id){ if(confirm("删除产品？")){products=products.filter(p=>p.id!==id); renderTable(); syncMatrixToCloud();} }
         function changeProdStatus(id,v){ let p=products.find(x=>x.id===id); if(p){p.status=v; p.historyLogs.unshift({time:getNowString(),type:"STATUS",desc:`状态改:${v}`}); renderTable(); syncMatrixToCloud();} }
         function toggleExpand(id){ expandedRows[id]=!expandedRows[id]; renderTable(); }
@@ -758,18 +903,29 @@
         function toggleSelectAll(c){ products.forEach(p=>{if(p.status!=='已归档'){c?selectedProductIds.add(p.id):selectedProductIds.delete(p.id)}}); renderTable(); }
         function updateSelectAllCheckboxState(){ let tp=products.filter(p=>p.status!=='已归档'), sc=tp.filter(p=>selectedProductIds.has(p.id)).length; if(document.getElementById("select-all-checkbox")) document.getElementById("select-all-checkbox").checked=(tp.length>0&&sc===tp.length); }
         function quickEditSeriesName(id){ let p=products.find(x=>x.id===id), n=prompt("系列名:",p.name); if(n&&n!==p.name){p.name=n; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:`更名:${n}`}); renderTable(); syncMatrixToCloud();} }
-        function openEditModal(id){ currentEditingId=id; let p=products.find(x=>x.id===id); document.getElementById("edit-name").value=p.name; document.getElementById("edit-category").value=p.category; document.getElementById("edit-prod-date").value=p.prodDate; document.getElementById("edit-reason").value=p.remark; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function openEditModal(id){ currentEditingId=id; let p=products.find(x=>x.id===id); document.getElementById("edit-name").value=p.name; document.getElementById("edit-source-type").value=p.sourceType||"自研"; document.getElementById("edit-category").value=p.category; document.getElementById("edit-prod-date").value=p.prodDate; document.getElementById("edit-reason").value=p.remark; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeEditModal(){ document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveEditChanges(){ let p=products.find(x=>x.id===currentEditingId); p.name=document.getElementById("edit-name").value; p.category=document.getElementById("edit-category").value; p.prodDate=document.getElementById("edit-prod-date").value; p.remark=document.getElementById("edit-reason").value; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新排期"}); closeEditModal(); renderTable(); syncMatrixToCloud(); }
+        function saveEditChanges(){ let p=products.find(x=>x.id===currentEditingId); p.name=document.getElementById("edit-name").value; p.sourceType=document.getElementById("edit-source-type").value; p.category=document.getElementById("edit-category").value; p.prodDate=document.getElementById("edit-prod-date").value; p.remark=document.getElementById("edit-reason").value; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新排期"}); closeEditModal(); renderTable(); syncMatrixToCloud(); }
 
-        function addNewSkuToProd(pid){ let p=products.find(x=>x.id===pid), n=prompt("新规格:"); if(n){p.skus.push({id:"S_"+Date.now(),name:n,shopInfo:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}); renderTable(); syncMatrixToCloud();} }
+        function addNewSkuToProd(pid){ let p=products.find(x=>x.id===pid), n=prompt("新规格:"); if(n){p.skus.push({id:"S_"+Date.now(),name:n,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}); renderTable(); syncMatrixToCloud();} }
         function quickEditSkuName(pid,sid){ let s=products.find(x=>x.id===pid)?.skus.find(x=>x.id===sid), n=prompt("规格名称:",s.name); if(n&&n!==s.name){s.name=n; renderTable(); syncMatrixToCloud();} }
         function removeSku(pid,sid){ if(confirm("删除规格？")){let p=products.find(x=>x.id===pid); p.skus=p.skus.filter(x=>x.id!==sid); renderTable(); syncMatrixToCloud();} }
 
-        function updateSkuShopInfo(pid, sid, v) {
+        function updateSkuField(pid, sid, field, v) {
             let s = products.find(x => x.id === pid)?.skus.find(x => x.id === sid);
-            if (s) {
-                s.shopInfo = v.trim();
+            if (s && s[field] !== v.trim()) {
+                s[field] = v.trim();
+                localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
+                clearTimeout(syncTimer);
+                // 使用 setTimeout 防抖动存储，并在修改后刷新界面，显示最新外透状态
+                syncTimer = setTimeout(() => { syncMatrixToCloud(); renderTable(); }, 1500);
+            }
+        }
+        
+        function updateReturnSkus(id, v) {
+            let r = globalReturns.find(x => x.id === id);
+            if (r && r.skus !== v) {
+                r.skus = v;
                 localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
                 clearTimeout(syncTimer);
                 syncTimer = setTimeout(() => { syncMatrixToCloud(); }, 1500);
@@ -820,8 +976,8 @@
             let tp=products.filter(p=>currentTab==='RUNNING'?p.status!=='已归档':p.status==='已归档');
             let sel=selectedProductIds.size>0?tp.filter(p=>selectedProductIds.has(p.id)):tp;
             if(!sel.length) return alert("无数据");
-            let rows=["系列,子规格,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,备注,大备注"];
-            sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${s.name}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
+            let rows=["系列,研发类型,子规格,排期与备注,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,全局备注,大备注"];
+            sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${p.sourceType||'自研'}","${s.name}","${s.skuRemark||''}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
             let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
             let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${new Date().toISOString().split('T')[0]}.csv`; a.click();
         }
