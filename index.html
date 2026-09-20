@@ -88,12 +88,10 @@
             </div>
 
             <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm text-xs">
-                <!-- 更新筛选栏，新增排序下拉框 -->
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     <select id="filter-category" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部品类</option></select>
                     <div id="filter-health-box"><select id="filter-health" onchange="renderTable()" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none"><option value="ALL">全部排期</option><option value="DELAY">🚨 仅看延期</option><option value="URGENT_DAYS">⚠️ 7天内</option></select></div>
                     <select id="filter-bignote" onchange="renderTable()" class="bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"><option value="ALL">全部大备注</option><option value="HAS_NOTE">📌 仅看有</option><option value="NO_NOTE">⚪ 仅看无</option></select>
-                    <!-- 新增：智能排序功能 -->
                     <select id="sort-order" onchange="renderTable()" class="bg-blue-50 text-blue-700 font-bold border border-blue-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
                         <option value="DEFAULT">默认排序</option>
                         <option value="URGENT">⏳ 按交期最早优先</option>
@@ -181,7 +179,6 @@
 
         <!-- ================= 模块 3：🏷️ 69码与编码库 ================= -->
         <div id="module-barcodes" class="space-y-4 hidden">
-            <!-- 结构不变，已在此前版本优化，略去冗余展示以缩减代码体积，直接保留原样 -->
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
                     <h2 class="font-bold text-sm text-gray-900 flex items-center"><span>🏷️ 69码与产品编码联动库</span></h2>
@@ -240,7 +237,7 @@
         <div id="global-memo-box-anchor"></div>
     </div>
 
-    <!-- ================= 全局弹窗层 (配置保持不变，仅省略展示) ================= -->
+    <!-- ================= 全局弹窗层 ================= -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
         <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
             <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold">⚙️ 多源云端独立配置</h2><button onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
@@ -371,13 +368,9 @@
         function renderFormattedText(t){ return escapeHtml(t).replace(/~~([^~]+)~~/g,"<s>$1</s>").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>').replace(/\r?\n/g,"<br>"); }
         function lockBodyScroll(l){ document.body.style.overflow=l?"hidden":""; }
 
-        // 【新增】智能提取最紧急时间用于排序
         function extractEarliestTime(p) {
             let times = [];
-            // 提取主截点时间
             if (p.prodDate) times.push(new Date(p.prodDate).getTime());
-            
-            // 提取所有子 SKU 备注里提到的中文/数字时间 (如 9/20, 9-10)
             (p.skus || []).forEach(s => {
                 let m = (s.skuRemark || '').match(/(?:20\d{2}[-\/年])?(\d{1,2})[-\/月](\d{1,2})/);
                 if (m) {
@@ -385,7 +378,6 @@
                     times.push(new Date(`${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}T00:00:00`).getTime());
                 }
             });
-            // 找到所有找到的时间中最靠前的，都没有返回无限大
             return times.length ? Math.min(...times) : Infinity;
         }
 
@@ -480,70 +472,69 @@
             try{ let h={"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; let c=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:h}); if(c.ok){let cd=await c.json();fileSha=cd.sha;} let b64=btoa(unescape(encodeURIComponent(JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos},null,2)))); let u=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{method:"PUT",headers:h,body:JSON.stringify({message:`Update`,content:b64,sha:fileSha})}); if(u.ok){let ud=await u.json();fileSha=ud.content.sha;} }catch(e){}
         }
 
+        /* 修复：移除向云端旧数据二次合并回滚的逻辑，保证删除与操作精准同步覆盖 */
         async function syncBarcodesToGist() {
-            if(isReadOnlyMode)return; const gB=cleanConfigString(localStorage.getItem("wb_gist_barcodes")), tG=(localStorage.getItem("wb_token_gist")||"").trim();
-            localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes)); if(!gB||!tG)return;
-            try{ 
-                let h={"Authorization":`Bearer ${tG}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; 
-                let gd=await fetch(`https://api.github.com/gists/${gB}`,{headers:h}).then(r=>r.json()); 
-                let fn = gd.files["69code_data.json"] ? "69code_data.json" : Object.keys(gd.files)[0];
-                let cloudData = normalizeBarcodesData(JSON.parse(gd.files[fn].content));
-                let mergedMap = new Map();
-                cloudData.forEach(b => { let k = b.sapCode || b.barcode || b.name; if(k) mergedMap.set(k, b); });
-                globalBarcodes.forEach(b => { 
-                    let k = b.sapCode || b.barcode || b.name; 
-                    if(k) { 
-                        let ex = mergedMap.get(k) || {}; 
-                        mergedMap.set(k, {...ex, ...b}); 
-                    } 
+            if(isReadOnlyMode) return;
+            const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes")),
+                  tG = (localStorage.getItem("wb_token_gist") || "").trim();
+            localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
+            if(!gB || !tG) return;
+            
+            try { 
+                let h = {
+                    "Authorization": `Bearer ${tG}`,
+                    "Accept": "application/vnd.github+json",
+                    "Content-Type": "application/json"
+                }; 
+                let gd = await fetch(`https://api.github.com/gists/${gB}`, { headers: h }).then(r => r.json()); 
+                let fn = (gd.files && gd.files["69code_data.json"]) ? "69code_data.json" : Object.keys(gd.files)[0];
+                
+                await fetch(`https://api.github.com/gists/${gB}`, {
+                    method: "PATCH",
+                    headers: h,
+                    body: JSON.stringify({
+                        files: {
+                            [fn]: { content: JSON.stringify(globalBarcodes, null, 2) }
+                        }
+                    })
                 });
-                globalBarcodes = Array.from(mergedMap.values());
-                localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
-                if (currentMainView === 'BARCODES') renderBarcodeTable();
-                await fetch(`https://api.github.com/gists/${gB}`,{method:"PATCH",headers:h,body:JSON.stringify({files:{"69code_data.json":{content:JSON.stringify(globalBarcodes,null,2)}}})}); 
-            }catch(e){}
+                document.getElementById("sync-status").innerText = "条码库已同步 ✅";
+            } catch(e) {
+                console.error("Gist 同步失败:", e);
+                document.getElementById("sync-status").innerText = "条码库同步失败 ❌";
+            }
         }
 
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
+        /* 修复：基于特征模式解析，防止单行 SKU 和条码被误识别为产品名称 */
         function smartParseBarcodeLine(line, index) {
-            if (line.includes('\t')) {
-                let parts = line.split('\t').map(s => s.trim());
-                let name = parts[0] || "";
-                let sap = parts[1] || "";
-                let barcode = parts[2] || "";
-                let remark = parts.slice(3).join(" ") || ""; 
-                let barcodeMatch = parts.find(p => /^(69\d{11}|\d{13,14})$/.test(p));
-                if (barcodeMatch && barcode !== barcodeMatch) {
-                    barcode = barcodeMatch;
-                    sap = parts.find(p => /^\d{6,12}$/.test(p) && p !== barcodeMatch) || sap;
-                }
-                if (!name && (sap || barcode)) name = `导入_${index + 1}`;
-                return { name, sap, barcode, remark };
+            let parts = line.includes('\t') ? line.split('\t').map(s => s.trim()) : line.split(/[\s,]+/).filter(Boolean);
+            if (!parts.length) return { name: "", sap: "", barcode: "", remark: "" };
+
+            let barcode = "", sap = "", name = "", remark = "";
+
+            let bIdx = parts.findIndex(p => /^(69\d{11}|\d{13,14})$/.test(p));
+            if (bIdx !== -1) {
+                barcode = parts[bIdx];
+                parts.splice(bIdx, 1);
             }
-            let tokens = line.split(/[\s,]+/).filter(Boolean);
-            let nameTokens = [], sap = "", barcode = "", remarkTokens = [];
-            let inRemark = false;
-            for (let t of tokens) {
-                if (/^(69\d{11}|\d{13,14})$/.test(t) && !barcode) {
-                    barcode = t;
-                } else if (/^\d{6,12}$/.test(t) && !sap) {
-                    sap = t;
-                } else {
-                    if (/^\d{4}[\/\-]\d{1,2}/.test(t) || /更新|备注|急|代发/.test(t)) {
-                        inRemark = true;
-                    }
-                    if (inRemark) remarkTokens.push(t);
-                    else nameTokens.push(t);
-                }
+
+            let sIdx = parts.findIndex(p => /^\d{6,12}$/.test(p));
+            if (sIdx !== -1) {
+                sap = parts[sIdx];
+                parts.splice(sIdx, 1);
             }
-            return { 
-                name: nameTokens.join(" ") || `导入_${index + 1}`, 
-                sap, 
-                barcode, 
-                remark: remarkTokens.join(" ") 
-            };
+
+            if (parts.length > 0) {
+                name = parts[0];
+                remark = parts.slice(1).join(" ");
+            } else {
+                name = `未命名_${sap || barcode || (index + 1)}`;
+            }
+
+            return { name, sap, barcode, remark };
         }
         
         function handleBarcodeExcelUpload(event) {
@@ -704,7 +695,6 @@
             alert("导入与更新完毕！");
         }
 
-        // ================= 各模块独立渲染引擎 =================
         function updateGlobalStatsUI(type) {
             if(type === 'MATRIX') {
                 let t=products.length, r=products.filter(p=>p.status!=='已归档').length, a=products.filter(p=>p.status==='已归档').length, tD=new Date().toISOString().split('T')[0];
@@ -730,12 +720,11 @@
             updateGlobalStatsUI('MATRIX');
             
             let kw=(document.getElementById("search-input")?.value||"").trim().toLowerCase(), fc=document.getElementById("filter-category")?.value||"ALL", fh=document.getElementById("filter-health")?.value||"ALL", fb=document.getElementById("filter-bignote")?.value||"ALL";
-            let so=document.getElementById("sort-order")?.value||"DEFAULT"; // 新增排序依据获取
+            let so=document.getElementById("sort-order")?.value||"DEFAULT";
             
             const cs=document.getElementById("filter-category"); if(cs&&cs.options.length<=1){cs.innerHTML='<option value="ALL">全部品类</option>'+Array.from(new Set(products.map(p=>p.category).filter(Boolean))).map(c=>`<option value="${c}">${c}</option>`).join("");cs.value=fc;}
             let tD=new Date().toISOString().split('T')[0];
 
-            // 1. 先进行数据过滤
             let displayList = products.filter(p => {
                 let arc=(p.status==="已归档"); 
                 if((currentTab==='RUNNING'&&arc)||(currentTab==='ARCHIVED'&&!arc))return false;
@@ -747,24 +736,20 @@
                 return true;
             });
 
-            // 2. 判断是否需要按紧急时间排序
             if (so === 'URGENT') {
                 displayList.sort((a, b) => extractEarliestTime(a) - extractEarliestTime(b));
             }
 
-            // 3. 渲染
             displayList.forEach(p => {
                 let arc=(p.status==="已归档"); 
                 let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999;
                 
-                // 【核心改进】根据“最紧急时间”来判定是否属于 7 天内加急标红状态
                 let effTime = extractEarliestTime(p);
                 let effDf = (effTime !== Infinity) ? Math.ceil((effTime - new Date(tD).getTime())/86400000) : 999;
                 let isUrgent = (!arc && effDf <= 7);
 
                 let skC=p.skus.length, bD=0,dD=0,sD=0; p.skus.forEach(s=>{if(s.bomOk)bD++; if(s.detailOk)dD++; if(s.sapOk)sD++;});
                 
-                // 【核心改进】进度条胶囊自动响应“最紧急时间”，如果紧急且还没达标，自动标红加粗
                 const bG = (t,c,k,l) => {
                     let stClass = '';
                     if (skC > 0 && c === skC) {
@@ -779,7 +764,6 @@
 
                 let hB=p.prodDate?(arc?p.prodDate:(df<0?`<span class="text-red-600 font-bold">${p.prodDate} 🚨超${Math.abs(df)}天</span>`:(df<=7?`<span class="text-amber-600 font-bold">${p.prodDate} ⚠️剩${df}天</span>`:`<span class="text-green-700">${p.prodDate}</span>`))):'-';
                 
-                // 【核心改进】提取子 SKU 备注/排期，并外显展示在主截点下方
                 let subRemarksHtml = p.skus.filter(s => s.skuRemark).map(s => `<div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded text-[9px] w-max max-w-[200px] truncate shadow-sm" title="${escapeHtml(s.skuRemark)}">${escapeHtml(s.name)}: ${escapeHtml(s.skuRemark)}</div>`).join('');
                 if (subRemarksHtml) {
                     hB += `<div class="mt-1.5 flex flex-col gap-1">${subRemarksHtml}</div>`;
@@ -917,7 +901,6 @@
                 s[field] = v.trim();
                 localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
                 clearTimeout(syncTimer);
-                // 使用 setTimeout 防抖动存储，并在修改后刷新界面，显示最新外透状态
                 syncTimer = setTimeout(() => { syncMatrixToCloud(); renderTable(); }, 1500);
             }
         }
@@ -959,7 +942,15 @@
         function openBarcodeEditModal(idx){ currentEditingBarcodeIdx=idx; let b=globalBarcodes[idx]; document.getElementById("edit-bar-name").value=b.name; document.getElementById("edit-bar-sap").value=b.sapCode; document.getElementById("edit-bar-code").value=b.barcode; document.getElementById("edit-bar-remark").value=b.remark; document.getElementById("barcode-edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeBarcodeEditModal(){ document.getElementById("barcode-edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
-        function removeBarcode(idx){ if(confirm("删除此69码？")){globalBarcodes.splice(idx,1); renderBarcodeTable(); syncBarcodesToGist();} }
+
+        /* 修复：删除后直接更新本地与云端，阻止旧数据恢复 */
+        function removeBarcode(idx){ 
+            if(confirm("确认彻底删除此 69 码记录？")){
+                globalBarcodes.splice(idx, 1); 
+                renderBarcodeTable(); 
+                syncBarcodesToGist();
+            } 
+        }
 
         function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").innerText=`【${p.name}】`; document.getElementById("big-note-textarea").value=p.bigNote||""; updateBigNoteLivePreview(); document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function saveBigNoteChanges() { let p=findGlobalItem(currentBigNoteId); if(p){p.bigNote=document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新大备注"}); closeBigNoteModal(); if(currentMainView==='MATRIX')renderTable();else if(currentMainView==='RETURNS')renderReturnsTable(); syncMatrixToCloud(); } }
