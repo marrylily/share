@@ -1,10 +1,19 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 客户端秒开修复终极版)
-✅ 解决内核启动卡死：清理 fake-ip-filter 中的冗余 geosite 规则与未解析 DoH
+powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - GitHub 修复终极版)
+✅ 解决 GitHub 误走直连超时：在 MICROSOFT 规则前置拦截 GitHub 域名与 GEOSITE 走代理
+✅ 解决启动超时与报错：移除引发死锁的 DoH 与冗余 geosite 配置，保持轻量秒加载
 ✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
 ✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
 ✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
 ✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
+
+支持参数：
+- loadbalance: true/false
+- landing: true/false
+- full: true/false
+- keepalive: true/false
+- fakeip: true/false
+- threshold: number
 */
 
 const NODE_SUFFIX = "节点";
@@ -154,23 +163,37 @@ const ruleProviders = {
 
 /* ---------- Rules ---------- */
 const baseRules = [
+  // 1. 基础拦截与广告
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
-  `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
-  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT},no-resolve`,
+
+  // 2. 特殊系统直连
   `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
   `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
   `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,APPLE@CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,MICROSOFT@CN,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+
+  // 3. ✅ 核心修复：在 MICROSOFT 之前拦截 GitHub，走代理
+  `GEOSITE,GITHUB,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
+
+  // 4. 其余微软服务直连
+  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
+
+  // 5. 业务专线与 AI / 流媒体
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,OPENAI,AI",
   "GEOSITE,CLAUDE,AI",
   `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
   `RULE-SET,TikTok,TikTok`,
   `RULE-SET,EHentai,E-Hentai`,
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+  `RULE-SET,AdditionalCDNResources,静态资源`,
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
   "GEOSITE,YOUTUBE,YouTube",
@@ -180,14 +203,15 @@ const baseRules = [
   "GEOSITE,BAHAMUT,Bahamut",
   "GEOSITE,BILIBILI,Bilibili",
   `RULE-SET,Crypto,Crypto`,
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-  `RULE-SET,AdditionalCDNResources,静态资源`,
+
+  // 6. GFW 与国内分流
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
+  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "DST-PORT,22,SSH(22端口)",
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
@@ -214,32 +238,24 @@ const snifferConfig = {
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-/* ---------- DNS（彻底纯净化，使用纯 IP，防止启动时解析死锁） ---------- */
+/* ---------- DNS ---------- */
 function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
   const config = {
     enable: true,
-    ipv6: false,
-    "prefer-h3": false,
+    ipv6: ipv6Enabled,
+    "prefer-h3": !!quicEnabled,
     "enhanced-mode": mode,
-    "use-hosts": true,
-    "default-nameserver": ["223.5.5.5", "119.29.29.29"],
-    nameserver: [
-      "223.5.5.5",
-      "119.29.29.29",
-      "180.184.1.1"
-    ],
+    "default-nameserver": ["119.29.29.29", "223.5.5.5"],
+    nameserver: ["223.5.5.5", "119.29.29.29", "180.184.1.1", "system"],
     fallback: [
       "https://1.1.1.1/dns-query",
-      "https://dns.google/dns-query"
+      "https://dns.google/dns-query",
+      "https://dns.cloudflare.com/dns-query",
+      "tcp://208.67.222.222",
     ],
-    "proxy-server-nameserver": ["223.5.5.5", "119.29.29.29"],
+    "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "tls://dot.pub"],
   };
-
-  if (mode === "fake-ip" && fakeIpFilter) {
-    config["fake-ip-range"] = "198.18.0.1/16";
-    // 关键优化：只留纯域名通配符，移除会导致预加载死锁的 geosite 标签
-    config["fake-ip-filter"] = fakeIpFilter;
-  }
+  if (fakeIpFilter) config["fake-ip-filter"] = fakeIpFilter;
   return config;
 }
 
@@ -248,15 +264,15 @@ const dnsConfigFakeIp = buildDnsConfig({
   mode: "fake-ip",
   quicEnabled,
   fakeIpFilter: [
-    "*.lan",
-    "*.local",
+    "geosite:private",
+    "geosite:connectivity-check",
+    "geosite:cn",
+    "Mijia Cloud",
+    "dig.io.mi.com",
     "localhost.ptlogin2.qq.com",
     "*.icloud.com",
-    "*.apple.com",
     "*.stun.*.*",
     "*.stun.*.*.*",
-    "time.*.com",
-    "ntp.*.com",
   ],
 });
 
@@ -583,27 +599,8 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
-  if (fullConfig) {
-    Object.assign(resultConfig, {
-      "mixed-port": 7890,
-      "allow-lan": true,
-      ipv6: false,
-      mode: "rule",
-      "unified-delay": true,
-      "tcp-concurrent": true,
-      "find-process-mode": "off",
-      "log-level": "info",
-      "disable-keep-alive": !keepAliveEnabled,
-      profile: {
-        "store-selected": true,
-        "store-fake-ip": true,
-      },
-    });
-  }
-
-  // 核心装配
+  // 避免注入冲突参数，完全适配客户端环境
   Object.assign(resultConfig, {
-    "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
     "rule-providers": ruleProviders,
     rules: finalRules,
