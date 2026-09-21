@@ -3,6 +3,7 @@ powerfullz 的 Substore 订阅转换脚本 (最终稳定重置版)
 ✅ 解决配置校验失败：移除引发无限循环死锁的嵌套组，回归原版最稳定的代理树结构
 ✅ 解决 GitHub 直连超时：在 MICROSOFT 规则前置拦截 GitHub 域名走代理
 ✅ 解决加载卡死：移除 external-controller 端口冲突，默认采用 standard 极速加载
+✅ 修复 E-Hentai 图标无法显示：将 raw.github 域名替换为国内可直连的 jsdelivr CDN 加速链接
 */
 
 const NODE_SUFFIX = "节点";
@@ -369,7 +370,6 @@ function buildProxyGroups({
       interval: 120,
       tolerance: 50,
       "include-all": true,
-      // 严密排除所有内部组名，彻底斩断潜在死循环
       "exclude-filter":
         "(?i)家宽|家庭|商宽|落地|0\\.[0-5]|低倍率|中国|\\bCN\\b|China|回国|移动|电信|联通|Mobile|Telecom|Unicom|CMCC|CUCC|CTCC|中转|回国.*BGP|BGP.*回国|中转.*BGP|BGP.*中转|选择|代理|转移|直连|拦截",
     },
@@ -452,7 +452,8 @@ function buildProxyGroups({
     },
     {
       name: "E-Hentai",
-      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/EHentai.png",
+      // ✅ 将 raw.github 替换为通用且国内不墙的 jsdelivr CDN 源
+      icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
       type: "select",
       proxies: defaultProxies,
     },
