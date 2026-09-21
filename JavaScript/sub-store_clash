@@ -1,21 +1,11 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 客户端秒开修复版)
-✅ 解决加载超时：强制注入 geodata-loader: "standard"（脱离 fullConfig 依赖，杜绝 memconservative 引起的卡顿超时）
-✅ 移除冲突配置：移除 external-controller，防止客户端与内核失联
-✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
-✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
-✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
-✅ 升级 DNS 架构：新增 nameserver-policy 分流与 respect-rules，杜绝国外 DNS 泄露与国内 CDN 降速
-✅ 优化分流规则链：前置局域网/直连，精准补齐 OpenAI/Claude/Apple 国内域名
-✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
-
-支持参数：
-- loadbalance: true/false
-- landing: true/false
-- full: true/false
-- keepalive: true/false
-- fakeip: true/false
-- threshold: number
+powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 秒级极速加载最终版)
+✅ 彻底解决加载卡死：移除 nameserver-policy 的复杂 geosite 预解析，避免内核启动阻塞
+✅ 保持 geodata-loader: "standard" 高速模式
+✅ 移除 external-controller，由客户端全权管理
+✅ 智能代理组：修复 loop 循环，故障转移集成 AUTO
+✅ AI 专属代理池（自动过滤合规地区）
+✅ 规则链前置局域网/直连，精准分流
 */
 
 const NODE_SUFFIX = "节点";
@@ -46,10 +36,8 @@ function buildFeatureFlags(args) {
     return acc;
   }, {});
 
-  // 强制关闭 IPv6 / QUIC
   flags.ipv6Enabled = false;
   flags.quicEnabled = false;
-
   flags.countryThreshold = parseNumber(args.threshold, 0);
   return flags;
 }
@@ -68,86 +56,22 @@ const {
 
 // 国家元数据
 const countriesMeta = {
-  "香港": {
-    flag: "🇭🇰",
-    pattern: "(?i)香港|Hong Kong|HongKong|\\bHK\\b|🇭🇰",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Hong_Kong.png",
-  },
-  "澳门": {
-    flag: "🇲🇴",
-    pattern: "(?i)澳门|Macau|Macao|\\bMO\\b|🇲🇴",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Macao.png",
-  },
-  "台湾": {
-    flag: "🇹🇼",
-    pattern: "(?i)台湾|Taiwan|台北|新北|彰化|\\bTW\\b|🇹🇼",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Taiwan.png",
-  },
-  "新加坡": {
-    flag: "🇸🇬",
-    pattern: "(?i)新加坡|狮城|Singapore|\\bSG\\b|🇸🇬",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Singapore.png",
-  },
-  "日本": {
-    flag: "🇯🇵",
-    pattern: "(?i)日本|东京|大阪|埼玉|Japan|\\bJP\\b|🇯🇵",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Japan.png",
-  },
-  "韩国": {
-    flag: "🇰🇷",
-    pattern: "(?i)韩国|首尔|Korea|\\bKR\\b|\\bKOR\\b|🇰🇷",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Korea.png",
-  },
-  "美国": {
-    flag: "🇺🇸",
-    pattern: "(?i)美国|United States|\\bUS\\b|\\bUSA\\b|🇺🇸",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_States.png",
-  },
-  "加拿大": {
-    flag: "🇨🇦",
-    pattern: "(?i)加拿大|Canada|\\bCA\\b|🇨🇦",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Canada.png",
-  },
-  "英国": {
-    flag: "🇬🇧",
-    pattern: "(?i)英国|United Kingdom|London|伦敦|\\bUK\\b|🇬🇧",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_Kingdom.png",
-  },
-  "澳大利亚": {
-    flag: "🇦🇺",
-    pattern: "(?i)澳大利亚|澳洲|Australia|\\bAU\\b|🇦🇺",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Australia.png",
-  },
-  "德国": {
-    flag: "🇩🇪",
-    pattern: "(?i)德国|Germany|\\bDE\\b|🇩🇪",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Germany.png",
-  },
-  "法国": {
-    flag: "🇫🇷",
-    pattern: "(?i)法国|France|\\bFR\\b|🇫🇷",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/France.png",
-  },
-  "俄罗斯": {
-    flag: "🇷🇺",
-    pattern: "(?i)俄罗斯|Russia|\\bRU\\b|🇷🇺",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Russia.png",
-  },
-  "泰国": {
-    flag: "🇹🇭",
-    pattern: "(?i)泰国|Thailand|\\bTH\\b|🇹🇭",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Thailand.png",
-  },
-  "印度": {
-    flag: "🇮🇳",
-    pattern: "(?i)印度|India|\\bIN\\b|🇮🇳",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/India.png",
-  },
-  "马来西亚": {
-    flag: "🇲🇾",
-    pattern: "(?i)马来西亚|Malaysia|\\bMY\\b|🇲🇾|KUL|吉隆坡|Kuala Lumpur",
-    icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Malaysia.png",
-  },
+  "香港": { flag: "🇭🇰", pattern: "(?i)香港|Hong Kong|HongKong|\\bHK\\b|🇭🇰", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Hong_Kong.png" },
+  "澳门": { flag: "🇲🇴", pattern: "(?i)澳门|Macau|Macao|\\bMO\\b|🇲🇴", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Macao.png" },
+  "台湾": { flag: "🇹🇼", pattern: "(?i)台湾|Taiwan|台北|新北|彰化|\\bTW\\b|🇹🇼", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Taiwan.png" },
+  "新加坡": { flag: "🇸🇬", pattern: "(?i)新加坡|狮城|Singapore|\\bSG\\b|🇸🇬", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Singapore.png" },
+  "日本": { flag: "🇯🇵", pattern: "(?i)日本|东京|大阪|埼玉|Japan|\\bJP\\b|🇯🇵", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Japan.png" },
+  "韩国": { flag: "🇰🇷", pattern: "(?i)韩国|首尔|Korea|\\bKR\\b|\\bKOR\\b|🇰🇷", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Korea.png" },
+  "美国": { flag: "🇺🇸", pattern: "(?i)美国|United States|\\bUS\\b|\\bUSA\\b|🇺🇸", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_States.png" },
+  "加拿大": { flag: "🇨🇦", pattern: "(?i)加拿大|Canada|\\bCA\\b|🇨🇦", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Canada.png" },
+  "英国": { flag: "🇬🇧", pattern: "(?i)英国|United Kingdom|London|伦敦|\\bUK\\b|🇬🇧", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_Kingdom.png" },
+  "澳大利亚": { flag: "🇦🇺", pattern: "(?i)澳大利亚|澳洲|Australia|\\bAU\\b|🇦🇺", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Australia.png" },
+  "德国": { flag: "🇩🇪", pattern: "(?i)德国|Germany|\\bDE\\b|🇩🇪", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Germany.png" },
+  "法国": { flag: "🇫🇷", pattern: "(?i)法国|France|\\bFR\\b|🇫🇷", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/France.png" },
+  "俄罗斯": { flag: "🇷🇺", pattern: "(?i)俄罗斯|Russia|\\bRU\\b|🇷🇺", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Russia.png" },
+  "泰国": { flag: "🇹🇭", pattern: "(?i)泰国|Thailand|\\bTH\\b|🇹🇭", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Thailand.png" },
+  "印度": { flag: "🇮🇳", pattern: "(?i)印度|India|\\bIN\\b|🇮🇳", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/India.png" },
+  "马来西亚": { flag: "🇲🇾", pattern: "(?i)马来西亚|Malaysia|\\bMY\\b|🇲🇾|KUL|吉隆坡|Kuala Lumpur", icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Malaysia.png" },
 };
 
 function getCountryGroupNames(countryInfo, minCount) {
@@ -231,24 +155,17 @@ const ruleProviders = {
 
 /* ---------- Rules ---------- */
 const baseRules = [
-  // 1. 广告拦截与隐私保护
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
-
-  // 2. 本地局域网与专有网络直连
   `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT},no-resolve`,
-
-  // 3. 特殊国内服务直连放行
   `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
   `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
   `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
   `GEOSITE,APPLE@CN,${PROXY_GROUPS.DIRECT}`,
   `GEOSITE,MICROSOFT@CN,${PROXY_GROUPS.DIRECT}`,
-
-  // 4. 专属业务与 AI / 流媒体平台
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,OPENAI,AI",
   "GEOSITE,CLAUDE,AI",
@@ -264,22 +181,14 @@ const baseRules = [
   "GEOSITE,BAHAMUT,Bahamut",
   "GEOSITE,BILIBILI,Bilibili",
   `RULE-SET,Crypto,Crypto`,
-
-  // 5. 静态加速与 CDN
   `RULE-SET,StaticResources,静态资源`,
   `RULE-SET,CDNResources,静态资源`,
   `RULE-SET,AdditionalCDNResources,静态资源`,
-
-  // 6. GFW 代理规则
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
-
-  // 7. 国内直连库
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
-
-  // 8. 运维端口与兜底
   "DST-PORT,22,SSH(22端口)",
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
@@ -306,34 +215,30 @@ const snifferConfig = {
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-/* ---------- DNS ---------- */
+/* ---------- DNS（极简极速版，杜绝规则预加载卡死） ---------- */
 function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
-  const isFakeIp = mode === "fake-ip";
   const config = {
     enable: true,
     ipv6: ipv6Enabled,
     "prefer-h3": !!quicEnabled,
     "enhanced-mode": mode,
     "use-hosts": true,
-    "respect-rules": true,
     "default-nameserver": ["223.5.5.5", "119.29.29.29"],
     nameserver: [
-      "https://223.5.5.5/dns-query",
-      "https://1.12.12.12/dns-query"
+      "223.5.5.5",
+      "119.29.29.29",
+      "180.184.1.1",
+      "system"
     ],
     fallback: [
       "https://1.1.1.1/dns-query",
       "https://dns.google/dns-query",
       "https://dns.cloudflare.com/dns-query"
     ],
-    "nameserver-policy": {
-      "geosite:cn,private": ["https://223.5.5.5/dns-query", "119.29.29.29"],
-      "geosite:geolocation-!cn": ["https://1.1.1.1/dns-query", "https://dns.google/dns-query"]
-    },
-    "proxy-server-nameserver": ["https://223.5.5.5/dns-query", "tls://dot.pub"],
+    "proxy-server-nameserver": ["223.5.5.5", "119.29.29.29"],
   };
 
-  if (isFakeIp && fakeIpFilter) {
+  if (mode === "fake-ip" && fakeIpFilter) {
     config["fake-ip-range"] = "198.18.0.1/16";
     config["fake-ip-filter"] = fakeIpFilter;
   }
@@ -669,7 +574,6 @@ function main(config) {
     defaultFallback,
   });
 
-  // GLOBAL 全局代理组
   const globalProxies = proxyGroups.map((item) => item.name);
   proxyGroups.push({
     name: "GLOBAL",
@@ -689,8 +593,6 @@ function main(config) {
       mode: "rule",
       "unified-delay": true,
       "tcp-concurrent": true,
-      "keep-alive-idle": 600,
-      "keep-alive-interval": 30,
       "find-process-mode": "off",
       "log-level": "info",
       "disable-keep-alive": !keepAliveEnabled,
@@ -701,7 +603,7 @@ function main(config) {
     });
   }
 
-  // 关键：始终强制输出 geodata-loader: "standard"，不再依赖 fullConfig
+  // 保证极速加载
   Object.assign(resultConfig, {
     "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
