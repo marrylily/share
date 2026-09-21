@@ -1,7 +1,7 @@
 /*
 powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 客户端秒开修复版)
-✅ 修复内核加载超时：geodata-loader 改为 standard 避免冷启动假死
-✅ 修复客户端失联报错：移除硬编码 external-controller，交由 GUI 客户端自行接管
+✅ 解决加载超时：强制注入 geodata-loader: "standard"（脱离 fullConfig 依赖，杜绝 memconservative 引起的卡顿超时）
+✅ 移除冲突配置：移除 external-controller，防止客户端与内核失联
 ✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
 ✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
 ✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
@@ -449,7 +449,6 @@ function buildProxyGroups({
 
   const findGroup = (keyword) => defaultProxiesDirect.find((n) => n.includes(keyword)) || `${keyword}${NODE_SUFFIX}`;
 
-  // 提取适合 AI 的候选组（支持美/日/新/台/英/德，过滤不受支持的地区）
   const aiAllowedCountries = ["美国", "日本", "新加坡", "台湾", "英国", "德国"];
   const aiCandidateGroups = countryGroupNames.filter((name) =>
     aiAllowedCountries.some((c) => name.includes(c))
@@ -682,7 +681,6 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
-  // 移除了 external-controller 并将 geodata-loader 改为 standard，杜绝超时报错
   if (fullConfig) {
     Object.assign(resultConfig, {
       "mixed-port": 7890,
@@ -695,7 +693,6 @@ function main(config) {
       "keep-alive-interval": 30,
       "find-process-mode": "off",
       "log-level": "info",
-      "geodata-loader": "standard",
       "disable-keep-alive": !keepAliveEnabled,
       profile: {
         "store-selected": true,
@@ -704,7 +701,9 @@ function main(config) {
     });
   }
 
+  // 关键：始终强制输出 geodata-loader: "standard"，不再依赖 fullConfig
   Object.assign(resultConfig, {
+    "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
     "rule-providers": ruleProviders,
     rules: finalRules,
