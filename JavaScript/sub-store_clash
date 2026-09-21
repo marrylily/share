@@ -1,11 +1,12 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 深度优化稳定版)
+powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 客户端秒开修复版)
+✅ 修复内核加载超时：geodata-loader 改为 standard 避免冷启动假死
+✅ 修复客户端失联报错：移除硬编码 external-controller，交由 GUI 客户端自行接管
 ✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
 ✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
 ✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
-✅ 升级 DNS 架构：新增 nameserver-policy 分流与 respect-rules，杜绝国外 DNS 泄露与国内 CDN 减速
-✅ 优化分流规则链：前置局域网/直连，精准补齐 OpenAI/Claude/Apple 国内域名，避免误代理
-✅ 优化 Mihomo 内核参数：支持 store-fake-ip、memconservative 内存优化及保活调整
+✅ 升级 DNS 架构：新增 nameserver-policy 分流与 respect-rules，杜绝国外 DNS 泄露与国内 CDN 降速
+✅ 优化分流规则链：前置局域网/直连，精准补齐 OpenAI/Claude/Apple 国内域名
 ✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
 
 支持参数：
@@ -201,7 +202,6 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
     PROXY_GROUPS.MANUAL
   );
 
-  // fallback 不包含 select，使用 AUTO 进行智能兜底
   const defaultFallback = buildList(
     landing && PROXY_GROUPS.LANDING,
     countryGroupNames,
@@ -229,14 +229,14 @@ const ruleProviders = {
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
-/* ---------- Rules（精细重构分流优先级） ---------- */
+/* ---------- Rules ---------- */
 const baseRules = [
   // 1. 广告拦截与隐私保护
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
 
-  // 2. 本地局域网与专有网络直连（前置降低开销）
+  // 2. 本地局域网与专有网络直连
   `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT},no-resolve`,
 
@@ -306,7 +306,7 @@ const snifferConfig = {
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-/* ---------- DNS（支持策略分流，防止泄漏与国内 CDN 降速） ---------- */
+/* ---------- DNS ---------- */
 function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
   const isFakeIp = mode === "fake-ip";
   const config = {
@@ -449,7 +449,7 @@ function buildProxyGroups({
 
   const findGroup = (keyword) => defaultProxiesDirect.find((n) => n.includes(keyword)) || `${keyword}${NODE_SUFFIX}`;
 
-  // 提取适合 AI 的候选组（优先美/日/新/台/英/德，过滤不受支持的地区）
+  // 提取适合 AI 的候选组（支持美/日/新/台/英/德，过滤不受支持的地区）
   const aiAllowedCountries = ["美国", "日本", "新加坡", "台湾", "英国", "德国"];
   const aiCandidateGroups = countryGroupNames.filter((name) =>
     aiAllowedCountries.some((c) => name.includes(c))
@@ -682,12 +682,10 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
+  // 移除了 external-controller 并将 geodata-loader 改为 standard，杜绝超时报错
   if (fullConfig) {
     Object.assign(resultConfig, {
       "mixed-port": 7890,
-      "redir-port": 7892,
-      "tproxy-port": 7893,
-      "routing-mark": 7894,
       "allow-lan": true,
       ipv6: ipv6Enabled,
       mode: "rule",
@@ -695,10 +693,9 @@ function main(config) {
       "tcp-concurrent": true,
       "keep-alive-idle": 600,
       "keep-alive-interval": 30,
-      "find-process-mode": "strict",
+      "find-process-mode": "off",
       "log-level": "info",
-      "geodata-loader": "memconservative",
-      "external-controller": "127.0.0.1:9090",
+      "geodata-loader": "standard",
       "disable-keep-alive": !keepAliveEnabled,
       profile: {
         "store-selected": true,
