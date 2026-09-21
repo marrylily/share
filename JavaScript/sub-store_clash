@@ -1,11 +1,12 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 最终稳定版)
+powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 深度优化稳定版)
 ✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
 ✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
-✅ 已删除 AI-自动 组（界面更清爽）
-✅ 修复 RULE--SET 拼写错误
-✅ 兼容 Clash Verge / Mihomo v1.19.x
-✅ 强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
+✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
+✅ 升级 DNS 架构：新增 nameserver-policy 分流与 respect-rules，杜绝国外 DNS 泄露与国内 CDN 减速
+✅ 优化分流规则链：前置局域网/直连，精准补齐 OpenAI/Claude/Apple 国内域名，避免误代理
+✅ 优化 Mihomo 内核参数：支持 store-fake-ip、memconservative 内存优化及保活调整
+✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
 
 支持参数：
 - loadbalance: true/false
@@ -64,7 +65,7 @@ const {
   countryThreshold,
 } = buildFeatureFlags(rawArgs);
 
-// 国家元数据（短 token 做边界）
+// 国家元数据
 const countriesMeta = {
   "香港": {
     flag: "🇭🇰",
@@ -174,14 +175,7 @@ const PROXY_GROUPS = {
 
 const buildList = (...elements) => elements.flat().filter(Boolean);
 
-/**
- * ✅ 最终稳定兜底策略：
- * - 选择代理(select) 仍然把 fallback 放第一位（习惯不变）
- * - 故障转移(fallback) 不再包含 select（避免 loop）
- * - fallback 里加入 AUTO（增强兜底能力）
- */
 function buildBaseLists({ landing, lowCost, countryGroupNames }) {
-  // 选择代理（入口）
   const defaultSelector = buildList(
     PROXY_GROUPS.FALLBACK,
     landing && PROXY_GROUPS.LANDING,
@@ -207,11 +201,11 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
     PROXY_GROUPS.MANUAL
   );
 
-  // ✅ 关键：fallback 不再包含 select，但加入 AUTO（兜底更强）
+  // fallback 不包含 select，使用 AUTO 进行智能兜底
   const defaultFallback = buildList(
     landing && PROXY_GROUPS.LANDING,
     countryGroupNames,
-    PROXY_GROUPS.AUTO,          // ✅ 新增：智能兜底测速
+    PROXY_GROUPS.AUTO,
     lowCost && PROXY_GROUPS.LOW_COST,
     PROXY_GROUPS.MANUAL,
     "DIRECT"
@@ -235,24 +229,32 @@ const ruleProviders = {
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
-/* ---------- Rules ---------- */
+/* ---------- Rules（精细重构分流优先级） ---------- */
 const baseRules = [
+  // 1. 广告拦截与隐私保护
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
-  `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
-  `RULE-SET,TikTok,TikTok`,
-  `RULE-SET,EHentai,E-Hentai`,
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-  `RULE-SET,AdditionalCDNResources,静态资源`,
+
+  // 2. 本地局域网与专有网络直连（前置降低开销）
+  `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
+  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT},no-resolve`,
+
+  // 3. 特殊国内服务直连放行
   `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
   `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
   `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,APPLE@CN,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,MICROSOFT@CN,${PROXY_GROUPS.DIRECT}`,
+
+  // 4. 专属业务与 AI / 流媒体平台
   "GEOSITE,CATEGORY-AI-!CN,AI",
+  "GEOSITE,OPENAI,AI",
+  "GEOSITE,CLAUDE,AI",
+  `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
+  `RULE-SET,TikTok,TikTok`,
+  `RULE-SET,EHentai,E-Hentai`,
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
   "GEOSITE,YOUTUBE,YouTube",
@@ -261,13 +263,23 @@ const baseRules = [
   "GEOSITE,TELEGRAM,Telegram",
   "GEOSITE,BAHAMUT,Bahamut",
   "GEOSITE,BILIBILI,Bilibili",
+  `RULE-SET,Crypto,Crypto`,
+
+  // 5. 静态加速与 CDN
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+  `RULE-SET,AdditionalCDNResources,静态资源`,
+
+  // 6. GFW 代理规则
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
+
+  // 7. 国内直连库
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
+
+  // 8. 运维端口与兜底
   "DST-PORT,22,SSH(22端口)",
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
@@ -283,31 +295,48 @@ function buildRules({ quicEnabled }) {
 
 /* ---------- Sniffer ---------- */
 const snifferConfig = {
-  sniff: { TLS: { ports: [443, 8443] }, HTTP: { ports: [80, 8080, 8880] }, QUIC: { ports: [443, 8443] } },
+  sniff: {
+    TLS: { ports: [443, 8443] },
+    HTTP: { ports: [80, 8080, 8880] },
+    QUIC: { ports: [443, 8443] }
+  },
   "override-destination": false,
   enable: true,
   "force-dns-mapping": true,
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-/* ---------- DNS ---------- */
+/* ---------- DNS（支持策略分流，防止泄漏与国内 CDN 降速） ---------- */
 function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
+  const isFakeIp = mode === "fake-ip";
   const config = {
     enable: true,
     ipv6: ipv6Enabled,
     "prefer-h3": !!quicEnabled,
     "enhanced-mode": mode,
-    "default-nameserver": ["119.29.29.29", "223.5.5.5"],
-    nameserver: ["223.5.5.5", "119.29.29.29", "180.184.1.1", "system"],
+    "use-hosts": true,
+    "respect-rules": true,
+    "default-nameserver": ["223.5.5.5", "119.29.29.29"],
+    nameserver: [
+      "https://223.5.5.5/dns-query",
+      "https://1.12.12.12/dns-query"
+    ],
     fallback: [
       "https://1.1.1.1/dns-query",
       "https://dns.google/dns-query",
-      "https://dns.cloudflare.com/dns-query",
-      "tcp://208.67.222.222",
+      "https://dns.cloudflare.com/dns-query"
     ],
-    "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "tls://dot.pub"],
+    "nameserver-policy": {
+      "geosite:cn,private": ["https://223.5.5.5/dns-query", "119.29.29.29"],
+      "geosite:geolocation-!cn": ["https://1.1.1.1/dns-query", "https://dns.google/dns-query"]
+    },
+    "proxy-server-nameserver": ["https://223.5.5.5/dns-query", "tls://dot.pub"],
   };
-  if (fakeIpFilter) config["fake-ip-filter"] = fakeIpFilter;
+
+  if (isFakeIp && fakeIpFilter) {
+    config["fake-ip-range"] = "198.18.0.1/16";
+    config["fake-ip-filter"] = fakeIpFilter;
+  }
   return config;
 }
 
@@ -403,6 +432,7 @@ function buildProxyGroups({
   landing,
   countries,
   countryProxyGroups,
+  countryGroupNames,
   lowCost,
   defaultProxies,
   defaultProxiesDirect,
@@ -418,6 +448,17 @@ function buildProxyGroups({
     : [];
 
   const findGroup = (keyword) => defaultProxiesDirect.find((n) => n.includes(keyword)) || `${keyword}${NODE_SUFFIX}`;
+
+  // 提取适合 AI 的候选组（优先美/日/新/台/英/德，过滤不受支持的地区）
+  const aiAllowedCountries = ["美国", "日本", "新加坡", "台湾", "英国", "德国"];
+  const aiCandidateGroups = countryGroupNames.filter((name) =>
+    aiAllowedCountries.some((c) => name.includes(c))
+  );
+  const aiProxies = buildList(
+    aiCandidateGroups.length > 0 ? aiCandidateGroups : null,
+    PROXY_GROUPS.SELECT,
+    PROXY_GROUPS.MANUAL
+  );
 
   return [
     {
@@ -476,7 +517,7 @@ function buildProxyGroups({
       name: "AI",
       icon: "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/icons/chatgpt.png",
       type: "select",
-      proxies: defaultProxies,
+      proxies: aiProxies,
     },
     {
       name: "Telegram",
@@ -586,6 +627,8 @@ function buildProxyGroups({
           icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Lab.png",
           type: "url-test",
           url: "https://cp.cloudflare.com/generate_204",
+          interval: 300,
+          tolerance: 50,
           "include-all": true,
           filter: "(?i)0\\.[0-5]|低倍率|省流|大流量|实验性",
         }
@@ -595,7 +638,7 @@ function buildProxyGroups({
 }
 
 function main(config) {
-  const resultConfig = { proxies: config.proxies };
+  const resultConfig = { proxies: config.proxies || [] };
 
   const countryInfo = parseCountries(resultConfig);
   const lowCost = hasLowCost(resultConfig);
@@ -619,6 +662,7 @@ function main(config) {
     landing,
     countries,
     countryProxyGroups,
+    countryGroupNames,
     lowCost,
     defaultProxies,
     defaultProxiesDirect,
@@ -626,7 +670,7 @@ function main(config) {
     defaultFallback,
   });
 
-  // GLOBAL
+  // GLOBAL 全局代理组
   const globalProxies = proxyGroups.map((item) => item.name);
   proxyGroups.push({
     name: "GLOBAL",
@@ -638,7 +682,7 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
-  if (fullConfig)
+  if (fullConfig) {
     Object.assign(resultConfig, {
       "mixed-port": 7890,
       "redir-port": 7892,
@@ -649,13 +693,19 @@ function main(config) {
       mode: "rule",
       "unified-delay": true,
       "tcp-concurrent": true,
-      "find-process-mode": "off",
+      "keep-alive-idle": 600,
+      "keep-alive-interval": 30,
+      "find-process-mode": "strict",
       "log-level": "info",
-      "geodata-loader": "standard",
-      "external-controller": ":9999",
+      "geodata-loader": "memconservative",
+      "external-controller": "127.0.0.1:9090",
       "disable-keep-alive": !keepAliveEnabled,
-      profile: { "store-selected": true },
+      profile: {
+        "store-selected": true,
+        "store-fake-ip": true,
+      },
     });
+  }
 
   Object.assign(resultConfig, {
     "proxy-groups": proxyGroups,
