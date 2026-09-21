@@ -1,19 +1,8 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - GitHub 修复终极版)
-✅ 解决 GitHub 误走直连超时：在 MICROSOFT 规则前置拦截 GitHub 域名与 GEOSITE 走代理
-✅ 解决启动超时与报错：移除引发死锁的 DoH 与冗余 geosite 配置，保持轻量秒加载
-✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
-✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
-✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
-✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
-
-支持参数：
-- loadbalance: true/false
-- landing: true/false
-- full: true/false
-- keepalive: true/false
-- fakeip: true/false
-- threshold: number
+powerfullz 的 Substore 订阅转换脚本 (最终稳定重置版)
+✅ 解决配置校验失败：移除引发无限循环死锁的嵌套组，回归原版最稳定的代理树结构
+✅ 解决 GitHub 直连超时：在 MICROSOFT 规则前置拦截 GitHub 域名走代理
+✅ 解决加载卡死：移除 external-controller 端口冲突，默认采用 standard 极速加载
 */
 
 const NODE_SUFFIX = "节点";
@@ -109,6 +98,7 @@ const PROXY_GROUPS = {
 const buildList = (...elements) => elements.flat().filter(Boolean);
 
 function buildBaseLists({ landing, lowCost, countryGroupNames }) {
+  // 恢复最原版的架构，彻底解决死循环报错
   const defaultSelector = buildList(
     PROXY_GROUPS.FALLBACK,
     landing && PROXY_GROUPS.LANDING,
@@ -137,7 +127,6 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
   const defaultFallback = buildList(
     landing && PROXY_GROUPS.LANDING,
     countryGroupNames,
-    PROXY_GROUPS.AUTO,
     lowCost && PROXY_GROUPS.LOW_COST,
     PROXY_GROUPS.MANUAL,
     "DIRECT"
@@ -163,37 +152,31 @@ const ruleProviders = {
 
 /* ---------- Rules ---------- */
 const baseRules = [
-  // 1. 基础拦截与广告
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
-
-  // 2. 特殊系统直连
-  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
-  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
-  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
-  `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
-
-  // 3. ✅ 核心修复：在 MICROSOFT 之前拦截 GitHub，走代理
-  `GEOSITE,GITHUB,${PROXY_GROUPS.SELECT}`,
-  `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
-  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
-  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
-
-  // 4. 其余微软服务直连
-  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
-
-  // 5. 业务专线与 AI / 流媒体
-  "GEOSITE,CATEGORY-AI-!CN,AI",
-  "GEOSITE,OPENAI,AI",
-  "GEOSITE,CLAUDE,AI",
   `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
   `RULE-SET,TikTok,TikTok`,
   `RULE-SET,EHentai,E-Hentai`,
   `RULE-SET,StaticResources,静态资源`,
   `RULE-SET,CDNResources,静态资源`,
   `RULE-SET,AdditionalCDNResources,静态资源`,
+  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
+  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
+  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
+  `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+  
+  // ✅ 强制把 GitHub 提前截取走代理（彻底解决直连超时）
+  `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-SUFFIX,github.io,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
+  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
+  
+  // GitHub 截胡完之后，再让其他微软业务正常直连
+  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
+  
+  "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
   "GEOSITE,YOUTUBE,YouTube",
@@ -203,8 +186,6 @@ const baseRules = [
   "GEOSITE,BAHAMUT,Bahamut",
   "GEOSITE,BILIBILI,Bilibili",
   `RULE-SET,Crypto,Crypto`,
-
-  // 6. GFW 与国内分流
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
@@ -351,7 +332,6 @@ function buildProxyGroups({
   landing,
   countries,
   countryProxyGroups,
-  countryGroupNames,
   lowCost,
   defaultProxies,
   defaultProxiesDirect,
@@ -367,16 +347,6 @@ function buildProxyGroups({
     : [];
 
   const findGroup = (keyword) => defaultProxiesDirect.find((n) => n.includes(keyword)) || `${keyword}${NODE_SUFFIX}`;
-
-  const aiAllowedCountries = ["美国", "日本", "新加坡", "台湾", "英国", "德国"];
-  const aiCandidateGroups = countryGroupNames.filter((name) =>
-    aiAllowedCountries.some((c) => name.includes(c))
-  );
-  const aiProxies = buildList(
-    aiCandidateGroups.length > 0 ? aiCandidateGroups : null,
-    PROXY_GROUPS.SELECT,
-    PROXY_GROUPS.MANUAL
-  );
 
   return [
     {
@@ -399,8 +369,9 @@ function buildProxyGroups({
       interval: 120,
       tolerance: 50,
       "include-all": true,
+      // 严密排除所有内部组名，彻底斩断潜在死循环
       "exclude-filter":
-        "(?i)家宽|家庭|商宽|落地|0\\.[0-5]|低倍率|中国|\\bCN\\b|China|回国|移动|电信|联通|Mobile|Telecom|Unicom|CMCC|CUCC|CTCC|中转|回国.*BGP|BGP.*回国|中转.*BGP|BGP.*中转",
+        "(?i)家宽|家庭|商宽|落地|0\\.[0-5]|低倍率|中国|\\bCN\\b|China|回国|移动|电信|联通|Mobile|Telecom|Unicom|CMCC|CUCC|CTCC|中转|回国.*BGP|BGP.*回国|中转.*BGP|BGP.*中转|选择|代理|转移|直连|拦截",
     },
     landing
       ? {
@@ -435,7 +406,7 @@ function buildProxyGroups({
       name: "AI",
       icon: "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/icons/chatgpt.png",
       type: "select",
-      proxies: aiProxies,
+      proxies: defaultProxies,
     },
     {
       name: "Telegram",
@@ -580,7 +551,6 @@ function main(config) {
     landing,
     countries,
     countryProxyGroups,
-    countryGroupNames,
     lowCost,
     defaultProxies,
     defaultProxiesDirect,
@@ -599,8 +569,26 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
-  // 避免注入冲突参数，完全适配客户端环境
+  // 严密的安全配置注入
+  if (fullConfig) {
+    Object.assign(resultConfig, {
+      "mixed-port": 7890,
+      "allow-lan": true,
+      ipv6: ipv6Enabled,
+      mode: "rule",
+      "unified-delay": true,
+      "tcp-concurrent": true,
+      "find-process-mode": "off",
+      "log-level": "info",
+      "geodata-loader": "standard", // 使用 standard 加速启动
+      "disable-keep-alive": !keepAliveEnabled,
+      profile: { "store-selected": true },
+    });
+  }
+
+  // 最终合成
   Object.assign(resultConfig, {
+    "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
     "rule-providers": ruleProviders,
     rules: finalRules,
