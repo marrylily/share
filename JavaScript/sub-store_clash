@@ -3,7 +3,7 @@ powerfullz 的 Substore 订阅转换脚本 (最终稳定重置版)
 ✅ 解决配置校验失败：移除引发无限循环死锁的嵌套组，回归原版最稳定的代理树结构
 ✅ 解决 GitHub 直连超时：在 MICROSOFT 规则前置拦截 GitHub 域名走代理
 ✅ 解决加载卡死：移除 external-controller 端口冲突，默认采用 standard 极速加载
-✅ 修复 E-Hentai 图标无法显示：将 raw.github 域名替换为国内可直连的 jsdelivr CDN 加速链接
+✅ 修复 E-Hentai 图标无法显示：更换为 fastly 高速节点，规避 gcore 缓存失效
 */
 
 const NODE_SUFFIX = "节点";
@@ -99,7 +99,6 @@ const PROXY_GROUPS = {
 const buildList = (...elements) => elements.flat().filter(Boolean);
 
 function buildBaseLists({ landing, lowCost, countryGroupNames }) {
-  // 恢复最原版的架构，彻底解决死循环报错
   const defaultSelector = buildList(
     PROXY_GROUPS.FALLBACK,
     landing && PROXY_GROUPS.LANDING,
@@ -168,13 +167,11 @@ const baseRules = [
   `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
   `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
   
-  // ✅ 强制把 GitHub 提前截取走代理（彻底解决直连超时）
   `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
   `DOMAIN-SUFFIX,github.io,${PROXY_GROUPS.SELECT}`,
   `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
   `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
   
-  // GitHub 截胡完之后，再让其他微软业务正常直连
   `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
   
   "GEOSITE,CATEGORY-AI-!CN,AI",
@@ -452,8 +449,8 @@ function buildProxyGroups({
     },
     {
       name: "E-Hentai",
-      // ✅ 将 raw.github 替换为通用且国内不墙的 jsdelivr CDN 源
-      icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
+      // ✅ 强制更换为 fastly 高速节点
+      icon: "https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
       type: "select",
       proxies: defaultProxies,
     },
@@ -570,7 +567,6 @@ function main(config) {
 
   const finalRules = buildRules({ quicEnabled });
 
-  // 严密的安全配置注入
   if (fullConfig) {
     Object.assign(resultConfig, {
       "mixed-port": 7890,
@@ -581,13 +577,12 @@ function main(config) {
       "tcp-concurrent": true,
       "find-process-mode": "off",
       "log-level": "info",
-      "geodata-loader": "standard", // 使用 standard 加速启动
+      "geodata-loader": "standard",
       "disable-keep-alive": !keepAliveEnabled,
       profile: { "store-selected": true },
     });
   }
 
-  // 最终合成
   Object.assign(resultConfig, {
     "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
