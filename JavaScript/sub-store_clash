@@ -1,11 +1,10 @@
 /*
-powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 秒级极速加载最终版)
-✅ 彻底解决加载卡死：移除 nameserver-policy 的复杂 geosite 预解析，避免内核启动阻塞
-✅ 保持 geodata-loader: "standard" 高速模式
-✅ 移除 external-controller，由客户端全权管理
-✅ 智能代理组：修复 loop 循环，故障转移集成 AUTO
-✅ AI 专属代理池（自动过滤合规地区）
-✅ 规则链前置局域网/直连，精准分流
+powerfullz 的 Substore 订阅转换脚本 (日常使用优化版 - 客户端秒开修复终极版)
+✅ 解决内核启动卡死：清理 fake-ip-filter 中的冗余 geosite 规则与未解析 DoH
+✅ 修复 ProxyGroup loop 循环报错（故障转移不再包含选择代理）
+✅ 故障转移(Fallback) 增加 AUTO(自动选择) 作为智能兜底
+✅ 升级 AI 分流策略：自动筛选可用国家池（美/日/新/台/英/德），剔除容易被拒地区
+✅ 修复 RULE-SET 拼写错误，强制关闭 IPv6 / QUIC（且禁 QUIC 规则用 AND 写法）
 */
 
 const NODE_SUFFIX = "节点";
@@ -215,31 +214,30 @@ const snifferConfig = {
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-/* ---------- DNS（极简极速版，杜绝规则预加载卡死） ---------- */
+/* ---------- DNS（彻底纯净化，使用纯 IP，防止启动时解析死锁） ---------- */
 function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
   const config = {
     enable: true,
-    ipv6: ipv6Enabled,
-    "prefer-h3": !!quicEnabled,
+    ipv6: false,
+    "prefer-h3": false,
     "enhanced-mode": mode,
     "use-hosts": true,
     "default-nameserver": ["223.5.5.5", "119.29.29.29"],
     nameserver: [
       "223.5.5.5",
       "119.29.29.29",
-      "180.184.1.1",
-      "system"
+      "180.184.1.1"
     ],
     fallback: [
       "https://1.1.1.1/dns-query",
-      "https://dns.google/dns-query",
-      "https://dns.cloudflare.com/dns-query"
+      "https://dns.google/dns-query"
     ],
     "proxy-server-nameserver": ["223.5.5.5", "119.29.29.29"],
   };
 
   if (mode === "fake-ip" && fakeIpFilter) {
     config["fake-ip-range"] = "198.18.0.1/16";
+    // 关键优化：只留纯域名通配符，移除会导致预加载死锁的 geosite 标签
     config["fake-ip-filter"] = fakeIpFilter;
   }
   return config;
@@ -250,15 +248,15 @@ const dnsConfigFakeIp = buildDnsConfig({
   mode: "fake-ip",
   quicEnabled,
   fakeIpFilter: [
-    "geosite:private",
-    "geosite:connectivity-check",
-    "geosite:cn",
-    "Mijia Cloud",
-    "dig.io.mi.com",
+    "*.lan",
+    "*.local",
     "localhost.ptlogin2.qq.com",
     "*.icloud.com",
+    "*.apple.com",
     "*.stun.*.*",
     "*.stun.*.*.*",
+    "time.*.com",
+    "ntp.*.com",
   ],
 });
 
@@ -589,7 +587,7 @@ function main(config) {
     Object.assign(resultConfig, {
       "mixed-port": 7890,
       "allow-lan": true,
-      ipv6: ipv6Enabled,
+      ipv6: false,
       mode: "rule",
       "unified-delay": true,
       "tcp-concurrent": true,
@@ -603,7 +601,7 @@ function main(config) {
     });
   }
 
-  // 保证极速加载
+  // 核心装配
   Object.assign(resultConfig, {
     "geodata-loader": "standard",
     "proxy-groups": proxyGroups,
