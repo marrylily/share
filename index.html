@@ -77,7 +77,8 @@
                         </select>
                     </div>
                     <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="text" id="p-prod-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <!-- 修改处：纯文本框+简写支持 -->
+                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="text" id="p-prod-date" placeholder="可打 9.3 或 0903" onblur="this.value=normalizeDate(this.value)" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
                 </div>
             </div>
@@ -140,7 +141,8 @@
                 <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">🔄 新建老品回厂跟进任务</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs mb-2.5">
                     <div><label class="block text-gray-600 mb-1">产品名称 / 型号 <span class="text-red-500">*</span></label><input type="text" id="r-name" placeholder="如: Q60S" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="text" id="r-eta-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <!-- 修改处：纯文本框+简写支持 -->
+                    <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="text" id="r-eta-date" placeholder="可打 9.3 或 0903" onblur="this.value=normalizeDate(this.value)" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addReturnTask()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">＋ 建立回厂任务</button></div>
                 </div>
                 <div>
@@ -284,7 +286,8 @@
                     <option value="代发">📦 一件代发</option>
                 </select>
                 <input type="text" id="edit-category" class="w-full border p-2 rounded" placeholder="品类">
-                <input type="text" id="edit-prod-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full border p-2 rounded">
+                <!-- 修改处：纯文本框+简写支持 -->
+                <input type="text" id="edit-prod-date" placeholder="可打 9.3 或 0903" onblur="this.value=normalizeDate(this.value)" class="w-full border p-2 rounded">
                 <input type="text" id="edit-reason" class="w-full border p-2 rounded" placeholder="备注">
             </div>
             <div class="flex justify-end space-x-2 mt-4"><button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存</button></div>
@@ -365,31 +368,36 @@
         function getNowString(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
         function escapeHtml(v){ return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
         
+        // 【修改处：生成本地无时差偏差的日期（解决倒计天数错误 Bug）】
+        function getLocalDateString() {
+            let d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // 【修改处：升级版日期解析（支持 9.3, 0903, 20260903 等简写扩展，彻底摆脱系统控件劫持）】
         function normalizeDate(v) {
             let s = String(v || "").trim();
             if (!s) return "";
+            let y = new Date().getFullYear();
             
-            // 匹配 YYYY-MM-DD 或 YYYY/MM/DD
+            // 8位纯数字 (20260920) -> 2026-09-20
+            if (/^\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+            
+            // 4位纯数字 (0920) -> 今年-09-20
+            if (/^\d{4}$/.test(s)) return `${y}-${s.slice(0,2)}-${s.slice(2,4)}`;
+            
+            // 短日期格式 (9.3, 9/3, 9-3, 09.03) -> 今年-09-03
+            let mShort = s.match(/^(\d{1,2})[-\/\.](\d{1,2})$/);
+            if (mShort) return `${y}-${String(mShort[1]).padStart(2, "0")}-${String(mShort[2]).padStart(2, "0")}`;
+            
+            // 标准/常见全日期格式 (2026-9-3, 2026/09/03, 2026.9.3)
             let m1 = s.match(/^(\d{4})[-\/\.](\d{1,2})[-\/\.](\d{1,2})/);
             if (m1) return `${m1[1]}-${String(m1[2]).padStart(2, "0")}-${String(m1[3]).padStart(2, "0")}`;
             
-            // 匹配 MM/DD/YYYY 或 DD/MM/YYYY (例如 03/09/2026)
-            let m2 = s.match(/^(\d{1,2})[-\/\.](\d{1,2})[-\/\.](\d{4})/);
-            if (m2) {
-                let p1 = parseInt(m2[1], 10), p2 = parseInt(m2[2], 10), year = m2[3];
-                // 如果第一位大于12，说明第一位必定是日期 (DD/MM/YYYY)
-                let month = p1 > 12 ? p2 : p1;
-                let day = p1 > 12 ? p1 : p2;
-                return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            }
-            
-            // 原生 Date 兜底
+            // 兜底原生 Date 解析
             let d = new Date(s);
             if (!isNaN(d.getTime())) {
-                let y = d.getFullYear();
-                let m = String(d.getMonth() + 1).padStart(2, "0");
-                let day = String(d.getDate()).padStart(2, "0");
-                return `${y}-${m}-${day}`;
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             }
             return s;
         }
@@ -401,7 +409,8 @@
             let times = [];
             if (p.prodDate) times.push(new Date(p.prodDate).getTime());
             (p.skus || []).forEach(s => {
-                let m = (s.skuRemark || '').match(/(?:20\d{2}[-\/年])?(\d{1,2})[-\/月](\d{1,2})/);
+                // 【修改处：允许 "." 作为日期的分隔符】
+                let m = (s.skuRemark || '').match(/(?:20\d{2}[-\/\.年])?(\d{1,2})[-\/\.月](\d{1,2})/);
                 if (m) {
                     let y = (s.skuRemark.match(/20\d{2}/) || [new Date().getFullYear()])[0];
                     times.push(new Date(`${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}T00:00:00`).getTime());
@@ -727,9 +736,10 @@
             alert("导入与更新完毕！");
         }
 
+        // 【修改处：全局状态和表格渲染调用无偏差的新日期获取函数】
         function updateGlobalStatsUI(type) {
             if (type === 'MATRIX') {
-                let t=products.length, r=products.filter(p=>p.status!=='已归档').length, a=products.filter(p=>p.status==='已归档').length, tD=new Date().toISOString().split('T')[0];
+                let t=products.length, r=products.filter(p=>p.status!=='已归档').length, a=products.filter(p=>p.status==='已归档').length, tD=getLocalDateString();
                 let d=products.filter(p=>p.status!=='已归档'&&p.prodDate&&Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000)<0).length;
                 if(document.getElementById("stat-total")) document.getElementById("stat-total").innerText = t;
                 if(document.getElementById("stat-running")) document.getElementById("stat-running").innerText = r;
@@ -738,7 +748,7 @@
                 if(document.getElementById("tab-count-running")) document.getElementById("tab-count-running").innerText = r;
                 if(document.getElementById("tab-count-archived")) document.getElementById("tab-count-archived").innerText = a;
             } else if (type === 'RETURNS') {
-                let t=globalReturns.length, doC=globalReturns.filter(r=>r.status==="已完成"||r.status==="✅ 已完成").length, tD=new Date().toISOString().split('T')[0];
+                let t=globalReturns.length, doC=globalReturns.filter(r=>r.status==="已完成"||r.status==="✅ 已完成").length, tD=getLocalDateString();
                 let d=globalReturns.filter(r=>r.status!=="已完成"&&r.status!=="✅ 已完成"&&r.etaDate&&Math.ceil((new Date(r.etaDate)-new Date(tD))/86400000)<0).length;
                 if(document.getElementById("stat-returns-total")) document.getElementById("stat-returns-total").innerText = t;
                 if(document.getElementById("stat-returns-done")) document.getElementById("stat-returns-done").innerText = doC;
@@ -755,7 +765,7 @@
             let so=document.getElementById("sort-order")?.value||"DEFAULT";
             
             const cs=document.getElementById("filter-category"); if(cs&&cs.options.length<=1){cs.innerHTML='<option value="ALL">全部品类</option>'+Array.from(new Set(products.map(p=>p.category).filter(Boolean))).map(c=>`<option value="${c}">${c}</option>`).join("");cs.value=fc;}
-            let tD=new Date().toISOString().split('T')[0];
+            let tD = getLocalDateString(); // 调用修好的本地日期函数
 
             let displayList = products.filter(p => {
                 let arc=(p.status==="已归档"); 
@@ -856,7 +866,7 @@
         function renderReturnsTable() {
             const tb=document.getElementById("returns-table-body"); if(!tb)return; tb.innerHTML="";
             updateGlobalStatsUI('RETURNS');
-            let kw=(document.getElementById("search-returns-input")?.value||"").trim().toLowerCase(), tD=new Date().toISOString().split('T')[0];
+            let kw=(document.getElementById("search-returns-input")?.value||"").trim().toLowerCase(), tD=getLocalDateString();
             
             globalReturns.forEach(r=>{
                 let df=r.etaDate?Math.ceil((new Date(r.etaDate)-new Date(tD))/86400000):999;
@@ -1003,7 +1013,7 @@
             let rows=["系列,研发类型,子规格,排期与备注,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,全局备注,大备注"];
             sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${p.sourceType||'自研'}","${s.name}","${s.skuRemark||''}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
             let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
-            let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+            let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${getLocalDateString()}.csv`; a.click();
         }
         function copyReadOnlyShareLink() {
             let o=localStorage.getItem("wb_owner")||"", r=localStorage.getItem("wb_repo")||"", gb=localStorage.getItem("wb_gist_barcodes")||"", tr=localStorage.getItem("wb_token_repo")||"", tg=localStorage.getItem("wb_token_gist")||"";
