@@ -77,7 +77,7 @@
                         </select>
                     </div>
                     <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="date" id="p-prod-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="text" id="p-prod-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
                 </div>
             </div>
@@ -140,7 +140,7 @@
                 <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">🔄 新建老品回厂跟进任务</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs mb-2.5">
                     <div><label class="block text-gray-600 mb-1">产品名称 / 型号 <span class="text-red-500">*</span></label><input type="text" id="r-name" placeholder="如: Q60S" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="date" id="r-eta-date" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
+                    <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="text" id="r-eta-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div class="flex items-end"><button type="button" onclick="addReturnTask()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">＋ 建立回厂任务</button></div>
                 </div>
                 <div>
@@ -284,7 +284,7 @@
                     <option value="代发">📦 一件代发</option>
                 </select>
                 <input type="text" id="edit-category" class="w-full border p-2 rounded" placeholder="品类">
-                <input type="date" id="edit-prod-date" class="w-full border p-2 rounded">
+                <input type="text" id="edit-prod-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" class="w-full border p-2 rounded">
                 <input type="text" id="edit-reason" class="w-full border p-2 rounded" placeholder="备注">
             </div>
             <div class="flex justify-end space-x-2 mt-4"><button onclick="closeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveEditChanges()" class="px-3 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存</button></div>
@@ -364,7 +364,36 @@
         function safeBase64Decode(s){ try{return decodeURIComponent(escape(atob(s.replace(/\s/g,''))))}catch(e){return atob(s.replace(/\s/g,''))} }
         function getNowString(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
         function escapeHtml(v){ return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-        function normalizeDate(v){ const m=String(v||"").trim().match(/^(\d{4})[-\/\.](\d{1,2})[-\/\.](\d{1,2})/); return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:String(v||"").trim(); }
+        
+        function normalizeDate(v) {
+            let s = String(v || "").trim();
+            if (!s) return "";
+            
+            // 匹配 YYYY-MM-DD 或 YYYY/MM/DD
+            let m1 = s.match(/^(\d{4})[-\/\.](\d{1,2})[-\/\.](\d{1,2})/);
+            if (m1) return `${m1[1]}-${String(m1[2]).padStart(2, "0")}-${String(m1[3]).padStart(2, "0")}`;
+            
+            // 匹配 MM/DD/YYYY 或 DD/MM/YYYY (例如 03/09/2026)
+            let m2 = s.match(/^(\d{1,2})[-\/\.](\d{1,2})[-\/\.](\d{4})/);
+            if (m2) {
+                let p1 = parseInt(m2[1], 10), p2 = parseInt(m2[2], 10), year = m2[3];
+                // 如果第一位大于12，说明第一位必定是日期 (DD/MM/YYYY)
+                let month = p1 > 12 ? p2 : p1;
+                let day = p1 > 12 ? p1 : p2;
+                return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            }
+            
+            // 原生 Date 兜底
+            let d = new Date(s);
+            if (!isNaN(d.getTime())) {
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, "0");
+                let day = String(d.getDate()).padStart(2, "0");
+                return `${y}-${m}-${day}`;
+            }
+            return s;
+        }
+
         function renderFormattedText(t){ return escapeHtml(t).replace(/~~([^~]+)~~/g,"<s>$1</s>").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>').replace(/\r?\n/g,"<br>"); }
         function lockBodyScroll(l){ document.body.style.overflow=l?"hidden":""; }
 
@@ -389,7 +418,7 @@
                     name: x.name||"未命名", 
                     sourceType: x.sourceType || "自研",
                     category: x.category||"常规", 
-                    prodDate: x.prodDate||"", 
+                    prodDate: normalizeDate(x.prodDate), 
                     remark: x.remark||"", 
                     bigNote: x.bigNote||"", 
                     status: x.status||"进行中", 
@@ -407,7 +436,7 @@
                         nodeRecords: s.nodeRecords||{}
                     }))
                 })),
-                oldReturns: r.map(x=>({id:String(x.id||"R_"+Math.random()), name:x.name||"未命名", etaDate:x.etaDate||"", skus:x.skus||"", status:x.status||"进行中", bigNote:x.bigNote||"", createdAt:x.createdAt||"", historyLogs:x.historyLogs||[]})),
+                oldReturns: r.map(x=>({id:String(x.id||"R_"+Math.random()), name:x.name||"未命名", etaDate:normalizeDate(x.etaDate), skus:x.skus||"", status:x.status||"进行中", bigNote:x.bigNote||"", createdAt:x.createdAt||"", historyLogs:x.historyLogs||[]})),
                 memos: m
             };
         }
@@ -472,7 +501,6 @@
             try{ let h={"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; let c=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:h}); if(c.ok){let cd=await c.json();fileSha=cd.sha;} let b64=btoa(unescape(encodeURIComponent(JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos},null,2)))); let u=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{method:"PUT",headers:h,body:JSON.stringify({message:`Update`,content:b64,sha:fileSha})}); if(u.ok){let ud=await u.json();fileSha=ud.content.sha;} }catch(e){}
         }
 
-        /* 修复：直接以当前 globalBarcodes 覆盖云端 Gist，彻底解决删除后旧数据复活的问题 */
         async function syncBarcodesToGist() {
             if (isReadOnlyMode) return;
             const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes")),
@@ -508,35 +536,30 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        /* 修复：精准拆分，优先匹配 69 码与数字 SKU，提取剩余文字为产品名称，避免名称错位成 SKU */
         function smartParseBarcodeLine(line, index) {
             let parts = line.includes('\t') ? line.split('\t').map(s => s.trim()) : line.split(/[\s,]+/).filter(Boolean);
             if (!parts.length) return { name: "", sap: "", barcode: "", remark: "" };
 
             let barcode = "", sap = "", name = "", remark = "";
 
-            // 1. 抓取 69 条码
             let bIdx = parts.findIndex(p => /^(69\d{11}|\d{13,14})$/.test(p));
             if (bIdx !== -1) {
                 barcode = parts[bIdx];
                 parts.splice(bIdx, 1);
             }
 
-            // 2. 抓取 6-12 位的纯数字 SKU 编码
             let sIdx = parts.findIndex(p => /^\d{6,12}$/.test(p));
             if (sIdx !== -1) {
                 sap = parts[sIdx];
                 parts.splice(sIdx, 1);
             }
 
-            // 3. 识别是否含有明示的“无编码”占位词
             let noCodeIdx = parts.findIndex(p => /^(无编码|暂无编码|待申请|-)$/.test(p));
             if (noCodeIdx !== -1) {
                 if (!sap) sap = parts[noCodeIdx];
                 parts.splice(noCodeIdx, 1);
             }
 
-            // 4. 其余文字：首项作为产品名称，剩余作为备注
             if (parts.length > 0) {
                 name = parts[0];
                 remark = parts.slice(1).join(" ");
@@ -576,7 +599,6 @@
             lockBodyScroll(!modal.classList.contains("hidden"));
         }
 
-        /* 修复：支持无编码/T套装（"无编码"占位）正常导入，不再视为重复项一并丢弃 */
         function analyzeBarcodeBatchImport() {
             let txt = document.getElementById("barcode-batch-import-text").value.trim();
             let sE = document.getElementById("barcode-analysis-stats");
@@ -613,7 +635,6 @@
                 let nl = n.toLowerCase(), sl = s.toLowerCase(), bl = b.toLowerCase(), ic = false;
                 let isRealSap = sl && !['无编码', '待申请', '-', '无', '待定'].includes(sl);
                 
-                // 冲突检查：仅对真实的有效纯数字编码进行唯一性拦截
                 if (isRealSap) { 
                     let ex = esM[sl] || bmS[sl]; 
                     if (ex && (ex.name||'').toLowerCase() !== nl) {
@@ -630,7 +651,6 @@
                 }
                 if (ic) return;
 
-                // 区分主键：如果属于“无编码”套装，结合型号名称与条码（或行号）作为独立主键，避免多条“无编码”撞车
                 let bk = isRealSap ? `${nl}_${sl}_${bl}` : `${nl}_${bl || ('row_' + i)}`;
                 let exactMatch = false;
                 let updateMatch = null;
@@ -641,7 +661,6 @@
                     let exBl = (ex.barcode || '').toLowerCase();
                     let exIsReal = exSl && !['无编码', '待申请', '-', '无', '待定'].includes(exSl);
 
-                    // 库中完全一致匹配判断
                     if (isRealSap && exIsReal && exSl === sl && exBl === bl) { 
                         exactMatch = true; break; 
                     }
@@ -904,7 +923,7 @@
         function quickEditSeriesName(id){ let p=products.find(x=>x.id===id), n=prompt("系列名:",p.name); if(n&&n!==p.name){p.name=n; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:`更名:${n}`}); renderTable(); syncMatrixToCloud();} }
         function openEditModal(id){ currentEditingId=id; let p=products.find(x=>x.id===id); document.getElementById("edit-name").value=p.name; document.getElementById("edit-source-type").value=p.sourceType||"自研"; document.getElementById("edit-category").value=p.category; document.getElementById("edit-prod-date").value=p.prodDate; document.getElementById("edit-reason").value=p.remark; document.getElementById("edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeEditModal(){ document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveEditChanges(){ let p=products.find(x=>x.id===currentEditingId); p.name=document.getElementById("edit-name").value; p.sourceType=document.getElementById("edit-source-type").value; p.category=document.getElementById("edit-category").value; p.prodDate=document.getElementById("edit-prod-date").value; p.remark=document.getElementById("edit-reason").value; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新排期"}); closeEditModal(); renderTable(); syncMatrixToCloud(); }
+        function saveEditChanges(){ let p=products.find(x=>x.id===currentEditingId); p.name=document.getElementById("edit-name").value; p.sourceType=document.getElementById("edit-source-type").value; p.category=document.getElementById("edit-category").value; p.prodDate=normalizeDate(document.getElementById("edit-prod-date").value); p.remark=document.getElementById("edit-reason").value; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新排期"}); closeEditModal(); renderTable(); syncMatrixToCloud(); }
 
         function addNewSkuToProd(pid){ let p=products.find(x=>x.id===pid), n=prompt("新规格:"); if(n){p.skus.push({id:"S_"+Date.now(),name:n,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}); renderTable(); syncMatrixToCloud();} }
         function quickEditSkuName(pid,sid){ let s=products.find(x=>x.id===pid)?.skus.find(x=>x.id===sid), n=prompt("规格名称:",s.name); if(n&&n!==s.name){s.name=n; renderTable(); syncMatrixToCloud();} }
@@ -958,7 +977,6 @@
         function closeBarcodeEditModal(){ document.getElementById("barcode-edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
 
-        /* 修复：单条删除后立刻刷新本地并直接写回 Gist，不再与旧数据合并恢复 */
         function removeBarcode(idx){ 
             if(confirm("确认彻底删除此 69 码记录？")){
                 globalBarcodes.splice(idx, 1); 
