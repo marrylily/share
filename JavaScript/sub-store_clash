@@ -1,6 +1,7 @@
 /*
 powerfullz 的 Substore 订阅转换脚本
 修复了：代理死循环、GitHub 直连超时、EHentai 图标不显示
+优化了：分流规则逻辑顺序与层级
 */
 
 const NODE_SUFFIX = "节点";
@@ -145,28 +146,39 @@ const ruleProviders = {
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
+// 【优化重点】重新排序了分流规则，按照优先级从高到低执行
 const baseRules = [
+  // 1. 局域网与防泄露 (最高优先级)
+  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
+  "DST-PORT,22,SSH(22端口)",
+
+  // 2. 广告与隐私拦截
   `RULE-SET,ADBlock,广告拦截`,
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
-  `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
-  `RULE-SET,TikTok,TikTok`,
-  `RULE-SET,EHentai,E-Hentai`,
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-  `RULE-SET,AdditionalCDNResources,静态资源`,
+
+  // 3. 微软、苹果、谷歌基础云服务直连
+  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
   `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
   `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
   `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
-  `GEOSITE,GOOGLE-PLAY@CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+
+  // 4. 静态 CDN 资源 
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+  `RULE-SET,AdditionalCDNResources,静态资源`,
   
+  // 5. GitHub 及特定应用走代理
   `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
   `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
   `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
-  
-  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
-  
+  `RULE-SET,TikTok,TikTok`,
+  `RULE-SET,EHentai,E-Hentai`,
+  `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
+  `RULE-SET,Crypto,Crypto`,
+
+  // 6. 流媒体与 AI 专线分流
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
@@ -176,15 +188,15 @@ const baseRules = [
   "GEOSITE,TELEGRAM,Telegram",
   "GEOSITE,BAHAMUT,Bahamut",
   "GEOSITE,BILIBILI,Bilibili",
-  `RULE-SET,Crypto,Crypto`,
-  `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
-  `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
+
+  // 7. 大网段兜底分流 (GFW走代理，CN走直连)
+  `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
+  `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
-  `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
-  "DST-PORT,22,SSH(22端口)",
+  
+  // 8. 最终兜底规则
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
 
@@ -440,7 +452,8 @@ function buildProxyGroups({
     },
     {
       name: "E-Hentai",
-      icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
+      // 【修改说明】已经将图标源替换为另一个拥有该图标的图库
+      icon: "https://gcore.jsdelivr.net/gh/Orz-3/mini@master/Color/Ehviewer.png",
       type: "select",
       proxies: defaultProxies,
     },
