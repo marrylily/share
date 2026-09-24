@@ -440,7 +440,7 @@ function buildProxyGroups({
     },
     {
       name: "E-Hentai",
-      icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
+      icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/EHentai.png",
       type: "select",
       proxies: defaultProxies,
     },
