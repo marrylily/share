@@ -1,7 +1,7 @@
 /*
 powerfullz 的 Substore 订阅转换脚本
-修复了：代理死循环、GitHub 直连超时、EHentai 图标不显示
-优化了：分流规则逻辑顺序与层级
+修复了：代理死循环、GitHub 直连超时/截流、EHentai 图标不显示
+优化了：GitHub 独立分流策略组、分流规则逻辑顺序与优先级
 */
 
 const NODE_SUFFIX = "节点";
@@ -91,6 +91,7 @@ const PROXY_GROUPS = {
   LANDING: "落地节点",
   LOW_COST: "低倍率节点",
   AUTO: "自动选择",
+  GITHUB: "GitHub",
 };
 
 const buildList = (...elements) => elements.flat().filter(Boolean);
@@ -146,7 +147,7 @@ const ruleProviders = {
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
-// 【优化重点】重新排序了分流规则，按照优先级从高到低执行
+// 优先级：内网/端口 > 广告过滤 > 系统核心直连 > GitHub/独立应用 > CDN/静态资源 > 流媒体与AI > GFW/CN大网段 > MATCH
 const baseRules = [
   // 1. 局域网与防泄露 (最高优先级)
   `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
@@ -164,21 +165,26 @@ const baseRules = [
   `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
   `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
 
-  // 4. 静态 CDN 资源 
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-  `RULE-SET,AdditionalCDNResources,静态资源`,
-  
-  // 5. GitHub 及特定应用走代理
-  `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.SELECT}`,
-  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.SELECT}`,
-  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.SELECT}`,
+  // 4. GitHub 独立走 GitHub 策略组 (置于 CDN 之前，防止 assets 资源被静态规则抢占)
+  `GEOSITE,github,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,github.io,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,githubassets.com,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.GITHUB}`,
+
+  // 5. 其他特定独立应用
   `RULE-SET,TikTok,TikTok`,
   `RULE-SET,EHentai,E-Hentai`,
   `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
   `RULE-SET,Crypto,Crypto`,
 
-  // 6. 流媒体与 AI 专线分流
+  // 6. 静态 CDN 资源 (SKK / Cloudflare 等)
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+  `RULE-SET,AdditionalCDNResources,静态资源`,
+
+  // 7. 流媒体与 AI 专线分流
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
@@ -191,12 +197,12 @@ const baseRules = [
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
 
-  // 7. 大网段兜底分流 (GFW走代理，CN走直连)
+  // 8. 大网段兜底分流 (GFW走代理，CN走直连)
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
-  
-  // 8. 最终兜底规则
+
+  // 9. 最终兜底规则
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
 
@@ -403,6 +409,12 @@ function buildProxyGroups({
       lazy: false,
     },
     {
+      name: PROXY_GROUPS.GITHUB,
+      icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/GitHub.png",
+      type: "select",
+      proxies: defaultProxies,
+    },
+    {
       name: "AI",
       icon: "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/icons/chatgpt.png",
       type: "select",
@@ -452,7 +464,6 @@ function buildProxyGroups({
     },
     {
       name: "E-Hentai",
-      // 【修改说明】已经将图标源替换为另一个拥有该图标的图库
       icon: "https://gcore.jsdelivr.net/gh/Orz-3/mini@master/Color/Ehviewer.png",
       type: "select",
       proxies: defaultProxies,
