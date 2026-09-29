@@ -1,7 +1,6 @@
 /*
-powerfullz 的 Substore 订阅转换脚本
-修复了：代理死循环、GitHub 被微软(MICROSOFT)规则截流直连、EHentai 图标不显示
-优化了：GitHub 独立分流策略组置顶优先、分流规则逻辑顺序与层级
+Substore 订阅转换脚本 - 规则架构重构版
+彻底重写：GitHub 独立分流链路，解决被 Microsoft/CDN 规则截流与继承 DIRECT 问题
 */
 
 const NODE_SUFFIX = "节点";
@@ -97,7 +96,9 @@ const PROXY_GROUPS = {
 const buildList = (...elements) => elements.flat().filter(Boolean);
 
 function buildBaseLists({ landing, lowCost, countryGroupNames }) {
+  // 代理组：默认优先走代理/地区/自动
   const defaultSelector = buildList(
+    PROXY_GROUPS.AUTO,
     PROXY_GROUPS.FALLBACK,
     landing && PROXY_GROUPS.LANDING,
     countryGroupNames,
@@ -108,8 +109,18 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
 
   const defaultProxies = buildList(
     PROXY_GROUPS.SELECT,
+    PROXY_GROUPS.AUTO,
     countryGroupNames,
     lowCost && PROXY_GROUPS.LOW_COST,
+    PROXY_GROUPS.MANUAL,
+    PROXY_GROUPS.DIRECT
+  );
+
+  // GitHub 专有代理列表：默认强制走代理节点，绝不把 DIRECT 放在默认首选项
+  const defaultGithubProxies = buildList(
+    PROXY_GROUPS.SELECT,
+    PROXY_GROUPS.AUTO,
+    countryGroupNames,
     PROXY_GROUPS.MANUAL,
     PROXY_GROUPS.DIRECT
   );
@@ -130,12 +141,13 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
     "DIRECT"
   );
 
-  return { defaultProxies, defaultProxiesDirect, defaultSelector, defaultFallback };
+  return { defaultProxies, defaultGithubProxies, defaultProxiesDirect, defaultSelector, defaultFallback };
 }
 
 const ruleProviders = {
   "ADBlock": { "type": "http", "behavior": "domain", "format": "mrs", "interval": 86400, "url": "https://adrules.top/adrules-mihomo.mrs", "path": "./ruleset/ADBlock.mrs" },
   "SogouInput": { "type": "http", "behavior": "classical", "format": "text", "interval": 86400, "url": "https://ruleset.skk.moe/Clash/non_ip/sogouinput.txt", "path": "./ruleset/SogouInput.txt" },
+  "GitHubRule": { "type": "http", "behavior": "classical", "format": "text", "interval": 86400, "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GitHub/GitHub.list", "path": "./ruleset/GitHub.list" },
   "StaticResources": { "type": "http", "behavior": "domain", "format": "text", "interval": 86400, "url": "https://ruleset.skk.moe/Clash/domainset/cdn.txt", "path": "./ruleset/StaticResources.txt" },
   "CDNResources": { "type": "http", "behavior": "classical", "format": "text", "interval": 86400, "url": "https://ruleset.skk.moe/Clash/non_ip/cdn.txt", "path": "./ruleset/CDNResources.txt" },
   "TikTok": { "type": "http", "behavior": "classical", "format": "text", "interval": 172800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/TikTok.list", "path": "./ruleset/TikTok.list" },
@@ -143,13 +155,12 @@ const ruleProviders = {
   "SteamFix": { "type": "http", "behavior": "classical", "format": "text", "interval": 172800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/SteamFix.list", "path": "./ruleset/SteamFix.list" },
   "GoogleFCM": { "type": "http", "behavior": "classical", "format": "text", "interval": 172800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/FirebaseCloudMessaging.list", "path": "./ruleset/GoogleFCM.list" },
   "AdditionalFilter": { "type": "http", "behavior": "classical", "format": "text", "interval": 86400, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/AdditionalFilter.list", "path": "./ruleset/AdditionalFilter.list" },
-  "AdditionalCDNResources": { "type": "http", "behavior": "classical", "format": "text", "interval": 86400, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/AdditionalCDNResources.list", "path": "./ruleset/AdditionalCDNResources.list" },
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
-// 优先级：内网/端口 > 广告过滤 > GitHub 独立组 (高于微软和CDN) > 微软苹果谷歌直连 > 独立应用 > CDN静态资源 > 流媒体与AI > GFW/CN网段 > MATCH
+// 【全新重构规则树】：彻底隔绝 GitHub 与 微软直连/国内CDN
 const baseRules = [
-  // 1. 局域网与防泄露 (最高优先级)
+  // 1. 本地局域网 & 特殊端口
   `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "DST-PORT,22,SSH(22端口)",
 
@@ -158,33 +169,25 @@ const baseRules = [
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
 
-  // 3. GitHub 独立策略组 (核心修复：排在 GEOSITE,MICROSOFT 之前，防止被微软直连规则提前截胡)
-  `GEOSITE,github,${PROXY_GROUPS.GITHUB}`,
+  // 3. 【核心修复】GitHub 独立最高优先级 (彻底凌驾于 MICROSOFT 与 CDN 之前)
+  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.GITHUB}`,
   `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.GITHUB}`,
   `DOMAIN-SUFFIX,github.io,${PROXY_GROUPS.GITHUB}`,
-  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.GITHUB}`,
   `DOMAIN-SUFFIX,githubassets.com,${PROXY_GROUPS.GITHUB}`,
-  `DOMAIN-KEYWORD,github,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,githubusercontent.com,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,githubcopilot.com,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,ghcr.io,${PROXY_GROUPS.GITHUB}`,
+  `DOMAIN-SUFFIX,git.io,${PROXY_GROUPS.GITHUB}`,
+  `RULE-SET,GitHubRule,${PROXY_GROUPS.GITHUB}`,
+  `GEOSITE,github,${PROXY_GROUPS.GITHUB}`,
 
-  // 4. 微软、苹果、谷歌基础云服务直连
-  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
-  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
-  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
-  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
-
-  // 5. 其他特定独立应用
+  // 4. 独立专项应用
   `RULE-SET,TikTok,TikTok`,
   `RULE-SET,EHentai,E-Hentai`,
   `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
   `RULE-SET,Crypto,Crypto`,
 
-  // 6. 静态 CDN 资源 (置于 GitHub 之后，防止 assets 资源被提前分流)
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-  `RULE-SET,AdditionalCDNResources,静态资源`,
-
-  // 7. 流媒体与 AI 专线分流
+  // 5. 流媒体与 AI 专线分流
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
@@ -197,12 +200,23 @@ const baseRules = [
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
 
-  // 8. 大网段兜底分流 (GFW走代理，CN走直连)
+  // 6. 基础系统服务直连 (排在 GitHub 之后，不再会影响 GitHub)
+  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
+  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
+  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
+  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
+
+  // 7. 静态 CDN 资源 (SKK / Cloudflare 等)
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+
+  // 8. 兜底大网段
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
 
-  // 9. 最终兜底规则
+  // 9. 最终匹配
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
 
@@ -221,37 +235,28 @@ const snifferConfig = {
     HTTP: { ports: [80, 8080, 8880] },
     QUIC: { ports: [443, 8443] }
   },
-  "override-destination": false,
+  "override-destination": true,
   enable: true,
   "force-dns-mapping": true,
   "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
 };
 
-function buildDnsConfig({ mode, fakeIpFilter, quicEnabled }) {
-  const config = {
-    enable: true,
-    ipv6: ipv6Enabled,
-    "prefer-h3": !!quicEnabled,
-    "enhanced-mode": mode,
-    "default-nameserver": ["119.29.29.29", "223.5.5.5"],
-    nameserver: ["223.5.5.5", "119.29.29.29", "180.184.1.1", "system"],
-    fallback: [
-      "https://1.1.1.1/dns-query",
-      "https://dns.google/dns-query",
-      "https://dns.cloudflare.com/dns-query",
-      "tcp://208.67.222.222",
-    ],
-    "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "tls://dot.pub"],
-  };
-  if (fakeIpFilter) config["fake-ip-filter"] = fakeIpFilter;
-  return config;
-}
-
-const dnsConfig = buildDnsConfig({ mode: "redir-host", quicEnabled });
-const dnsConfigFakeIp = buildDnsConfig({
-  mode: "fake-ip",
-  quicEnabled,
-  fakeIpFilter: [
+// 锁定纯净的 Fake-IP 架构，防止本地 DNS 污染导致 IP 直连逃逸
+const modernDnsConfig = {
+  enable: true,
+  ipv6: false,
+  "prefer-h3": false,
+  "enhanced-mode": "fake-ip",
+  "fake-ip-range": "198.18.0.1/16",
+  "default-nameserver": ["223.5.5.5", "119.29.29.29"],
+  nameserver: ["223.5.5.5", "119.29.29.29", "180.184.1.1"],
+  fallback: [
+    "https://1.1.1.1/dns-query",
+    "https://dns.cloudflare.com/dns-query",
+    "https://dns.google/dns-query",
+  ],
+  "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "tls://dot.pub"],
+  "fake-ip-filter": [
     "geosite:private",
     "geosite:connectivity-check",
     "geosite:cn",
@@ -262,7 +267,7 @@ const dnsConfigFakeIp = buildDnsConfig({
     "*.stun.*.*",
     "*.stun.*.*.*",
   ],
-});
+};
 
 const geoxURL = {
   geoip: "https://gcore.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/geoip.dat",
@@ -341,6 +346,7 @@ function buildProxyGroups({
   countryProxyGroups,
   lowCost,
   defaultProxies,
+  defaultGithubProxies,
   defaultProxiesDirect,
   defaultSelector,
   defaultFallback,
@@ -412,7 +418,7 @@ function buildProxyGroups({
       name: PROXY_GROUPS.GITHUB,
       icon: "https://gcore.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/GitHub.png",
       type: "select",
-      proxies: defaultProxies,
+      proxies: defaultGithubProxies,
     },
     {
       name: "AI",
@@ -547,7 +553,7 @@ function main(config) {
   const countryGroupNames = getCountryGroupNames(countryInfo, countryThreshold);
   const countries = stripNodeSuffix(countryGroupNames);
 
-  const { defaultProxies, defaultProxiesDirect, defaultSelector, defaultFallback } = buildBaseLists({
+  const { defaultProxies, defaultGithubProxies, defaultProxiesDirect, defaultSelector, defaultFallback } = buildBaseLists({
     landing,
     lowCost,
     countryGroupNames,
@@ -565,6 +571,7 @@ function main(config) {
     countryProxyGroups,
     lowCost,
     defaultProxies,
+    defaultGithubProxies,
     defaultProxiesDirect,
     defaultSelector,
     defaultFallback,
@@ -602,7 +609,7 @@ function main(config) {
     "rule-providers": ruleProviders,
     rules: finalRules,
     sniffer: snifferConfig,
-    dns: fakeIPEnabled ? dnsConfigFakeIp : dnsConfig,
+    dns: modernDnsConfig,
     "geodata-mode": true,
     "geox-url": geoxURL,
   });
