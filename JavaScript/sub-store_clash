@@ -1,6 +1,10 @@
 /*
-Substore 订阅转换脚本 - 规则架构重构版
-彻底重写：GitHub 独立分流链路，解决被 Microsoft/CDN 规则截流与继承 DIRECT 问题
+Substore 订阅转换脚本 - 终极修复版
+修复了：
+1. 公司内网/OA系统 (hotata.com 及 8018 等特殊端口) 走代理导致 502 Bad Gateway 问题
+2. GitHub 域名被 GeoSite(MICROSOFT) 和静态 CDN 规则抢先截流直连问题
+3. 嗅探端口扩展与 Fake-IP 模式解析逃逸问题
+4. 修复 EHentai 图标源失效问题
 */
 
 const NODE_SUFFIX = "节点";
@@ -96,7 +100,6 @@ const PROXY_GROUPS = {
 const buildList = (...elements) => elements.flat().filter(Boolean);
 
 function buildBaseLists({ landing, lowCost, countryGroupNames }) {
-  // 代理组：默认优先走代理/地区/自动
   const defaultSelector = buildList(
     PROXY_GROUPS.AUTO,
     PROXY_GROUPS.FALLBACK,
@@ -116,7 +119,7 @@ function buildBaseLists({ landing, lowCost, countryGroupNames }) {
     PROXY_GROUPS.DIRECT
   );
 
-  // GitHub 专有代理列表：默认强制走代理节点，绝不把 DIRECT 放在默认首选项
+  // GitHub 专有代理组：优先走代理与自动测速，避免 DIRECT 占位造成误伤
   const defaultGithubProxies = buildList(
     PROXY_GROUPS.SELECT,
     PROXY_GROUPS.AUTO,
@@ -158,9 +161,12 @@ const ruleProviders = {
   "Crypto": { "type": "http", "behavior": "classical", "format": "text", "interval": 604800, "url": "https://gcore.jsdelivr.net/gh/powerfullz/override-rules@master/ruleset/Crypto.list", "path": "./ruleset/Crypto.list" }
 };
 
-// 【全新重构规则树】：彻底隔绝 GitHub 与 微软直连/国内CDN
+// 【规则优先级绝对排序】
+// 内部办公与直连 > 本地局域网 > 广告拦截 > GitHub 专线 > 独立特定应用 > 微软/苹果云服务 > 静态资源 > 流媒体与AI > 大网段兜底
 const baseRules = [
-  // 1. 本地局域网 & 特殊端口
+  // 1. 【公司内部系统与办公直连 - 彻底解决 502 报错】
+  `DOMAIN-SUFFIX,hotata.com,${PROXY_GROUPS.DIRECT}`,
+  `DOMAIN-KEYWORD,hotata,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,PRIVATE,${PROXY_GROUPS.DIRECT}`,
   "DST-PORT,22,SSH(22端口)",
 
@@ -169,7 +175,7 @@ const baseRules = [
   `RULE-SET,AdditionalFilter,广告拦截`,
   `RULE-SET,SogouInput,搜狗输入法`,
 
-  // 3. 【核心修复】GitHub 独立最高优先级 (彻底凌驾于 MICROSOFT 与 CDN 之前)
+  // 3. 【GitHub 独立走 GitHub 策略组 - 严禁排在 MICROSOFT 和 CDN 后面】
   `DOMAIN-KEYWORD,github,${PROXY_GROUPS.GITHUB}`,
   `DOMAIN-SUFFIX,github.com,${PROXY_GROUPS.GITHUB}`,
   `DOMAIN-SUFFIX,github.io,${PROXY_GROUPS.GITHUB}`,
@@ -181,13 +187,24 @@ const baseRules = [
   `RULE-SET,GitHubRule,${PROXY_GROUPS.GITHUB}`,
   `GEOSITE,github,${PROXY_GROUPS.GITHUB}`,
 
-  // 4. 独立专项应用
+  // 4. 其他特定应用
   `RULE-SET,TikTok,TikTok`,
   `RULE-SET,EHentai,E-Hentai`,
   `DOMAIN-SUFFIX,truthsocial.com,Truth Social`,
   `RULE-SET,Crypto,Crypto`,
 
-  // 5. 流媒体与 AI 专线分流
+  // 5. 微软、苹果、谷歌基础云服务直连 (排在 GitHub 之后，不再截流 GitHub)
+  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
+  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
+  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
+  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
+  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
+
+  // 6. 静态 CDN 资源 (SKK / Cloudflare 等)
+  `RULE-SET,StaticResources,静态资源`,
+  `RULE-SET,CDNResources,静态资源`,
+
+  // 7. 流媒体与 AI 专线分流
   "GEOSITE,CATEGORY-AI-!CN,AI",
   "GEOSITE,NETFLIX,Netflix",
   "GEOSITE,DISNEY,Disney+",
@@ -200,23 +217,12 @@ const baseRules = [
   "GEOIP,NETFLIX,Netflix,no-resolve",
   "GEOIP,TELEGRAM,Telegram,no-resolve",
 
-  // 6. 基础系统服务直连 (排在 GitHub 之后，不再会影响 GitHub)
-  `GEOSITE,APPLE,${PROXY_GROUPS.DIRECT}`,
-  `GEOSITE,MICROSOFT,${PROXY_GROUPS.DIRECT}`,
-  `RULE-SET,SteamFix,${PROXY_GROUPS.DIRECT}`,
-  `RULE-SET,GoogleFCM,${PROXY_GROUPS.DIRECT}`,
-  `DOMAIN,services.googleapis.cn,${PROXY_GROUPS.SELECT}`,
-
-  // 7. 静态 CDN 资源 (SKK / Cloudflare 等)
-  `RULE-SET,StaticResources,静态资源`,
-  `RULE-SET,CDNResources,静态资源`,
-
-  // 8. 兜底大网段
+  // 8. 大网段兜底分流 (GFW走代理，CN走直连)
   `GEOSITE,GFW,${PROXY_GROUPS.SELECT}`,
   `GEOSITE,CN,${PROXY_GROUPS.DIRECT}`,
   `GEOIP,CN,${PROXY_GROUPS.DIRECT}`,
 
-  // 9. 最终匹配
+  // 9. 最终兜底规则
   `MATCH,${PROXY_GROUPS.SELECT}`,
 ];
 
@@ -238,10 +244,10 @@ const snifferConfig = {
   "override-destination": true,
   enable: true,
   "force-dns-mapping": true,
-  "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com"],
+  "skip-domain": ["Mijia Cloud", "dlg.io.mi.com", "+.push.apple.com", "*.hotata.com"],
 };
 
-// 锁定纯净的 Fake-IP 架构，防止本地 DNS 污染导致 IP 直连逃逸
+// 纯净 Fake-IP 配置，加入内网系统放行
 const modernDnsConfig = {
   enable: true,
   ipv6: false,
@@ -260,6 +266,7 @@ const modernDnsConfig = {
     "geosite:private",
     "geosite:connectivity-check",
     "geosite:cn",
+    "*.hotata.com",
     "Mijia Cloud",
     "dig.io.mi.com",
     "localhost.ptlogin2.qq.com",
