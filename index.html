@@ -181,8 +181,17 @@
         <div id="module-barcodes" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3 text-xs">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
-                    <h2 class="font-bold text-sm text-gray-900 flex items-center"><span>🏷️ 69码与产品编码联动库</span></h2>
+                    <h2 class="font-bold text-sm text-gray-900 flex items-center">
+                        <span>🏷️ 69码与产品编码联动库</span>
+                        <span class="ml-2 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-normal">🔒 已启用互补合并 & 真异码保护</span>
+                    </h2>
                     <div class="flex items-center space-x-2 flex-wrap gap-y-1 admin-create-panel">
+                        <button type="button" onclick="autoMergeComplementaryAndCleanFakeDiffs()" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm cursor-pointer flex items-center gap-1" title="自动将【原SKU为空(-)】的拆分记录与新SKU合并成一条，并清理假异动框">
+                            <span>🧹 一键合并空SKU & 清理假异动</span>
+                        </button>
+                        <button type="button" onclick="openHistoryRescueModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm cursor-pointer flex items-center gap-1">
+                            <span>🕵️ 找回真被覆盖的历史编码</span>
+                        </button>
                         <label class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer">
                             📥 导入 Excel <input type="file" id="barcode-excel-file" accept=".xlsx, .xls, .csv" onchange="handleBarcodeExcelUpload(event)" class="hidden">
                         </label>
@@ -197,7 +206,7 @@
                         <button type="button" onclick="clearBarcodeBatchSearch()" class="text-[11px] text-gray-400 hover:text-indigo-600 underline cursor-pointer">清空核对</button>
                     </div>
                     <div class="flex gap-2">
-                        <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码..." class="flex-1 bg-white border border-gray-300 rounded-lg p-2 focus:outline-none font-mono"></textarea>
+                        <textarea id="barcode-batch-search-input" rows="2" placeholder="粘贴多个 69码 或 SKU 产品编码 或 产品名称..." class="flex-1 bg-white border border-gray-300 rounded-lg p-2 focus:outline-none font-mono"></textarea>
                         <button type="button" onclick="executeBarcodeBatchSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold cursor-pointer">⚡ 开始核对</button>
                     </div>
                     <div id="barcode-missing-box" class="hidden bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs space-y-1.5">
@@ -210,7 +219,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    <input type="text" id="barcode-search-input" autocomplete="off" oninput="renderBarcodeTable()" placeholder="单条快速过滤..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none">
+                    <input type="text" id="barcode-search-input" autocomplete="off" oninput="renderBarcodeTable()" placeholder="单条快速过滤 (支持搜名称/SKU/69码/异动标签)..." class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none">
                     <div class="text-right text-gray-400 self-center text-[11px]" id="barcode-table-count"></div>
                 </div>
             </div>
@@ -224,7 +233,7 @@
                                 <th class="p-3 min-w-[140px]">SKU 编码</th>
                                 <th class="p-3 min-w-[140px]">69 条码</th>
                                 <th class="p-3 min-w-[150px]">备注</th>
-                                <th class="p-3 text-right min-w-[110px]">操作</th>
+                                <th class="p-3 text-right min-w-[160px]">操作</th>
                             </tr>
                         </thead>
                         <tbody id="barcode-table-body" class="divide-y divide-gray-200"></tbody>
@@ -249,6 +258,55 @@
                 <div><label class="block text-purple-700 font-bold mb-1">🔑 Gist 专属 Token</label><input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 focus:outline-none font-mono"></div>
             </div>
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100"><button onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存同步</button></div>
+        </div>
+    </div>
+
+    <!-- 🕵️ 历史被覆盖数据时光机恢复与拆分弹窗 -->
+    <div id="barcode-history-rescue-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) closeHistoryRescueModal()">
+        <div class="bg-white border p-5 rounded-2xl w-full max-w-3xl shadow-2xl text-xs flex flex-col max-h-[90vh] relative">
+            <div class="flex justify-between items-center pb-2.5 border-b">
+                <div>
+                    <h2 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
+                        <span>🕵️ 历史【真被覆盖编码】· 云端时光机找回工具</span>
+                    </h2>
+                    <p class="text-[11px] text-gray-500 mt-0.5">已自动过滤掉“原SKU为空(-)后补齐SKU”的正常互补记录！仅提取【原本有真实旧SKU A，后来被新SKU B覆盖】的记录。</p>
+                </div>
+                <button onclick="closeHistoryRescueModal()" class="text-gray-400 text-lg cursor-pointer">✕</button>
+            </div>
+
+            <div class="my-3 flex flex-wrap items-center justify-between gap-2 bg-amber-50 border border-amber-200 p-3 rounded-xl">
+                <div class="text-amber-900 space-y-0.5">
+                    <div class="font-bold">💡 精准过滤说明：</div>
+                    <div class="text-[11px] text-amber-700">如果原记录只有 69 码（无 SKU），后来更新了 SKU，属于互补合并，不会在此列出。此处仅找回两个不同真实编码被覆盖的情况！</div>
+                </div>
+                <button type="button" onclick="scanGistHistoryForOverwrittenData()" id="btn-scan-gist-history" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm cursor-pointer shrink-0">
+                    ⚡ 扫描云端 Gist 历史找回真被覆盖编码
+                </button>
+            </div>
+
+            <details class="mb-3 bg-gray-50 border border-gray-200 rounded-xl p-2.5">
+                <summary class="font-bold text-gray-700 cursor-pointer select-none">📋 方式二：手动粘贴旧版表格数据对比恢复</summary>
+                <div class="mt-2 space-y-2">
+                    <textarea id="rescue-manual-old-text" rows="3" placeholder="把旧 Excel 数据粘贴到这里，系统仅提取【旧数据有真实SKU/69码，且与当前库不一致】的被覆盖项..." class="w-full bg-white border rounded-lg p-2 font-mono text-xs focus:outline-none"></textarea>
+                    <button type="button" onclick="scanManualOldTextForOverwrittenData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold cursor-pointer">🔍 对比当前库并提取真被覆盖项</button>
+                </div>
+            </details>
+
+            <div id="rescue-status-bar" class="font-bold text-gray-700 mb-1.5">等待扫描...</div>
+            <div id="rescue-results-container" class="flex-1 log-scroll bg-gray-50 border rounded-xl p-3 space-y-2 min-h-[220px]">
+                <div class="text-gray-400 text-center py-12">请点击上方【⚡ 扫描云端 Gist 历史找回真被覆盖编码】开始检测</div>
+            </div>
+
+            <div class="flex justify-between items-center mt-4 pt-3 border-t">
+                <label class="inline-flex items-center space-x-1.5 cursor-pointer text-gray-600">
+                    <input type="checkbox" id="rescue-select-all" checked onchange="toggleRescueSelectAll(this.checked)" class="w-4 h-4 text-amber-600 rounded">
+                    <span>全选所有检测到的真被覆盖记录</span>
+                </label>
+                <div class="flex space-x-2">
+                    <button onclick="closeHistoryRescueModal()" class="px-3.5 py-1.5 bg-gray-100 rounded-lg cursor-pointer">关闭</button>
+                    <button onclick="confirmExecuteHistoryRescue()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm cursor-pointer">✅ 一键恢复选中项并拆分为独立记录</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -308,9 +366,15 @@
     </div>
 
     <div id="barcode-edit-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3" onclick="if(event.target===this) closeBarcodeEditModal()">
-        <div class="bg-white p-5 rounded-2xl w-full max-w-md text-xs relative"><div class="font-bold text-sm mb-3">✏️ 修改69码映射</div>
+        <div class="bg-white p-5 rounded-2xl w-full max-w-md text-xs relative"><div class="font-bold text-sm mb-3">✏️ 修改 / 拆分 69码映射</div>
             <div class="space-y-2"><input type="text" id="edit-bar-name" class="w-full border p-2 rounded" placeholder="型号"><input type="text" id="edit-bar-sap" class="w-full border p-2 rounded" placeholder="SKU编码"><input type="text" id="edit-bar-code" class="w-full border border-indigo-300 bg-indigo-50 p-2 rounded" placeholder="69码"><input type="text" id="edit-bar-remark" class="w-full border p-2 rounded" placeholder="备注"></div>
-            <div class="flex justify-end space-x-2 mt-4"><button onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 text-white rounded cursor-pointer">保存</button></div>
+            <div class="flex justify-between items-center mt-4 pt-2 border-t">
+                <button onclick="cloneAsDistinctBarcodeFromEdit()" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded cursor-pointer font-bold" title="保留原记录不变，将当前修改另存为一条新记录">🔀 另存为新批次记录(不覆盖原数据)</button>
+                <div class="space-x-2">
+                    <button onclick="closeBarcodeEditModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button>
+                    <button onclick="saveBarcodeEditChanges()" class="px-3.5 py-1.5 bg-indigo-600 text-white rounded cursor-pointer">直接保存</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -358,6 +422,7 @@
         let isReadOnlyMode=false, isMemoPanelOpen=true, currentTab='RUNNING', currentMainView='MATRIX';
         
         let barcodeBatchQueryList=[], barcodeMissingList=[], pendingImportBarcodes=[], pendingUpdateBarcodes=[], pendingRefreshBarcodes=[], pendingCheck={};
+        let detectedOverwrittenList = [];
         let syncTimer=null;
 
         function cleanConfigString(s){ return String(s||"").trim().match(/([a-f0-9]{32})/i)?.[1] || String(s||"").trim(); }
@@ -533,7 +598,6 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        // 智能行解析：防止 69 码被误放入备注
         function smartParseBarcodeLine(line, index) {
             let s = String(line || "").trim();
             if (!s) return { name: "", sap: "", barcode: "", remark: "" };
@@ -547,7 +611,7 @@
                     if (!barcode && /^(69\d{11}|\d{13,14})$/.test(col)) {
                         barcode = col;
                         cols[idx] = "";
-                    } else if (!sap && (/^\d{6,12}$/.test(col) || /^[A-Z0-9_\-]{6,16}$/i.test(col)) && !/^(无编码|暂无编码|待申请|-)$/.test(col)) {
+                    } else if (!sap && (/^\d{6,12}$/.test(col) || /^[A-Z0-9_\-]{6,16}$/i.test(col)) && !/^(无编码|暂无编码|待申请|-)$/.test(col) && !/[\u4e00-\u9fa5]/.test(col)) {
                         sap = col;
                         cols[idx] = "";
                     } else if (/^(无编码|暂无编码|待申请|-)$/.test(col)) {
@@ -577,7 +641,10 @@
                 }
 
                 if (!sap) {
-                    let sIdx = parts.findIndex(p => /^[A-Za-z0-9_\-]{6,14}$/.test(p) && !p.startsWith("69"));
+                    let sIdx = parts.findIndex((p, idx) => idx > 0 && (/^\d{6,12}$/.test(p) || (/^[A-Za-z0-9_\-]{7,15}$/.test(p) && !p.startsWith("69") && !/[\u4e00-\u9fa5]/.test(p))));
+                    if (sIdx === -1) {
+                        sIdx = parts.findIndex(p => /^\d{8,12}$/.test(p) && !p.startsWith("69"));
+                    }
                     if (sIdx !== -1) {
                         sap = parts[sIdx];
                         parts.splice(sIdx, 1);
@@ -594,7 +661,6 @@
                 name = `未命名_${sap || barcode || (index + 1)}`;
             }
 
-            // 二次清洗：如果备注中仍包含 69 码，直接剥离
             if (remark && /^(69\d{11}|\d{13,14})$/.test(remark)) {
                 if (!barcode) barcode = remark;
                 remark = "";
@@ -632,10 +698,19 @@
             lockBodyScroll(!modal.classList.contains("hidden"));
         }
 
-        // ================= 核心重构：智能诊断、互补合并、一致刷新与冲突保留逻辑 =================
+        // ================= 核心工具：判断是否为真实有效编码（排除 - / 空 / 无编码） =================
         function isValidValue(v) {
             let s = String(v || '').trim().toLowerCase();
-            return s.length > 0 && !['无编码', '暂无编码', '待申请', '-', '无', '待定'].includes(s);
+            return s.length > 0 && !['无编码', '暂无编码', '待申请', '-', '无', '待定', 'null', 'undefined'].includes(s);
+        }
+
+        // 判断两条同名记录是否【真正可以互补合并】（必须不存在 SKU 冲突，且不存在 69码 冲突）
+        function canTwoItemsComplementMerge(a, b) {
+            let aHasSap = isValidValue(a.sapCode), bHasSap = isValidValue(b.sapCode);
+            let aHasBar = isValidValue(a.barcode), bHasBar = isValidValue(b.barcode);
+            let sapConflict = aHasSap && bHasSap && a.sapCode.trim().toLowerCase() !== b.sapCode.trim().toLowerCase();
+            let barConflict = aHasBar && bHasBar && a.barcode.trim().toLowerCase() !== b.barcode.trim().toLowerCase();
+            return !sapConflict && !barConflict;
         }
 
         function mergeRemarkStrings(oldR, newR) {
@@ -646,6 +721,124 @@
             let parts = r1.split(/\s*\|\s*/);
             if (parts.includes(r2) || r1.includes(r2)) return r1;
             return `${r1} | ${r2}`;
+        }
+
+        // ================= 🧹 一键合并【原SKU为空(-)】的拆分记录 & 清理假异动框 =================
+        function autoMergeComplementaryAndCleanFakeDiffs() {
+            if (isReadOnlyMode) return alert("只读模式下不可操作");
+
+            let cleanedTagCount = 0;
+            let mergedRowCount = 0;
+
+            globalBarcodes.forEach(b => {
+                if (b.remark && /\[🔄批次异动[^\]]*原SKU:(?:-|无|空|待申请|无编码)\s*➔[^\]]*\]/.test(b.remark)) {
+                    b.remark = b.remark.replace(/\[🔄批次异动[^\]]*原SKU:(?:-|无|空|待申请|无编码)\s*➔[^\]]*\]\s*/g, '').trim();
+                    cleanedTagCount++;
+                }
+            });
+
+            let toRemoveIndices = new Set();
+            let groupByName = {};
+
+            globalBarcodes.forEach((b, idx) => {
+                let nl = (b.name || '').trim().toLowerCase();
+                if (!nl) return;
+                groupByName[nl] = groupByName[nl] || [];
+                groupByName[nl].push({ item: b, idx: idx });
+            });
+
+            Object.values(groupByName).forEach(group => {
+                if (group.length < 2) return;
+
+                for (let i = 0; i < group.length; i++) {
+                    if (toRemoveIndices.has(group[i].idx)) continue;
+                    let a = group[i].item;
+
+                    for (let j = i + 1; j < group.length; j++) {
+                        if (toRemoveIndices.has(group[j].idx)) continue;
+                        let b = group[j].item;
+
+                        if (canTwoItemsComplementMerge(a, b)) {
+                            if (!isValidValue(a.sapCode) && isValidValue(b.sapCode)) {
+                                a.sapCode = b.sapCode.trim();
+                            }
+                            if (!isValidValue(a.barcode) && isValidValue(b.barcode)) {
+                                a.barcode = b.barcode.trim();
+                            }
+                            a.remark = mergeRemarkStrings(b.remark, a.remark);
+                            toRemoveIndices.add(group[j].idx);
+                            mergedRowCount++;
+                        }
+                    }
+                }
+            });
+
+            if (mergedRowCount === 0 && cleanedTagCount === 0) {
+                return alert("✨ 检测完毕：当前库中没有需要合并的【空SKU(-)】拆分行，也没有假异动标签！");
+            }
+
+            if (toRemoveIndices.size > 0) {
+                globalBarcodes = globalBarcodes.filter((_, idx) => !toRemoveIndices.has(idx));
+            }
+
+            renderBarcodeTable();
+            syncBarcodesToGist();
+            alert(`🧹 自动合并与清理完成！\n• 🔗 已将 ${mergedRowCount} 条【无冲突空缺行】合并为完整记录\n• ✨ 已清理 ${cleanedTagCount} 个【原SKU:-】假异动标签`);
+        }
+
+        // 单行手动点击【🔗合并】按钮：仅合并无编码冲突的互补行
+        function quickMergeComplementaryByName(idx) {
+            if (isReadOnlyMode) return;
+            let target = globalBarcodes[idx];
+            if (!target) return;
+            let nl = (target.name || '').trim().toLowerCase();
+
+            let sameNameItems = globalBarcodes.map((b, i) => ({ item: b, idx: i })).filter(x => (x.item.name || '').trim().toLowerCase() === nl);
+            if (sameNameItems.length < 2) return alert("该产品当前只有 1 条记录，无需合并。");
+
+            let removeSet = new Set();
+            for (let i = 0; i < sameNameItems.length; i++) {
+                if (removeSet.has(sameNameItems[i].idx)) continue;
+                let pItem = sameNameItems[i].item;
+                for (let j = i + 1; j < sameNameItems.length; j++) {
+                    if (removeSet.has(sameNameItems[j].idx)) continue;
+                    let cItem = sameNameItems[j].item;
+                    if (canTwoItemsComplementMerge(pItem, cItem)) {
+                        if (!isValidValue(pItem.sapCode) && isValidValue(cItem.sapCode)) pItem.sapCode = cItem.sapCode;
+                        if (!isValidValue(pItem.barcode) && isValidValue(cItem.barcode)) pItem.barcode = cItem.barcode;
+                        pItem.remark = mergeRemarkStrings(cItem.remark, pItem.remark).replace(/\[🔄批次异动[^\]]*原SKU:(?:-|无|空|待申请|无编码)\s*➔[^\]]*\]\s*/g, '').trim();
+                        removeSet.add(sameNameItems[j].idx);
+                    }
+                }
+            }
+
+            if (removeSet.size === 0) {
+                return alert(`【${target.name}】的多条记录均拥有各自不同的真实 SKU 编码（如不同时期申请的新老编码），不能合并覆盖为一条！\n\n💡 若您想让缺少 69 码的新 SKU 沿用老款的 69 码，请点击【📋沿用同品69码】按钮。`);
+            }
+
+            globalBarcodes = globalBarcodes.filter((_, i) => !removeSet.has(i));
+            renderBarcodeTable();
+            syncBarcodesToGist();
+            alert(`✅ 已将【${target.name}】的空缺行与最新编码合并为一条完整记录！`);
+        }
+
+        // 新增：针对 K-D3016W 这种【新SKU缺69码，而同产品老SKU有69码】的情况，一键沿用同品69码，同时保留两条不同SKU独立并存！
+        function inheritSiblingBarcode(idx) {
+            if (isReadOnlyMode) return;
+            let target = globalBarcodes[idx];
+            if (!target) return;
+            let nl = (target.name || '').trim().toLowerCase();
+
+            let donor = globalBarcodes.find((b, i) => i !== idx && (b.name || '').trim().toLowerCase() === nl && isValidValue(b.barcode));
+            if (!donor) return alert("未找到同产品的有效 69 码可供沿用！");
+
+            if (confirm(`是否为【${target.name}】(SKU: ${target.sapCode || '-'}) 沿用同产品已有的 69 码【${donor.barcode}】？\n\n（注：两条不同的 SKU 编码记录仍将各自独立保留，不会被合并覆盖）`)) {
+                target.barcode = donor.barcode;
+                target.remark = mergeRemarkStrings(target.remark, `沿用同品69码(${donor.barcode})`);
+                target.createdAt = getNowString();
+                renderBarcodeTable();
+                syncBarcodesToGist();
+            }
         }
 
         function analyzeBarcodeBatchImport() {
@@ -664,7 +857,6 @@
             let ls = txt.split('\n').map(l => l.trim()).filter(Boolean);
             let ps = [], pu = [], pr = [], dp = [], diffLogs = [];
 
-            // 建立模拟工作池（包含现有库 + 本次批次动态演进状态），防止覆盖并支持同批次内先后互补
             let workingPool = globalBarcodes.map((b, idx) => ({
                 _originIdx: idx,
                 _isFromPool: true,
@@ -688,24 +880,19 @@
                 let sl = hasNewSap ? s.toLowerCase() : "";
                 let bl = hasNewBar ? b.toLowerCase() : "";
 
-                // 寻找与当前行相关的所有记录（同名、同SKU、或同69码）
                 let related = workingPool.filter(item => {
                     let iNl = item.name.toLowerCase();
-                    let iHasSap = isValidValue(item.sapCode);
-                    let iHasBar = isValidValue(item.barcode);
-                    let iSl = iHasSap ? item.sapCode.toLowerCase() : "";
-                    let iBl = iHasBar ? item.barcode.toLowerCase() : "";
-
+                    let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
+                    let iBl = isValidValue(item.barcode) ? item.barcode.toLowerCase() : "";
                     return (nl && iNl === nl) || (sl && iSl === sl) || (bl && iBl === bl);
                 });
 
                 if (related.length === 0) {
-                    // 完全无交集的全新数据 -> 直接新增
                     let newItem = {
                         _isNew: true,
                         name: n,
-                        sapCode: s,
-                        barcode: b,
+                        sapCode: hasNewSap ? s : "",
+                        barcode: hasNewBar ? b : "",
                         remark: r || '批量导入',
                         createdAt: nowStr
                     };
@@ -714,43 +901,46 @@
                     return;
                 }
 
-                // 1. 检查是否存在【完全一致 / 子集一致】的记录 -> 直接刷新时间（不重复新增，不报错）
+                // 【法则 1：完全一致 -> 提示用户是否刷新时间】
                 let exactTarget = related.find(item => {
                     let iNl = item.name.toLowerCase();
-                    let iHasSap = isValidValue(item.sapCode);
-                    let iHasBar = isValidValue(item.barcode);
-                    let iSl = iHasSap ? item.sapCode.toLowerCase() : "";
-                    let iBl = iHasBar ? item.barcode.toLowerCase() : "";
+                    let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
+                    let iBl = isValidValue(item.barcode) ? item.barcode.toLowerCase() : "";
 
                     let nameMatch = (!nl || iNl === nl);
-                    let sapMatch = (!sl || iSl === sl);
-                    let barMatch = (!bl || iBl === bl);
+                    let sapMatch = sl ? (iSl === sl) : true;
+                    let barMatch = bl ? (iBl === bl) : true;
+
+                    if (sl && iSl && iSl !== sl) return false;
+                    if (bl && iBl && iBl !== bl) return false;
+                    if (sl && !iSl) return false;
+                    if (bl && !iBl) return false;
+
                     return nameMatch && sapMatch && barMatch;
                 });
 
                 if (exactTarget) {
+                    let oldTime = exactTarget.createdAt || '无历史时间';
+                    exactTarget._oldCreatedAt = exactTarget._oldCreatedAt || oldTime;
                     exactTarget.remark = mergeRemarkStrings(exactTarget.remark, r);
                     exactTarget.createdAt = nowStr;
                     if (exactTarget._isFromPool && !pr.includes(exactTarget) && !pu.includes(exactTarget)) {
                         pr.push(exactTarget);
                     }
-                    dp.push(`[${n}] 内容与已有记录一致，已直接刷新时间戳与备注`);
+                    dp.push(`• <strong>[${escapeHtml(exactTarget.name)}]</strong> (SKU:${escapeHtml(exactTarget.sapCode||'-')} | 69码:${escapeHtml(exactTarget.barcode||'-')}) ➔ 原时间: ${escapeHtml(exactTarget._oldCreatedAt)}`);
                     return;
                 }
 
-                // 2. 检查是否存在【互补缺失（如第一次只有SKU，第二次补69码；或反之）】-> 智能合并补全
+                // 【法则 2：互补缺失（原记录缺SKU补SKU，或原记录缺69码补69码，且无任何编码冲突） -> 合并成一条】
                 let mergeTarget = related.find(item => {
                     let iNl = item.name.toLowerCase();
-                    let iHasSap = isValidValue(item.sapCode);
-                    let iHasBar = isValidValue(item.barcode);
-                    let iSl = iHasSap ? item.sapCode.toLowerCase() : "";
-                    let iBl = iHasBar ? item.barcode.toLowerCase() : "";
+                    let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
+                    let iBl = isValidValue(item.barcode) ? item.barcode.toLowerCase() : "";
 
                     let nameCompatible = (!nl || !iNl || iNl === nl || iNl.startsWith('未命名_'));
                     let sapCompatible = (!sl || !iSl || iSl === sl);
                     let barCompatible = (!bl || !iBl || iBl === bl);
 
-                    // 必须至少有一项是互补填空的
                     let isComplementary = (sl && !iSl) || (bl && !iBl) || (nl && iNl.startsWith('未命名_'));
                     return nameCompatible && sapCompatible && barCompatible && isComplementary;
                 });
@@ -774,7 +964,6 @@
                     mergeTarget._mergeDesc = addedParts.join(' + ');
 
                     if (mergeTarget._isFromPool && !pu.includes(mergeTarget)) {
-                        // 如果之前在 pr 里，移到 pu
                         let prIdx = pr.indexOf(mergeTarget);
                         if (prIdx !== -1) pr.splice(prIdx, 1);
                         pu.push(mergeTarget);
@@ -782,19 +971,24 @@
                     return;
                 }
 
-                // 3. 既不一致，也不互补 -> 说明【两次更新时间段的内容不一致/发生异动】！
-                // 严格保留原数据不覆盖，同时新增一条带区别标识的新记录！
-                let conflictRef = related[0];
+                // 【法则 3：真内容不一致（原记录已有真实SKU A，新数据是另一个真实SKU B） -> 保留原记录并新增区分】
+                let conflictRef = related.find(item => item.name.toLowerCase() === nl) || related[0];
                 let diffReasons = [];
                 if (nl && conflictRef.name.toLowerCase() === nl) {
                     if (sl && isValidValue(conflictRef.sapCode) && conflictRef.sapCode.toLowerCase() !== sl) {
-                        diffReasons.push(`原SKU:${conflictRef.sapCode} ➔ 新SKU:${s}`);
+                        diffReasons.push(`更新SKU (原:${conflictRef.sapCode} ➔ 新:${s})`);
                     }
                     if (bl && isValidValue(conflictRef.barcode) && conflictRef.barcode.toLowerCase() !== bl) {
-                        diffReasons.push(`原69码:${conflictRef.barcode} ➔ 新69码:${b}`);
+                        diffReasons.push(`更新69码 (原:${conflictRef.barcode} ➔ 新:${b})`);
                     }
                 } else {
-                    diffReasons.push(`编码复用/规格变更 (原产品:${conflictRef.name})`);
+                    diffReasons.push(`同码异品 (原产品:${conflictRef.name})`);
+                }
+
+                let inheritedBar = hasNewBar ? b : "";
+                if (!bl && conflictRef && conflictRef.name.toLowerCase() === nl && isValidValue(conflictRef.barcode)) {
+                    inheritedBar = conflictRef.barcode;
+                    diffReasons.push(`沿用同品69码:${inheritedBar}`);
                 }
 
                 let diffTag = `[🔄批次异动 ${shortNow} | ${diffReasons.join(' ')}]`;
@@ -804,15 +998,15 @@
                     _isNew: true,
                     _isDistinct: true,
                     name: n,
-                    sapCode: s,
-                    barcode: b,
+                    sapCode: hasNewSap ? s : "",
+                    barcode: inheritedBar,
                     remark: finalRemark,
                     createdAt: nowStr
                 };
 
                 workingPool.push(distinctNewItem);
                 ps.push(distinctNewItem);
-                diffLogs.push(`• <strong>[${escapeHtml(n)}]</strong> 检测到不同时段内容差异（${escapeHtml(diffReasons.join('，'))}），已<strong>完整保留原记录</strong>并新增区分条目`);
+                diffLogs.push(`• <strong>[${escapeHtml(n)}]</strong> ${escapeHtml(diffReasons.join('，'))} ➔ <strong>原记录已完好保留</strong>，此新编码将作为独立新行存入`);
             });
 
             pendingImportBarcodes = ps;
@@ -822,12 +1016,12 @@
             let normalNewCount = ps.filter(x => !x._isDistinct).length;
             let distinctNewCount = ps.filter(x => x._isDistinct).length;
 
-            sE.innerHTML = `共解析 <strong>${ls.length}</strong> 行 ｜ 🆕 常规新增: <strong class="text-green-600">${normalNewCount}</strong> ｜ 🔗 互补合并(SKU+69码): <strong class="text-blue-600">${pu.length}</strong> ｜ ⚡ 一致刷新: <strong class="text-teal-600">${pr.length}</strong> ｜ 🔀 异动保留并新增区分: <strong class="text-amber-600">${distinctNewCount}</strong>`;
+            sE.innerHTML = `共解析 <strong>${ls.length}</strong> 行 ｜ 🆕 常规新增: <strong class="text-green-600">${normalNewCount}</strong> ｜ 🔗 互补合并(原空补全): <strong class="text-blue-600">${pu.length}</strong> ｜ ⚡ 内容一致待确认: <strong class="text-teal-600">${pr.length}</strong> ｜ 🔀 真异码双保留: <strong class="text-amber-600">${distinctNewCount}</strong>`;
             
             let detailHtml = "";
             if (pu.length) {
                 detailHtml += `<div class="text-blue-700 bg-blue-50 border border-blue-200 p-2 rounded-lg mt-2 text-xs">
-                    <div class="font-bold mb-1">🔗 智能互补合并 (${pu.length} 条)：保留原数据并补全另一半编码</div>
+                    <div class="font-bold mb-1">🔗 智能互补合并 (${pu.length} 条)：原记录只有69码(无SKU)或只有SKU(无69码)，自动合二为一</div>
                     <div class="max-h-24 overflow-y-auto custom-scroll space-y-0.5 text-[11px]">
                         ${pu.map(u => `• <strong>[${escapeHtml(u.name)}]</strong> ➔ ${escapeHtml(u._mergeDesc || '合并补全')}`).join('<br>')}
                     </div>
@@ -835,29 +1029,44 @@
             }
             if (diffLogs.length) {
                 detailHtml += `<div class="text-amber-800 bg-amber-50 border border-amber-200 p-2 rounded-lg mt-2 text-xs">
-                    <div class="font-bold mb-1">🔀 跨期内容不一致 · 双保留区分 (${diffLogs.length} 条)：绝不覆盖旧编码</div>
+                    <div class="font-bold mb-1">🔀 跨期真编码变更 · 双保留区分 (${diffLogs.length} 条)：原记录已有旧编码，绝不覆盖！</div>
                     <div class="max-h-28 overflow-y-auto custom-scroll space-y-1 text-[11px]">
                         ${diffLogs.join('<br>')}
                     </div>
                 </div>`;
             }
             if (pr.length) {
-                detailHtml += `<div class="text-teal-700 mt-1.5 text-xs">⚡ <strong>${pr.length}</strong> 条数据与库中最新状态一致，将直接刷新时间戳与备注。</div>`;
+                detailHtml += `<div class="text-teal-800 bg-teal-50 border border-teal-200 p-2.5 rounded-lg mt-2 text-xs space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">⚡ 检测到 ${pr.length} 条「名称、SKU、69码」完全一致的记录：</span>
+                        <label class="inline-flex items-center space-x-1.5 cursor-pointer bg-white px-2.5 py-1 rounded border border-teal-300 shadow-sm hover:bg-teal-50/50">
+                            <input type="checkbox" id="chk-refresh-exact-time" checked class="w-3.5 h-3.5 text-teal-600 rounded cursor-pointer">
+                            <span class="font-bold text-teal-700 text-[11px]">刷入最新更新时间 (取消勾选则跳过)</span>
+                        </label>
+                    </div>
+                    <div class="max-h-24 overflow-y-auto custom-scroll space-y-0.5 text-[11px] text-teal-700">
+                        ${dp.join('<br>')}
+                    </div>
+                </div>`;
             }
             dE.innerHTML = detailHtml;
         }
 
-        // 提交导入、互补合并、刷新与异动留痕
         function confirmBarcodeBatchImport() {
             let hasAdds = pendingImportBarcodes && pendingImportBarcodes.length > 0;
             let hasUpdates = pendingUpdateBarcodes && pendingUpdateBarcodes.length > 0;
             let hasRefreshes = pendingRefreshBarcodes && pendingRefreshBarcodes.length > 0;
 
-            if (!hasAdds && !hasUpdates && !hasRefreshes) {
+            let chkEl = document.getElementById("chk-refresh-exact-time");
+            let shouldRefreshExact = chkEl ? chkEl.checked : false;
+
+            if (!hasAdds && !hasUpdates && (!hasRefreshes || !shouldRefreshExact)) {
+                if (hasRefreshes && !shouldRefreshExact) {
+                    return alert("您已取消勾选【刷入最新更新时间】，且当前没有其他新增或互补合并项，本次未做任何更改！");
+                }
                 return alert("没有需要处理的数据！");
             }
 
-            // 1. 执行互补合并更新（绝对不覆盖原有非空编码，仅补齐空缺 + 合并备注 + 刷新时间）
             if (hasUpdates) {
                 pendingUpdateBarcodes.forEach(u => {
                     let target = globalBarcodes[u._originIdx];
@@ -871,18 +1080,23 @@
                 });
             }
 
-            // 2. 执行一致刷新（相同数据直接刷新时间戳和备注）
+            let refreshedCount = 0;
+            let skippedExactCount = 0;
             if (hasRefreshes) {
-                pendingRefreshBarcodes.forEach(r => {
-                    let target = globalBarcodes[r._originIdx];
-                    if (target) {
-                        target.remark = r.remark;
-                        target.createdAt = r.createdAt;
-                    }
-                });
+                if (shouldRefreshExact) {
+                    pendingRefreshBarcodes.forEach(r => {
+                        let target = globalBarcodes[r._originIdx];
+                        if (target) {
+                            target.remark = r.remark;
+                            target.createdAt = r.createdAt;
+                            refreshedCount++;
+                        }
+                    });
+                } else {
+                    skippedExactCount = pendingRefreshBarcodes.length;
+                }
             }
 
-            // 3. 执行新增（含常规新增 + 异动双保留区分记录）
             let normalNewCount = 0, distinctNewCount = 0;
             if (hasAdds) {
                 let cleanAdds = pendingImportBarcodes.map(item => {
@@ -900,7 +1114,6 @@
             }
 
             let updateCount = pendingUpdateBarcodes.length;
-            let refreshCount = pendingRefreshBarcodes.length;
 
             pendingImportBarcodes = [];
             pendingUpdateBarcodes = [];
@@ -910,7 +1123,288 @@
             toggleBarcodeBatchImportModal();
             renderBarcodeTable();
             syncBarcodesToGist();
-            alert(`操作执行完毕！\n• 🆕 常规新增：${normalNewCount} 条\n• 🔗 互补合并补全：${updateCount} 条\n• 🔀 内容不一致保留原数据并新增区分：${distinctNewCount} 条\n• ⚡ 内容一致直接刷新：${refreshCount} 条`);
+            alert(`操作执行完毕！\n• 🆕 常规新增：${normalNewCount} 条\n• 🔗 互补合并补全：${updateCount} 条\n• 🔀 内容不一致保留原数据并新增区分：${distinctNewCount} 条\n• ⚡ 内容一致刷入新时间：${refreshedCount} 条${skippedExactCount ? `\n• ⏭️ 内容一致不刷新跳过：${skippedExactCount} 条` : ''}`);
+        }
+
+        // ================= 🕵️ 升级版时光机：严格只提取【真被覆盖（原SKU非空）】的历史记录 =================
+        function openHistoryRescueModal() {
+            if (isReadOnlyMode) return alert("只读模式下不可操作");
+            document.getElementById("barcode-history-rescue-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+
+        function closeHistoryRescueModal() {
+            document.getElementById("barcode-history-rescue-modal").classList.add("hidden");
+            lockBodyScroll(false);
+        }
+
+        function toggleRescueSelectAll(checked) {
+            document.querySelectorAll(".rescue-item-checkbox").forEach(cb => cb.checked = checked);
+        }
+
+        async function scanGistHistoryForOverwrittenData() {
+            const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes")),
+                  tG = (localStorage.getItem("wb_token_gist") || "").trim();
+            if (!gB || !tG) {
+                return alert("请先在【⚙️ 云端配置】中填写 69码 Gist ID 和 Gist Token！");
+            }
+
+            let btn = document.getElementById("btn-scan-gist-history");
+            let statusEl = document.getElementById("rescue-status-bar");
+            btn.disabled = true;
+            btn.innerText = "⏳ 正在深度比对云端历史版本...";
+            statusEl.innerText = "正在拉取 GitHub Gist 历史提交记录 (Commits)...";
+
+            try {
+                let h = { "Authorization": `Bearer ${tG}`, "Accept": "application/vnd.github+json" };
+                let commitsRes = await fetch(`https://api.github.com/gists/${gB}/commits?per_page=30`, { headers: h });
+                if (!commitsRes.ok) throw new Error("无法获取 Gist 历史版本，请检查 Token 权限");
+                let commits = await commitsRes.json();
+
+                statusEl.innerText = `共找到 ${commits.length} 个历史版本，正在过滤互补项并提取【真被覆盖】的旧编码...`;
+
+                let currentByName = {};
+                let currentAllValidSapByName = {};
+                let currentAllValidBarByName = {};
+
+                globalBarcodes.forEach((b, idx) => {
+                    let nl = (b.name || '').trim().toLowerCase();
+                    if (!nl) return;
+                    currentByName[nl] = currentByName[nl] || [];
+                    currentByName[nl].push({ ...b, _idx: idx });
+
+                    currentAllValidSapByName[nl] = currentAllValidSapByName[nl] || new Set();
+                    currentAllValidBarByName[nl] = currentAllValidBarByName[nl] || new Set();
+                    if (isValidValue(b.sapCode)) currentAllValidSapByName[nl].add(b.sapCode.trim().toLowerCase());
+                    if (isValidValue(b.barcode)) currentAllValidBarByName[nl].add(b.barcode.trim().toLowerCase());
+                });
+
+                let foundMap = new Map();
+                let targetCommits = commits.slice(1, 15);
+
+                for (let c of targetCommits) {
+                    let verRes = await fetch(c.url, { headers: h });
+                    if (!verRes.ok) continue;
+                    let verData = await verRes.json();
+                    let fn = (verData.files && verData.files["69code_data.json"]) ? "69code_data.json" : Object.keys(verData.files || {})[0];
+                    if (!fn || !verData.files[fn] || !verData.files[fn].content) continue;
+
+                    let histBarcodes = normalizeBarcodesData(JSON.parse(verData.files[fn].content));
+                    let commitTime = (c.committed_at || '').replace('T', ' ').substring(0, 16);
+
+                    histBarcodes.forEach(hb => {
+                        let nl = (hb.name || '').trim().toLowerCase();
+                        if (!nl || !currentByName[nl]) return;
+
+                        let hSap = (hb.sapCode || '').trim();
+                        let hBar = (hb.barcode || '').trim();
+                        let hHasRealSap = isValidValue(hSap);
+                        let hHasRealBar = isValidValue(hBar);
+
+                        let sapLost = hHasRealSap && !currentAllValidSapByName[nl].has(hSap.toLowerCase());
+                        let barLost = hHasRealBar && !currentAllValidBarByName[nl].has(hBar.toLowerCase());
+
+                        if (sapLost || barLost) {
+                            let currPrimary = currentByName[nl][0];
+                            let uniqueOverKey = `${nl}__${hSap.toLowerCase()}__${hBar.toLowerCase()}`;
+                            if (!foundMap.has(uniqueOverKey)) {
+                                let currRemParts = (currPrimary.remark || '').split('|').map(s => s.trim()).filter(Boolean);
+                                let oldRem = hb.remark || (currRemParts.length > 1 ? currRemParts[0] : '历史原记录');
+                                let newRem = currRemParts.length > 1 ? currRemParts.slice(1).join(' | ') : currPrimary.remark;
+
+                                foundMap.set(uniqueOverKey, {
+                                    type: 'GIST_HISTORY_RECOVERED',
+                                    currentIdx: currPrimary._idx,
+                                    name: currPrimary.name,
+                                    currentSap: currPrimary.sapCode,
+                                    currentBar: currPrimary.barcode,
+                                    oldSap: hHasRealSap ? hSap : currPrimary.sapCode,
+                                    oldBar: hHasRealBar ? hBar : currPrimary.barcode,
+                                    oldRemark: oldRem,
+                                    newRemark: newRem,
+                                    oldCreatedAt: hb.createdAt || commitTime,
+                                    commitDate: commitTime
+                                });
+                            }
+                        }
+                    });
+                }
+
+                detectedOverwrittenList = Array.from(foundMap.values());
+                if (detectedOverwrittenList.length === 0) {
+                    statusEl.innerText = "✅ 扫描完毕：未发现【两个真实编码互相覆盖】的丢失记录（原空SKU后补齐的记录已自动合并保留）。";
+                    document.getElementById("rescue-results-container").innerHTML = `<div class="text-green-600 font-bold text-center py-10">🎉 扫描完成！您的库中没有丢失任何真实的旧 SKU 或旧 69码！</div>`;
+                } else {
+                    renderRescueCandidatesUI(`🎉 成功从云端历史快照中找回 ${detectedOverwrittenList.length} 条【真实旧编码被新编码覆盖】的记录：`);
+                }
+            } catch (err) {
+                alert("扫描历史版本出错: " + err.message);
+                statusEl.innerText = "扫描中断，请检查网络。";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "⚡ 扫描云端 Gist 历史找回真被覆盖编码";
+            }
+        }
+
+        function scanManualOldTextForOverwrittenData() {
+            let txt = document.getElementById("rescue-manual-old-text").value.trim();
+            if (!txt) return alert("请先粘贴旧版数据文本！");
+
+            let ls = txt.split('\n').map(l => l.trim()).filter(Boolean);
+            let currentByName = {};
+            let currentAllValidSapByName = {};
+            let currentAllValidBarByName = {};
+
+            globalBarcodes.forEach((b, idx) => {
+                let nl = (b.name || '').trim().toLowerCase();
+                if (!nl) return;
+                currentByName[nl] = currentByName[nl] || [];
+                currentByName[nl].push({ ...b, _idx: idx });
+                currentAllValidSapByName[nl] = currentAllValidSapByName[nl] || new Set();
+                currentAllValidBarByName[nl] = currentAllValidBarByName[nl] || new Set();
+                if (isValidValue(b.sapCode)) currentAllValidSapByName[nl].add(b.sapCode.trim().toLowerCase());
+                if (isValidValue(b.barcode)) currentAllValidBarByName[nl].add(b.barcode.trim().toLowerCase());
+            });
+
+            let foundList = [];
+            ls.forEach((l, i) => {
+                let { name: n, sap: hSap, barcode: hBar, remark: hRem } = smartParseBarcodeLine(l, i);
+                if (!n) return;
+                let nl = n.toLowerCase();
+                if (!currentByName[nl]) return;
+
+                let sapLost = isValidValue(hSap) && !currentAllValidSapByName[nl].has(hSap.toLowerCase());
+                let barLost = isValidValue(hBar) && !currentAllValidBarByName[nl].has(hBar.toLowerCase());
+
+                if (sapLost || barLost) {
+                    let currPrimary = currentByName[nl][0];
+                    let currRemParts = (currPrimary.remark || '').split('|').map(s => s.trim()).filter(Boolean);
+                    foundList.push({
+                        type: 'MANUAL_RECOVERED',
+                        currentIdx: currPrimary._idx,
+                        name: currPrimary.name,
+                        currentSap: currPrimary.sapCode,
+                        currentBar: currPrimary.barcode,
+                        oldSap: isValidValue(hSap) ? hSap : currPrimary.sapCode,
+                        oldBar: isValidValue(hBar) ? hBar : currPrimary.barcode,
+                        oldRemark: hRem || (currRemParts.length > 1 ? currRemParts[0] : '历史原数据'),
+                        newRemark: currRemParts.length > 1 ? currRemParts.slice(1).join(' | ') : currPrimary.remark,
+                        oldCreatedAt: '历史导入',
+                        commitDate: '手动对比找回'
+                    });
+                }
+            });
+
+            detectedOverwrittenList = foundList;
+            renderRescueCandidatesUI(`🔍 手动对比完成：共提取出 ${foundList.length} 条【真实旧编码被覆盖】的记录！`);
+        }
+
+        function renderRescueCandidatesUI(titleMsg) {
+            document.getElementById("rescue-status-bar").innerText = titleMsg;
+            let container = document.getElementById("rescue-results-container");
+            if (!detectedOverwrittenList.length) {
+                container.innerHTML = `<div class="text-gray-400 text-center py-8">暂无真被覆盖项</div>`;
+                return;
+            }
+
+            container.innerHTML = detectedOverwrittenList.map((item, idx) => `
+                <div class="bg-white border border-amber-200 rounded-xl p-3 shadow-sm flex flex-col gap-2">
+                    <div class="flex items-center justify-between border-b pb-1.5">
+                        <label class="flex items-center space-x-2 cursor-pointer font-bold text-gray-900">
+                            <input type="checkbox" checked data-idx="${idx}" class="rescue-item-checkbox w-4 h-4 text-amber-600 rounded">
+                            <span>📦 ${escapeHtml(item.name)}</span>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-normal">${escapeHtml(item.commitDate)}</span>
+                        </label>
+                        <span class="text-[11px] text-emerald-700 font-semibold">将拆分为【旧编码记录 + 新编码记录】两条并存</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px]">
+                        <div class="bg-gray-50 p-2 rounded border border-gray-200 space-y-1">
+                            <div class="font-bold text-gray-700">⏪ 恢复后的【原记录】：</div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">旧SKU:</span>
+                                <input type="text" id="rescue-old-sap-${idx}" value="${escapeHtml(item.oldSap)}" class="border rounded px-1.5 py-0.5 font-mono w-full bg-white">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">旧69码:</span>
+                                <input type="text" id="rescue-old-bar-${idx}" value="${escapeHtml(item.oldBar)}" class="border rounded px-1.5 py-0.5 font-mono w-full bg-white">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">原备注:</span>
+                                <input type="text" id="rescue-old-rem-${idx}" value="${escapeHtml(item.oldRemark)}" class="border rounded px-1.5 py-0.5 w-full bg-white">
+                            </div>
+                        </div>
+                        <div class="bg-amber-50/50 p-2 rounded border border-amber-200 space-y-1">
+                            <div class="font-bold text-amber-900">⏩ 独立保留的【最新记录】：</div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">新SKU:</span>
+                                <input type="text" id="rescue-new-sap-${idx}" value="${escapeHtml(item.currentSap)}" class="border rounded px-1.5 py-0.5 font-mono font-bold text-indigo-700 w-full bg-white">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">新69码:</span>
+                                <input type="text" id="rescue-new-bar-${idx}" value="${escapeHtml(item.currentBar)}" class="border rounded px-1.5 py-0.5 font-mono w-full bg-white">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 w-12 shrink-0">新备注:</span>
+                                <input type="text" id="rescue-new-rem-${idx}" value="${escapeHtml(item.newRemark)}" class="border rounded px-1.5 py-0.5 w-full bg-white">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmExecuteHistoryRescue() {
+            let checkedBoxes = Array.from(document.querySelectorAll(".rescue-item-checkbox:checked"));
+            if (!checkedBoxes.length) return alert("请至少勾选一条需要恢复拆分的记录！");
+
+            let nowStr = getNowString();
+            let shortNow = nowStr.substring(0, 16);
+            let splitCount = 0;
+            let newSplitRecords = [];
+
+            checkedBoxes.forEach(cb => {
+                let idx = parseInt(cb.getAttribute("data-idx"));
+                let item = detectedOverwrittenList[idx];
+                if (!item) return;
+
+                let oldSap = document.getElementById(`rescue-old-sap-${idx}`).value.trim();
+                let oldBar = document.getElementById(`rescue-old-bar-${idx}`).value.trim();
+                let oldRem = document.getElementById(`rescue-old-rem-${idx}`).value.trim();
+
+                let newSap = document.getElementById(`rescue-new-sap-${idx}`).value.trim();
+                let newBar = document.getElementById(`rescue-new-bar-${idx}`).value.trim();
+                let newRem = document.getElementById(`rescue-new-rem-${idx}`).value.trim();
+
+                if (!isValidValue(oldSap) && !isValidValue(oldBar)) return;
+
+                let targetInGlobal = globalBarcodes[item.currentIdx];
+                if (targetInGlobal) {
+                    targetInGlobal.sapCode = oldSap;
+                    targetInGlobal.barcode = oldBar;
+                    targetInGlobal.remark = oldRem;
+                    if (item.oldCreatedAt) targetInGlobal.createdAt = item.oldCreatedAt;
+
+                    let diffTag = `[🔄批次异动 ${shortNow} | 原SKU:${oldSap||'-'} ➔ 新SKU:${newSap||'-'}]`;
+                    let cleanNewRem = newRem.includes('🔄批次异动') ? newRem : `${diffTag} ${newRem}`;
+                    newSplitRecords.push({
+                        name: item.name,
+                        sapCode: newSap,
+                        barcode: newBar,
+                        remark: cleanNewRem,
+                        createdAt: nowStr
+                    });
+                    splitCount++;
+                }
+            });
+
+            if (newSplitRecords.length > 0) {
+                globalBarcodes = newSplitRecords.concat(globalBarcodes);
+                detectedOverwrittenList = [];
+                closeHistoryRescueModal();
+                renderBarcodeTable();
+                syncBarcodesToGist();
+                alert(`🎉 成功恢复并拆分了 ${splitCount} 组真被覆盖记录！`);
+            }
         }
 
         function updateGlobalStatsUI(type) {
@@ -1068,31 +1562,52 @@
             });
         }
 
+        // ================= 精准渲染 69 码表格：严格区分【真互补可合并】与【多批次不同SKU】 =================
         function renderBarcodeTable() {
             const tb=document.getElementById("barcode-table-body"); if(!tb)return; tb.innerHTML="";
             let kw=(document.getElementById("barcode-search-input")?.value||"").trim().toLowerCase(), mc=0;
             
-            // 统计同名或同编码出现次数，方便在界面上直观标记出存在多个历史/异动版本的条目
-            let nameFreq = {};
-            globalBarcodes.forEach(b => {
+            let groupByName = {};
+            globalBarcodes.forEach((b, idx) => {
                 let nl = (b.name || '').trim().toLowerCase();
-                if (nl) nameFreq[nl] = (nameFreq[nl] || 0) + 1;
+                if (nl) {
+                    groupByName[nl] = groupByName[nl] || [];
+                    groupByName[nl].push({ item: b, idx: idx });
+                }
             });
 
             globalBarcodes.forEach((b,i)=>{
                 if(barcodeBatchQueryList.length>0) { let mat=barcodeBatchQueryList.some(q=>{let ql=q.toLowerCase();return (b.barcode||'').toLowerCase()===ql||(b.sapCode||'').toLowerCase()===ql||(b.name||'').toLowerCase().includes(ql);}); if(!mat)return; }
                 if(kw&&!(b.name.toLowerCase().includes(kw)||b.sapCode.toLowerCase().includes(kw)||b.barcode.toLowerCase().includes(kw)||(b.remark||"").toLowerCase().includes(kw)))return;
                 mc++; 
-                let isMultiVersion = nameFreq[(b.name || '').trim().toLowerCase()] > 1;
+                let nl = (b.name || '').trim().toLowerCase();
+                let siblings = groupByName[nl] || [];
+                let isMultiVersion = siblings.length > 1;
+
+                // 严格检测：当前行是否存在一个【无SKU冲突且无69码冲突】的同名兄弟行（只有不冲突才叫“可互补合并”）
+                let canMergeWithSibling = isMultiVersion && siblings.some(sib => sib.idx !== i && canTwoItemsComplementMerge(b, sib.item));
+
+                // 检测：当前行如果有新SKU但缺69码（如K-D3016W的第一条），且同名兄弟行里有现成的69码，提供【📋沿用同品69码】按钮
+                let canInheritBarcode = isMultiVersion && !canMergeWithSibling && isValidValue(b.sapCode) && !isValidValue(b.barcode) && siblings.some(sib => sib.idx !== i && isValidValue(sib.item.barcode));
+
                 let hasDiffTag = (b.remark || '').includes('🔄批次异动');
 
                 let tr=document.createElement("tr"); 
-                tr.className=`hover:bg-indigo-50/40 border-b ${hasDiffTag ? 'bg-amber-50/30' : ''}`;
+                tr.className=`hover:bg-indigo-50/40 border-b ${hasDiffTag ? 'bg-amber-50/40' : ''}`;
                 
                 let formattedRemark = escapeHtml(b.remark).replace(/(\[🔄批次异动[^\]]+\])/g, '<span class="bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1 inline-block mb-0.5">$1</span>');
-                let multiBadge = isMultiVersion ? `<span class="ml-1.5 bg-purple-100 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded text-[10px] font-normal" title="该产品名称在库中存在多条不同编码记录">多批次/多码</span>` : '';
+                let multiBadge = isMultiVersion ? `<span class="ml-1.5 ${canMergeWithSibling ? 'bg-teal-100 text-teal-800 border-teal-300' : 'bg-purple-100 text-purple-700 border-purple-200'} border px-1.5 py-0.5 rounded text-[10px] font-normal" title="${canMergeWithSibling ? '存在无编码冲突的空缺互补行，可点击右侧【🔗合并】合二为一' : '该产品存在多个不同SKU或69码批次记录'}">${canMergeWithSibling ? '🔗可互补合并' : '多批次/多码'}</span>` : '';
+                
+                let actionExtraHtml = '';
+                if (!isReadOnlyMode) {
+                    if (canMergeWithSibling) {
+                        actionExtraHtml = `<button onclick="quickMergeComplementaryByName(${i})" class="text-teal-600 font-bold hover:underline cursor-pointer mr-1" title="将无冲突的空缺行与本行合并为一条完整数据">🔗合并</button> | `;
+                    } else if (canInheritBarcode) {
+                        actionExtraHtml = `<button onclick="inheritSiblingBarcode(${i})" class="text-indigo-600 font-bold hover:underline cursor-pointer mr-1" title="保持两条不同SKU独立并存，仅将同产品已有的69码填入本行">📋沿用同品69码</button> | `;
+                    }
+                }
 
-                tr.innerHTML=`<td class="p-3 font-bold">${escapeHtml(b.name)}${multiBadge}</td><td class="p-3 font-mono">${escapeHtml(b.sapCode || '-')}</td><td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(b.barcode || '-')}</td><td class="p-3 text-gray-600">${formattedRemark} <div class="text-[9px] text-gray-400 mt-1">🕒 更新: ${b.createdAt||'未知'}</div></td><td class="p-3 text-right">${!isReadOnlyMode?`<button onclick="openBarcodeEditModal(${i})" class="text-blue-600 cursor-pointer">修改</button> | <button onclick="removeBarcode(${i})" class="text-red-500 cursor-pointer">删除</button>`:'-'}</td>`; 
+                tr.innerHTML=`<td class="p-3 font-bold">${escapeHtml(b.name)}${multiBadge}</td><td class="p-3 font-mono ${hasDiffTag?'font-bold text-amber-800':''}">${escapeHtml(isValidValue(b.sapCode) ? b.sapCode : '-')}</td><td class="p-3 font-mono font-bold text-indigo-700">${escapeHtml(isValidValue(b.barcode) ? b.barcode : '-')}</td><td class="p-3 text-gray-600">${formattedRemark} <div class="text-[9px] text-gray-400 mt-1">🕒 更新: ${b.createdAt||'未知'}</div></td><td class="p-3 text-right whitespace-nowrap">${!isReadOnlyMode?`${actionExtraHtml}<button onclick="openBarcodeEditModal(${i})" class="text-blue-600 cursor-pointer">修改</button> | <button onclick="removeBarcode(${i})" class="text-red-500 cursor-pointer">删除</button>`:'-'}</td>`; 
                 tb.appendChild(tr);
             });
             if(document.getElementById("barcode-table-count")) document.getElementById("barcode-table-count").innerText=`筛选 ${mc} / 共 ${globalBarcodes.length}`; 
@@ -1176,11 +1691,10 @@
         function fallbackCopyTextToClipboard(text) { let textArea = document.createElement("textarea"); textArea.value = text; textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); alert("已成功复制到剪贴板！"); } catch (err) { alert("复制失败，请手动选择文字进行复制。"); } document.body.removeChild(textArea); }
         function copyMissingBarcodes(){ if(!barcodeMissingList.length)return alert("没有缺失项！"); copyTextToClipboard(barcodeMissingList.join('\n')); }
         
-        // 单条录入也同步应用三大智能法则（一致刷新、互补合并、异动保留并新增）
         function addNewBarcodePrompt(){ 
             if(isReadOnlyMode)return; 
             let n=prompt("产品名称:"); if(!n)return; 
-            let s=prompt("SKU编码(选填):")||"", b=prompt("69码(选填):")||"", r=prompt("备注(选填):")||"手工录入";
+            let s=prompt("SKU编码(选填):")||"", b=prompt("69码(选填):")||"", r=prompt("备注(选填):")||"";
             n=n.trim(); s=s.trim(); b=b.trim(); r=r.trim();
             let nl=n.toLowerCase(), hasSap=isValidValue(s), hasBar=isValidValue(b);
             let sl=hasSap?s.toLowerCase():"", bl=hasBar?b.toLowerCase():"";
@@ -1194,21 +1708,28 @@
             });
 
             if (related.length > 0) {
-                // 1. 完全一致 -> 刷新
                 let exact = related.find(item => {
                     let iNl = (item.name||'').toLowerCase();
                     let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
                     let iBl = isValidValue(item.barcode) ? item.barcode.toLowerCase() : "";
+                    if (sl && iSl && iSl !== sl) return false;
+                    if (bl && iBl && iBl !== bl) return false;
+                    if (sl && !iSl) return false;
+                    if (bl && !iBl) return false;
                     return (!nl || iNl === nl) && (!sl || iSl === sl) && (!bl || iBl === bl);
                 });
                 if (exact) {
-                    exact.remark = mergeRemarkStrings(exact.remark, r);
-                    exact.createdAt = nowStr;
-                    renderBarcodeTable(); syncBarcodesToGist();
-                    return alert("库中已存在一致记录，已直接刷新时间与备注！");
+                    if (confirm(`库中已存在一致记录：\n名称：${exact.name}\nSKU：${exact.sapCode || '-'}\n69码：${exact.barcode || '-'}\n原时间：${exact.createdAt || '无'}\n\n是否要刷入最新更新时间（并合并新备注）？`)) {
+                        exact.remark = mergeRemarkStrings(exact.remark, r);
+                        exact.createdAt = nowStr;
+                        renderBarcodeTable(); syncBarcodesToGist();
+                        alert("已成功刷入最新更新时间！");
+                    } else {
+                        alert("已取消刷新，保持原记录时间不变。");
+                    }
+                    return;
                 }
 
-                // 2. 互补缺失 -> 合并
                 let mergeTarget = related.find(item => {
                     let iNl = (item.name||'').toLowerCase();
                     let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
@@ -1218,27 +1739,62 @@
                 if (mergeTarget) {
                     if (sl && !isValidValue(mergeTarget.sapCode)) mergeTarget.sapCode = s;
                     if (bl && !isValidValue(mergeTarget.barcode)) mergeTarget.barcode = b;
-                    mergeTarget.remark = mergeRemarkStrings(mergeTarget.remark, r);
+                    mergeTarget.remark = mergeRemarkStrings(mergeTarget.remark, r || "手工补全");
                     mergeTarget.createdAt = nowStr;
                     renderBarcodeTable(); syncBarcodesToGist();
-                    return alert("检测到历史互补记录（SKU与69码互补），已自动合并补全！");
+                    return alert("检测到历史互补记录（原字段为空），已自动合并补全！");
                 }
 
-                // 3. 内容不一致 -> 保留原数据并新增区分
-                let ref = related[0];
-                let diffTag = `[🔄批次异动 ${nowStr.substring(0,16)} | 原SKU:${ref.sapCode||'-'} 原69:${ref.barcode||'-'}]`;
-                globalBarcodes.unshift({name:n, sapCode:s, barcode:b, remark:`${diffTag} ${r}`, createdAt:nowStr});
+                let ref = related.find(item => (item.name||'').toLowerCase() === nl) || related[0];
+                let inheritedBar = hasBar ? b : (ref && (ref.name||'').toLowerCase() === nl ? ref.barcode : "");
+                let diffTag = `[🔄批次异动 ${nowStr.substring(0,16)} | 原SKU:${ref.sapCode||'-'} ➔ 新SKU:${s||'-'}]`;
+                globalBarcodes.unshift({name:n, sapCode:hasSap?s:"", barcode:inheritedBar, remark:r ? `${diffTag} ${r}` : diffTag, createdAt:nowStr});
                 renderBarcodeTable(); syncBarcodesToGist();
-                return alert("检测到与历史记录内容不一致，已为您保留原数据，并新增一条带异动标识的新记录！");
+                return alert("检测到与历史记录编码不一致（原记录已有旧SKU），已为您保留原数据不变，并新增一条带异动标识的新记录！");
             }
 
-            globalBarcodes.unshift({name:n,sapCode:s,barcode:b,remark:r,createdAt:nowStr}); 
+            globalBarcodes.unshift({name:n,sapCode:hasSap?s:"",barcode:hasBar?b:"",remark:r||"手工录入",createdAt:nowStr}); 
             renderBarcodeTable(); syncBarcodesToGist(); 
         }
 
         function openBarcodeEditModal(idx){ currentEditingBarcodeIdx=idx; let b=globalBarcodes[idx]; document.getElementById("edit-bar-name").value=b.name; document.getElementById("edit-bar-sap").value=b.sapCode; document.getElementById("edit-bar-code").value=b.barcode; document.getElementById("edit-bar-remark").value=b.remark; document.getElementById("barcode-edit-modal").classList.remove("hidden"); lockBodyScroll(true); }
         function closeBarcodeEditModal(){ document.getElementById("barcode-edit-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function saveBarcodeEditChanges(){ let b=globalBarcodes[currentEditingBarcodeIdx], nn=document.getElementById("edit-bar-name").value.trim(), ns=document.getElementById("edit-bar-sap").value.trim(), nc=document.getElementById("edit-bar-code").value.trim(), nr=document.getElementById("edit-bar-remark").value.trim(); if(!nn)return alert("产品名为空"); b.name=nn; b.sapCode=ns; b.barcode=nc; b.remark=nr; b.createdAt=getNowString(); closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); }
+        
+        function saveBarcodeEditChanges(){ 
+            let b=globalBarcodes[currentEditingBarcodeIdx], 
+                nn=document.getElementById("edit-bar-name").value.trim(), 
+                ns=document.getElementById("edit-bar-sap").value.trim(), 
+                nc=document.getElementById("edit-bar-code").value.trim(), 
+                nr=document.getElementById("edit-bar-remark").value.trim(); 
+            if(!nn)return alert("产品名为空"); 
+            if (isValidValue(b.sapCode) && isValidValue(ns) && b.sapCode !== ns) {
+                if (!confirm(`⚠️ 您修改了已有记录的真实 SKU 编码（${b.sapCode} ➔ ${ns}）。\n\n• 点击【确定】：直接覆盖原记录\n• 如果想保留原记录并新增，请点【取消】然后点击左下角的【🔀 另存为新批次记录】按钮！`)) {
+                    return;
+                }
+            }
+            b.name=nn; b.sapCode=isValidValue(ns)?ns:""; b.barcode=isValidValue(nc)?nc:""; b.remark=nr; b.createdAt=getNowString(); 
+            closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist(); 
+        }
+
+        function cloneAsDistinctBarcodeFromEdit() {
+            let b=globalBarcodes[currentEditingBarcodeIdx], 
+                nn=document.getElementById("edit-bar-name").value.trim(), 
+                ns=document.getElementById("edit-bar-sap").value.trim(), 
+                nc=document.getElementById("edit-bar-code").value.trim(), 
+                nr=document.getElementById("edit-bar-remark").value.trim(); 
+            if(!nn)return alert("产品名为空");
+            let nowStr = getNowString();
+            let diffTag = `[🔄批次异动 ${nowStr.substring(0,16)} | 原SKU:${b.sapCode||'-'} ➔ 新SKU:${ns||'-'}]`;
+            globalBarcodes.unshift({
+                name: nn,
+                sapCode: isValidValue(ns)?ns:"",
+                barcode: isValidValue(nc)?nc:"",
+                remark: nr ? `${diffTag} ${nr}` : diffTag,
+                createdAt: nowStr
+            });
+            closeBarcodeEditModal(); renderBarcodeTable(); syncBarcodesToGist();
+            alert("已保留原记录不变，并将当前新编码另存为一条独立新记录！");
+        }
 
         function removeBarcode(idx){ 
             if(confirm("确认彻底删除此 69 码记录？")){
@@ -1248,4 +1804,52 @@
             } 
         }
 
-        function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").
+        function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").innerText=`【${p.name}】`; document.getElementById("big-note-textarea").value=p.bigNote||""; updateBigNoteLivePreview(); document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function saveBigNoteChanges() { let p=findGlobalItem(currentBigNoteId); if(p){p.bigNote=document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新大备注"}); closeBigNoteModal(); if(currentMainView==='MATRIX')renderTable();else if(currentMainView==='RETURNS')renderReturnsTable(); syncMatrixToCloud(); } }
+        function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML=renderFormattedText(document.getElementById("big-note-textarea").value); }
+        function insertStrikeThrough() { let ta=document.getElementById("big-note-textarea"), s=ta.selectionStart, e=ta.selectionEnd, v=ta.value; ta.value=(s!==e)?v.substring(0,s)+`~~${v.substring(s,e)}~~`+v.substring(e):v+`~~作废内容~~`; updateBigNoteLivePreview(); }
+        function insertFileLinkPrompt() { let l=prompt("文档链接:"); if(l){document.getElementById("big-note-textarea").value+=` 🔗链接: ${l.trim()} `; updateBigNoteLivePreview();} }
+        function insertTimestamp() { document.getElementById("big-note-textarea").value+=` [${getNowString().substring(5,16)}] `; updateBigNoteLivePreview(); }
+        function closeBigNoteModal() { document.getElementById("big-note-modal").classList.add("hidden"); lockBodyScroll(false); }
+
+        function openLogsModal(id) { let p=findGlobalItem(id); document.getElementById("logs-title").innerText=`【${p.name}】`; let c=document.getElementById("logs-container"); c.innerHTML=""; (p.historyLogs||[]).forEach(l=>{c.innerHTML+=`<div class="bg-white p-3 rounded-xl border flex gap-2"><span class="border px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 h-max mt-0.5">流转</span><div class="flex-1 text-xs text-gray-800">${escapeHtml(l.desc)}<div class="text-[10px] text-gray-400 mt-1">${l.time}</div></div></div>`;}); document.getElementById("logs-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function closeLogsModal() { document.getElementById("logs-modal").classList.add("hidden"); lockBodyScroll(false); }
+
+        function exportSelectedToExcel() {
+            let tp=products.filter(p=>currentTab==='RUNNING'?p.status!=='已归档':p.status==='已归档');
+            let sel=selectedProductIds.size>0?tp.filter(p=>selectedProductIds.has(p.id)):tp;
+            if(!sel.length) return alert("无数据");
+            let rows=["系列,研发类型,子规格,排期与备注,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,全局备注,大备注"];
+            sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${p.sourceType||'自研'}","${s.name}","${s.skuRemark||''}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
+            let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+            let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${getLocalDateString()}.csv`; a.click();
+        }
+        function copyReadOnlyShareLink() {
+            let o=localStorage.getItem("wb_owner")||"", r=localStorage.getItem("wb_repo")||"", gb=localStorage.getItem("wb_gist_barcodes")||"", tr=localStorage.getItem("wb_token_repo")||"", tg=localStorage.getItem("wb_token_gist")||"";
+            let u=`${window.location.origin+window.location.pathname}?mode=readonly&owner=${encodeURIComponent(o)}&repo=${encodeURIComponent(r)}&gist_bar=${encodeURIComponent(gb)}&token_repo=${encodeURIComponent(tr)}&token_gist=${encodeURIComponent(tg)}`;
+            if(navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(u).then(()=>openReadonlyModal(u)).catch(()=>openReadonlyModal(u)); } else openReadonlyModal(u);
+        }
+        function openReadonlyModal(u) { document.getElementById("readonly-url-textarea").value=u; document.getElementById("readonly-share-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
+        function confirmCopyReadonlyUrl() { let t=document.getElementById("readonly-url-textarea"); t.select(); try{document.execCommand('copy'); alert("已复制！");}catch(e){} closeReadonlyModal(); }
+
+        function toggleAIChatDrawer() { let d=document.getElementById("ai-chat-drawer"); d.classList.toggle("hidden"); lockBodyScroll(!d.classList.contains("hidden")); }
+        function applyQuickPrompt(t) { let i=document.getElementById("ai-user-prompt"); if(t==='DIAGNOSE')i.value="诊断卡点并列出延期最高Top 3"; if(t==='SPEECH_PRODUCT')i.value="催促产品提供缺少69码的话术"; if(t==='REPORT_DELAY')i.value="生成延期汇报文案"; }
+        function submitUserDemandToAI() { let i=document.getElementById("ai-user-prompt"), m=document.getElementById("ai-chat-messages"), txt=i.value.trim(); if(!txt)return; i.value=""; m.innerHTML+=`<div class="flex justify-end mt-3"><div class="bg-blue-600 text-white p-3 rounded-xl max-w-[88%] text-xs shadow">${escapeHtml(txt)}</div></div>`; m.scrollTop=m.scrollHeight; setTimeout(()=>{m.innerHTML+=`<div class="flex gap-2 mt-3"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs max-w-[88%]">已收到指令。</div></div>`; m.scrollTop=m.scrollHeight;},600); }
+        function clearAIChatHistory() { document.getElementById("ai-chat-messages").innerHTML=`<div class="flex gap-2"><div class="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-[10px] shrink-0">WB</div><div class="bg-gray-100 p-3 rounded-xl text-xs">已清空上下文。</div></div>`; }
+        
+        function renderMemos() {
+            const list = document.getElementById("memo-list-container"), count = document.getElementById("memo-count-tag");
+            if (!list) return; let ms=Array.isArray(globalMemos)?globalMemos:[];
+            if(count) count.innerText = `${ms.filter(m=>!m.done).length} 项提醒`;
+            if(!ms.length) { list.innerHTML = '<div class="text-center text-gray-400 py-4 text-xs">暂无备忘</div>'; return; }
+            list.innerHTML = ms.map((m,i)=>`<div class="flex gap-2 bg-white p-2 border rounded ${m.done?'opacity-50':''}"><input type="checkbox" ${m.done?'checked':''} onchange="toggleMemoDone(${i})" class="w-4 h-4 mt-0.5 shrink-0"><div class="flex-1 min-w-0"><div class="flex gap-2 text-[10px]"><span class="bg-amber-50 text-amber-700 px-1 rounded">${escapeHtml(m.priority)}</span><span class="text-gray-400">${m.createdAt}</span></div><div class="text-xs mt-1 ${m.done?'line-through':''} whitespace-pre-wrap break-all">${escapeHtml(m.text)}</div></div><button onclick="removeMemoItem(${i})" class="text-gray-300 hover:text-red-500 shrink-0">✕</button></div>`).join("");
+        }
+        function addMemoItem() { let v=document.getElementById("memo-input").value.trim(); if(!v)return; globalMemos.unshift({id:"M_"+Date.now(), text:v, priority:document.getElementById("memo-priority").value, done:false, createdAt:getNowString().substring(5,16)}); document.getElementById("memo-input").value=""; renderMemos(); syncMatrixToCloud(); }
+        function toggleMemoDone(i) { globalMemos[i].done=!globalMemos[i].done; renderMemos(); syncMatrixToCloud(); }
+        function removeMemoItem(i) { globalMemos.splice(i,1); renderMemos(); syncMatrixToCloud(); }
+        function clearDoneMemos() { globalMemos=globalMemos.filter(m=>!m.done); renderMemos(); syncMatrixToCloud(); }
+        function toggleMemoPanel() { isMemoPanelOpen=!isMemoPanelOpen; document.getElementById("memo-panel-body").classList.toggle("hidden",!isMemoPanelOpen); document.getElementById("memo-toggle-btn").innerText=isMemoPanelOpen?"折叠 ▲":"展开 ▼"; }
+    </script>
+</body>
+</html>
