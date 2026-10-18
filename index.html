@@ -424,6 +424,7 @@
         let barcodeBatchQueryList=[], barcodeMissingList=[], pendingImportBarcodes=[], pendingUpdateBarcodes=[], pendingRefreshBarcodes=[], pendingCheck={};
         let detectedOverwrittenList = [];
         let syncTimer=null;
+        let _needsSilentGistSync = false;
 
         function cleanConfigString(s){ return String(s||"").trim().match(/([a-f0-9]{32})/i)?.[1] || String(s||"").trim(); }
         function safeBase64Decode(s){ try{return decodeURIComponent(escape(atob(s.replace(/\s/g,''))))}catch(e){return atob(s.replace(/\s/g,''))} }
@@ -458,6 +459,167 @@
 
         function renderFormattedText(t){ return escapeHtml(t).replace(/~~([^~]+)~~/g,"<s>$1</s>").replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>').replace(/\r?\n/g,"<br>"); }
         function lockBodyScroll(l){ document.body.style.overflow=l?"hidden":""; }
+
+        // ================= 底层编码规则判定与静默自愈核心函数 =================
+        function isValidValue(v) {
+            let s = String(v || '').trim().toLowerCase();
+            return s.length > 0 && !['无编码', '暂无编码', '待申请', '-', '无', '待定', 'null', 'undefined'].includes(s);
+        }
+
+        // 1. 严格识别 69 条码：必须是 69 开头的 13 位标准码（或 069 包装码 / 45,49,88 等标准 13 位国际商品条码）
+        function isStrict69Barcode(v) {
+            let s = String(v || "").trim();
+            return /^(69\d{11}|069\d{11}|[4589]\d{12})$/.test(s);
+        }
+
+        // 2. 识别日期型备注（如 26.10.16、2026-10-16、9/20），防止日期被误判为 SKU 编码
+        function isDateLikeToken(v) {
+            let s = String(v || "").trim();
+            return /^(\d{2,4}[-\/\.]\d{1,2}[-\/\.]\d{1,2}|\d{1,2}[-\/\.]\d{1,2})$/.test(s);
+        }
+
+        // 3. 严格识别 SKU / SAP 物料编码（如 320131126004 这种 8~14 位非 69 开头的纯数字）
+        // 特别保护：第一列的 D-1125、K-D3016W 等带横杠型号绝不误判为 SKU
+        function isStrictSapSkuCode(v, isFirstCol = false) {
+            let s = String(v || "").trim();
+            if (!s || isStrict69Barcode(s) || isDateLikeToken(s)) return false;
+            if (!isValidValue(s) || /[\u4e00-\u9fa5]/.test(s)) return false;
+
+            // 8~14位纯数字（且不是69条码），如 320131126004，必定是 SKU 编码
+            if (/^\d{8,14}$/.test(s)) return true;
+
+            // 如果在第一列，除了 8~14 位纯数字 SKU 以外，带横杠或字母的型号（如 D-1126、Q60S）一律作为【产品名称】保护
+            if (isFirstCol) return false;
+
+            // 非第一列：支持 6~7 位纯数字，或无横杠的 8~16 位纯字母数字长编码（且至少含4位连续数字）
+            if (/^\d{6,7}$/.test(s)) return true;
+            if (/^[A-Z0-9]{8,16}$/i.test(s) && /\d{4,}/.test(s)) return true;
+            return false;
+        }
+
+        // 4. 根据同系列编码规律静默反推产品型号（例如：从 D-1125:320131125004 自动推导出 320131126004 对应 D-1126）
+        function inferProductNameFromSap(sapCode, poolList = []) {
+            let s = String(sapCode || "").trim();
+            if (!/^\d{8,14}$/.test(s)) return "";
+
+            let pool = poolList.length ? poolList : globalBarcodes;
+            for (let item of pool) {
+                let bSap = String(item.sapCode || item.sap || "").trim();
+                let bName = String(item.name || "").trim();
+                if (!bSap || !bName || bName === bSap || /^\d{8,14}$/.test(bName) || bName.startsWith("未命名_")) continue;
+
+                let nameMatch = bName.match(/^(.*?)(\d{3,5})$/);
+                if (nameMatch && bSap.length === s.length) {
+                    let prefix = nameMatch[1];
+                    let numStr = nameMatch[2];
+                    let pos = bSap.indexOf(numStr);
+                    if (pos !== -1) {
+                        let bHead = bSap.slice(0, pos), bTail = bSap.slice(pos + numStr.length);
+                        let sHead = s.slice(0, pos), sTail = s.slice(pos + numStr.length);
+                        if (bHead === sHead && bTail === sTail) {
+                            let targetNum = s.slice(pos, pos + numStr.length);
+                            return `${prefix}${targetNum}`;
+                        }
+                    }
+                }
+            }
+            return "";
+        }
+
+        // 5. 自动清洗并静默修正历史错位数据（无需额外按钮，加载/渲染时自动完成纠偏）
+        function autoHealBarcodeList(list) {
+            let changed = false;
+
+            // 第一遍：修正 SKU 与 69 码互串、名称列误填纯数字 SKU 或 69 码
+            list.forEach(b => {
+                let curName = String(b.name || "").trim();
+                let curSap = String(b.sapCode || "").trim();
+                let curBar = String(b.barcode || "").trim();
+                let curRem = String(b.remark || "").trim();
+
+                // A. 如果 SKU 列填了 69 码，而 69 码列不是 69 码 -> 自动归位
+                if (isStrict69Barcode(curSap) && !isStrict69Barcode(curBar)) {
+                    let tmp = curBar;
+                    b.barcode = curSap;
+                    b.sapCode = isStrictSapSkuCode(tmp, false) ? tmp : "";
+                    curSap = b.sapCode;
+                    curBar = b.barcode;
+                    changed = true;
+                }
+                // B. 如果 69 码列填了非 69 码的纯数字 SKU（如 12 位 ERP 码） -> 自动移回 SKU 列
+                else if (isValidValue(curBar) && !isStrict69Barcode(curBar) && isStrictSapSkuCode(curBar, false)) {
+                    if (!isValidValue(curSap)) {
+                        b.sapCode = curBar;
+                        b.barcode = "";
+                        curSap = b.sapCode;
+                        curBar = b.barcode;
+                        changed = true;
+                    } else if (isStrict69Barcode(curSap)) {
+                        b.sapCode = curBar;
+                        b.barcode = curSap;
+                        curSap = b.sapCode;
+                        curBar = b.barcode;
+                        changed = true;
+                    }
+                }
+
+                // C. 如果产品名称本身是 8~14 位纯数字（如 320131126004 跑到了产品名称列）
+                if (/^\d{8,14}$/.test(curName) || curName.startsWith("未命名_")) {
+                    let rawCode = curName.replace(/^未命名_/, "");
+                    if (isStrict69Barcode(rawCode) && !isValidValue(curBar)) {
+                        b.barcode = rawCode;
+                        curBar = rawCode;
+                        changed = true;
+                    } else if (/^\d{8,14}$/.test(rawCode) && !isValidValue(curSap)) {
+                        b.sapCode = rawCode;
+                        curSap = rawCode;
+                        changed = true;
+                    }
+                }
+
+                // D. 如果备注里藏了 69 码或纯数字 SKU（而对应列恰好为空），自动提取归位
+                if (curRem) {
+                    let tokens = curRem.split(/\s+/);
+                    let kept = [];
+                    let remModified = false;
+                    tokens.forEach(tk => {
+                        if (!isValidValue(curBar) && isStrict69Barcode(tk)) {
+                            b.barcode = tk;
+                            curBar = tk;
+                            remModified = true;
+                        } else if (!isValidValue(curSap) && /^\d{8,12}$/.test(tk) && !isDateLikeToken(tk)) {
+                            b.sapCode = tk;
+                            curSap = tk;
+                            remModified = true;
+                        } else {
+                            kept.push(tk);
+                        }
+                    });
+                    if (remModified) {
+                        b.remark = kept.join(" ");
+                        changed = true;
+                    }
+                }
+            });
+
+            // 第二遍：针对名称列仍是纯数字 SKU（如 320131126004）的记录，自动根据上下游同系列编码规律反推型号（如恢复为 D-1126）
+            list.forEach(b => {
+                let curName = String(b.name || "").trim();
+                let curSap = String(b.sapCode || "").trim();
+                if ((/^\d{8,14}$/.test(curName) || curName.startsWith("未命名_")) && curSap) {
+                    let inferred = inferProductNameFromSap(curSap, list);
+                    if (inferred && inferred !== curName) {
+                        b.name = inferred;
+                        changed = true;
+                    }
+                }
+            });
+
+            if (changed) {
+                _needsSilentGistSync = true;
+            }
+            return list;
+        }
 
         function extractEarliestTime(p) {
             let times = [];
@@ -503,7 +665,21 @@
             };
         }
         
-        function normalizeBarcodesData(raw){ return (Array.isArray(raw)?raw:(raw?.barcodes||raw?.items||[])).map(x=>({...x, name:String(x.name||x.productName||'').trim(),sapCode:String(x.sapCode||x.skuCode||'').trim(),barcode:String(x.barcode||x.code69||'').trim(),remark:String(x.remark||x.note||'').trim(),createdAt:String(x.createdAt||'').trim(),brand:String(x.brand||'').trim(),series:String(x.series||'').trim(),sheet:String(x.sheet||'').trim(),region:String(x.region||'').trim()})).filter(x=>x.name||x.barcode||x.sapCode); }
+        function normalizeBarcodesData(raw){
+            let list = (Array.isArray(raw)?raw:(raw?.barcodes||raw?.items||[])).map(x=>({
+                ...x,
+                name:String(x.name||x.productName||'').trim(),
+                sapCode:String(x.sapCode||x.skuCode||'').trim(),
+                barcode:String(x.barcode||x.code69||'').trim(),
+                remark:String(x.remark||x.note||'').trim(),
+                createdAt:String(x.createdAt||'').trim(),
+                brand:String(x.brand||'').trim(),
+                series:String(x.series||'').trim(),
+                sheet:String(x.sheet||'').trim(),
+                region:String(x.region||'').trim()
+            })).filter(x=>x.name||x.barcode||x.sapCode);
+            return autoHealBarcodeList(list);
+        }
         
         function findGlobalItem(id){ return products.find(x=>x.id===id)||globalReturns.find(x=>x.id===id); }
 
@@ -546,7 +722,16 @@
             const o=cleanConfigString(localStorage.getItem("wb_owner")), r=cleanConfigString(localStorage.getItem("wb_repo")), tR=(localStorage.getItem("wb_token_repo")||"").trim(), gB=cleanConfigString(localStorage.getItem("wb_gist_barcodes")), tG=(localStorage.getItem("wb_token_gist")||"").trim();
             document.getElementById("sync-status").innerText="拉取数据..."; let ts=[];
             if(o&&r&&tR) ts.push(fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:{"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json"}}).then(r=>r.json()).then(d=>{if(d.content){let n=normalizeMatrixData(JSON.parse(safeBase64Decode(d.content)));products=n.products;globalReturns=n.oldReturns;globalMemos=n.memos;fileSha=d.sha;localStorage.setItem("wb_local_matrix",JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos}));}}));
-            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0]; globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes));}));
+            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{
+                let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0];
+                _needsSilentGistSync = false;
+                globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));
+                localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes));
+                if (_needsSilentGistSync && !isReadOnlyMode) {
+                    _needsSilentGistSync = false;
+                    syncBarcodesToGist();
+                }
+            }));
             await Promise.all(ts); document.getElementById("sync-status").innerText="已同步 ✅"; document.getElementById("auth-dot").className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"; document.getElementById("auth-tag-text").innerText="双源连接"; switchMainView(currentMainView);
         }
         
@@ -598,72 +783,117 @@
         function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
         function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
-        function smartParseBarcodeLine(line, index) {
-            let s = String(line || "").trim();
-            if (!s) return { name: "", sap: "", barcode: "", remark: "" };
+        // ================= 重写后的防错位单行解析函数 =================
+        function smartParseBarcodeLine(line, index, contextParsed = []) {
+            let rawLine = String(line || "");
+            if (!rawLine.trim()) return { name: "", sap: "", barcode: "", remark: "" };
+
+            // 自动跳过表头行
+            if (/^(产品名称|产品型号|型号|名称)\s*[\t,，\s]\s*(SKU|SAP|产品编码|编码|69码|条码)/i.test(rawLine.trim())) {
+                return { name: "", sap: "", barcode: "", remark: "" };
+            }
 
             let barcode = "", sap = "", name = "", remark = "";
+            const isPlaceholder = v => /^(无编码|暂无编码|待申请|-|无|空)$/i.test(String(v || "").trim());
 
-            if (s.includes('\t')) {
-                let cols = s.split('\t').map(c => c.trim());
-                
-                cols.forEach((col, idx) => {
-                    if (!barcode && /^(69\d{11}|\d{13,14})$/.test(col)) {
+            if (rawLine.includes('\t')) {
+                // 保留原始 Tab 分列索引，避免因空单元格导致列左移错位
+                let rawCols = rawLine.split('\t').map(c => c.trim());
+                while (rawCols.length > 0 && rawCols[rawCols.length - 1] === "") rawCols.pop();
+
+                let used = new Array(rawCols.length).fill(false);
+
+                // 1. 优先全行定位 69 条码（严格 69 开头的 13 位码）
+                rawCols.forEach((col, idx) => {
+                    if (!barcode && isStrict69Barcode(col)) {
                         barcode = col;
-                        cols[idx] = "";
-                    } else if (!sap && (/^\d{6,12}$/.test(col) || /^[A-Z0-9_\-]{6,16}$/i.test(col)) && !/^(无编码|暂无编码|待申请|-)$/.test(col) && !/[\u4e00-\u9fa5]/.test(col)) {
-                        sap = col;
-                        cols[idx] = "";
-                    } else if (/^(无编码|暂无编码|待申请|-)$/.test(col)) {
-                        if (!sap) sap = col;
-                        cols[idx] = "";
+                        used[idx] = true;
                     }
                 });
 
-                let remaining = cols.filter(Boolean);
-                if (remaining.length > 0) {
-                    name = remaining[0];
-                    remark = remaining.slice(1).join(" ");
+                // 2. 定位明确的 SKU 编码（保护第 1 列的 D-1126 等型号不被当成 SKU；若第 1 列本身是 12 位纯数字 SKU 则识别为 SKU）
+                rawCols.forEach((col, idx) => {
+                    if (used[idx] || !col) return;
+                    if (!sap && isStrictSapSkuCode(col, idx === 0)) {
+                        sap = col;
+                        used[idx] = true;
+                    }
+                });
+
+                // 3. 提取产品名称（优先取第 1 列未使用的非日期、非占位文本）
+                if (rawCols.length > 0 && !used[0] && rawCols[0] && !isPlaceholder(rawCols[0]) && !isDateLikeToken(rawCols[0])) {
+                    name = rawCols[0];
+                    used[0] = true;
                 }
+
+                // 4. 若第 2 列（标准 SKU 列）仍有未使用的非日期/非中文编码，归为 SKU
+                if (!sap && rawCols.length >= 2 && !used[1] && rawCols[1]) {
+                    let c1 = rawCols[1];
+                    if (isPlaceholder(c1)) {
+                        used[1] = true;
+                    } else if (!isDateLikeToken(c1) && !isStrict69Barcode(c1) && !/[\u4e00-\u9fa5]/.test(c1) && c1.length >= 5) {
+                        sap = c1;
+                        used[1] = true;
+                    }
+                }
+
+                // 5. 若第 1 列为空或直接填了 12 位 SKU，尝试从其余未使用列寻找名称
+                if (!name) {
+                    let nameIdx = rawCols.findIndex((col, idx) => !used[idx] && col && !isPlaceholder(col) && !isDateLikeToken(col));
+                    if (nameIdx !== -1) {
+                        name = rawCols[nameIdx];
+                        used[nameIdx] = true;
+                    }
+                }
+
+                // 6. 其余有效列归入备注
+                let remList = [];
+                rawCols.forEach((col, idx) => {
+                    if (!used[idx] && col && !isPlaceholder(col)) remList.push(col);
+                });
+                remark = remList.join(" ");
             } else {
-                let parts = s.split(/[\s,]+/).filter(Boolean);
+                let parts = rawLine.trim().split(/[\s,，]+/).filter(Boolean);
+                let used = new Array(parts.length).fill(false);
 
-                let bIdx = parts.findIndex(p => /^(69\d{11}|\d{13,14})$/.test(p));
-                if (bIdx !== -1) {
-                    barcode = parts[bIdx];
-                    parts.splice(bIdx, 1);
-                }
-
-                let noCodeIdx = parts.findIndex(p => /^(无编码|暂无编码|待申请|-)$/.test(p));
-                if (noCodeIdx !== -1) {
-                    sap = parts[noCodeIdx];
-                    parts.splice(noCodeIdx, 1);
-                }
-
-                if (!sap) {
-                    let sIdx = parts.findIndex((p, idx) => idx > 0 && (/^\d{6,12}$/.test(p) || (/^[A-Za-z0-9_\-]{7,15}$/.test(p) && !p.startsWith("69") && !/[\u4e00-\u9fa5]/.test(p))));
-                    if (sIdx === -1) {
-                        sIdx = parts.findIndex(p => /^\d{8,12}$/.test(p) && !p.startsWith("69"));
+                // 1. 抓 69 码
+                parts.forEach((p, idx) => {
+                    if (!barcode && isStrict69Barcode(p)) {
+                        barcode = p;
+                        used[idx] = true;
                     }
-                    if (sIdx !== -1) {
-                        sap = parts[sIdx];
-                        parts.splice(sIdx, 1);
+                });
+
+                // 2. 抓严格 SKU（保护第 1 项带横杠型号不被当成 SKU）
+                parts.forEach((p, idx) => {
+                    if (used[idx]) return;
+                    if (!sap && isStrictSapSkuCode(p, idx === 0)) {
+                        sap = p;
+                        used[idx] = true;
                     }
+                });
+
+                // 3. 抓产品名称
+                let firstUnused = parts.findIndex((p, idx) => !used[idx] && !isPlaceholder(p) && !isDateLikeToken(p));
+                if (firstUnused !== -1) {
+                    name = parts[firstUnused];
+                    used[firstUnused] = true;
                 }
 
-                if (parts.length > 0) {
-                    name = parts[0];
-                    remark = parts.slice(1).join(" ");
-                }
+                // 4. 剩余归入备注
+                let remList = [];
+                parts.forEach((p, idx) => {
+                    if (!used[idx] && !isPlaceholder(p)) remList.push(p);
+                });
+                remark = remList.join(" ");
             }
 
-            if (!name) {
-                name = `未命名_${sap || barcode || (index + 1)}`;
-            }
-
-            if (remark && /^(69\d{11}|\d{13,14})$/.test(remark)) {
-                if (!barcode) barcode = remark;
-                remark = "";
+            // 若整行只有 SKU（如 320131126004）漏了名称，自动根据上下文或库内同系列规律推导型号（如 D-1126）
+            if (!name && sap) {
+                let inferred = inferProductNameFromSap(sap, contextParsed);
+                name = inferred || `未命名_${sap}`;
+            } else if (!name) {
+                name = `未命名_${barcode || (index + 1)}`;
             }
 
             return { name, sap, barcode, remark };
@@ -679,7 +909,7 @@
                     let data = new Uint8Array(e.target.result);
                     let workbook = XLSX.read(data, {type: 'array'});
                     let worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    let json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    let json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
                     let text = json.map(row => row.join('\t')).join('\n');
                     document.getElementById("barcode-batch-import-text").value = text;
                     toggleBarcodeBatchImportModal();
@@ -696,12 +926,6 @@
             let modal = document.getElementById("barcode-batch-import-modal");
             modal.classList.toggle("hidden");
             lockBodyScroll(!modal.classList.contains("hidden"));
-        }
-
-        // ================= 核心工具：判断是否为真实有效编码（排除 - / 空 / 无编码） =================
-        function isValidValue(v) {
-            let s = String(v || '').trim().toLowerCase();
-            return s.length > 0 && !['无编码', '暂无编码', '待申请', '-', '无', '待定', 'null', 'undefined'].includes(s);
         }
 
         // 判断两条同名记录是否【真正可以互补合并】（必须不存在 SKU 冲突，且不存在 69码 冲突）
@@ -723,9 +947,14 @@
             return `${r1} | ${r2}`;
         }
 
-        // ================= 🧹 一键合并【原SKU为空(-)】的拆分记录 & 清理假异动框 =================
+        // ================= 🧹 一键合并【原SKU为空(-)】的拆分记录 & 清理假异动框（同时自动触发错位自愈） =================
         function autoMergeComplementaryAndCleanFakeDiffs() {
             if (isReadOnlyMode) return alert("只读模式下不可操作");
+
+            // 先静默执行一次错位自愈
+            _needsSilentGistSync = false;
+            autoHealBarcodeList(globalBarcodes);
+            let healedFlag = _needsSilentGistSync;
 
             let cleanedTagCount = 0;
             let mergedRowCount = 0;
@@ -773,8 +1002,8 @@
                 }
             });
 
-            if (mergedRowCount === 0 && cleanedTagCount === 0) {
-                return alert("✨ 检测完毕：当前库中没有需要合并的【空SKU(-)】拆分行，也没有假异动标签！");
+            if (mergedRowCount === 0 && cleanedTagCount === 0 && !healedFlag) {
+                return alert("✨ 检测完毕：当前库中没有需要合并的【空SKU(-)】拆分行，也没有错位或假异动标签！");
             }
 
             if (toRemoveIndices.size > 0) {
@@ -783,10 +1012,9 @@
 
             renderBarcodeTable();
             syncBarcodesToGist();
-            alert(`🧹 自动合并与清理完成！\n• 🔗 已将 ${mergedRowCount} 条【无冲突空缺行】合并为完整记录\n• ✨ 已清理 ${cleanedTagCount} 个【原SKU:-】假异动标签`);
+            alert(`🧹 自动合并与清理完成！\n• 🔗 已将 ${mergedRowCount} 条【无冲突空缺行】合并为完整记录\n• ✨ 已清理 ${cleanedTagCount} 个【原SKU:-】假异动标签${healedFlag ? '\n• 🔧 已自动修正历史错位编码与型号' : ''}`);
         }
 
-        // 单行手动点击【🔗合并】按钮：仅合并无编码冲突的互补行
         function quickMergeComplementaryByName(idx) {
             if (isReadOnlyMode) return;
             let target = globalBarcodes[idx];
@@ -822,7 +1050,6 @@
             alert(`✅ 已将【${target.name}】的空缺行与最新编码合并为一条完整记录！`);
         }
 
-        // 新增：针对 K-D3016W 这种【新SKU缺69码，而同产品老SKU有69码】的情况，一键沿用同品69码，同时保留两条不同SKU独立并存！
         function inheritSiblingBarcode(idx) {
             if (isReadOnlyMode) return;
             let target = globalBarcodes[idx];
@@ -842,10 +1069,10 @@
         }
 
         function analyzeBarcodeBatchImport() {
-            let txt = document.getElementById("barcode-batch-import-text").value.trim();
+            let txt = document.getElementById("barcode-batch-import-text").value;
             let sE = document.getElementById("barcode-analysis-stats");
             let dE = document.getElementById("barcode-analysis-duplicates");
-            if (!txt) { 
+            if (!txt || !txt.trim()) { 
                 sE.innerText = "等待输入数据..."; 
                 pendingImportBarcodes = []; 
                 pendingUpdateBarcodes = []; 
@@ -854,7 +1081,7 @@
                 return; 
             }
 
-            let ls = txt.split('\n').map(l => l.trim()).filter(Boolean);
+            let ls = txt.split(/\r?\n/).filter(l => l.trim().length > 0);
             let ps = [], pu = [], pr = [], dp = [], diffLogs = [];
 
             let workingPool = globalBarcodes.map((b, idx) => ({
@@ -870,8 +1097,23 @@
             let nowStr = getNowString();
             let shortNow = nowStr.substring(0, 16);
 
+            // 两遍扫描：第一遍先解析基础字段，第二遍结合同批上下文自动推导漏掉的型号名
+            let parsedRows = [];
             ls.forEach((l, i) => {
-                let { name: n, sap: s, barcode: b, remark: r } = smartParseBarcodeLine(l, i);
+                let item = smartParseBarcodeLine(l, i, parsedRows);
+                if (item.name || item.sap || item.barcode) {
+                    parsedRows.push(item);
+                }
+            });
+            parsedRows.forEach(item => {
+                if ((item.name.startsWith("未命名_") || /^\d{8,14}$/.test(item.name)) && item.sap) {
+                    let inferred = inferProductNameFromSap(item.sap, parsedRows);
+                    if (inferred) item.name = inferred;
+                }
+            });
+
+            parsedRows.forEach((parsed) => {
+                let { name: n, sap: s, barcode: b, remark: r } = parsed;
                 if (!n && !s && !b) return;
 
                 let nl = n.toLowerCase();
@@ -931,25 +1173,26 @@
                     return;
                 }
 
-                // 【法则 2：互补缺失（原记录缺SKU补SKU，或原记录缺69码补69码，且无任何编码冲突） -> 合并成一条】
+                // 【法则 2：互补缺失（原记录缺SKU补SKU，或原记录缺69码补69码，或原记录名称是纯数字SKU被纠正型号） -> 合并成一条】
                 let mergeTarget = related.find(item => {
                     let iNl = item.name.toLowerCase();
                     let iSl = isValidValue(item.sapCode) ? item.sapCode.toLowerCase() : "";
                     let iBl = isValidValue(item.barcode) ? item.barcode.toLowerCase() : "";
 
-                    let nameCompatible = (!nl || !iNl || iNl === nl || iNl.startsWith('未命名_'));
+                    let nameCompatible = (!nl || !iNl || iNl === nl || iNl.startsWith('未命名_') || /^\d{8,14}$/.test(iNl));
                     let sapCompatible = (!sl || !iSl || iSl === sl);
                     let barCompatible = (!bl || !iBl || iBl === bl);
 
-                    let isComplementary = (sl && !iSl) || (bl && !iBl) || (nl && iNl.startsWith('未命名_'));
+                    let isComplementary = (sl && !iSl) || (bl && !iBl) || (nl && !nl.startsWith('未命名_') && (iNl.startsWith('未命名_') || /^\d{8,14}$/.test(iNl)));
                     return nameCompatible && sapCompatible && barCompatible && isComplementary;
                 });
 
                 if (mergeTarget) {
                     let addedParts = [];
-                    if (nl && mergeTarget.name.toLowerCase().startsWith('未命名_')) {
+                    let mNl = mergeTarget.name.toLowerCase();
+                    if (nl && !nl.startsWith('未命名_') && (mNl.startsWith('未命名_') || /^\d{8,14}$/.test(mNl))) {
                         mergeTarget.name = n;
-                        addedParts.push('补齐名称');
+                        addedParts.push(`补齐型号(${n})`);
                     }
                     if (sl && !isValidValue(mergeTarget.sapCode)) {
                         mergeTarget.sapCode = s;
@@ -1016,7 +1259,7 @@
             let normalNewCount = ps.filter(x => !x._isDistinct).length;
             let distinctNewCount = ps.filter(x => x._isDistinct).length;
 
-            sE.innerHTML = `共解析 <strong>${ls.length}</strong> 行 ｜ 🆕 常规新增: <strong class="text-green-600">${normalNewCount}</strong> ｜ 🔗 互补合并(原空补全): <strong class="text-blue-600">${pu.length}</strong> ｜ ⚡ 内容一致待确认: <strong class="text-teal-600">${pr.length}</strong> ｜ 🔀 真异码双保留: <strong class="text-amber-600">${distinctNewCount}</strong>`;
+            sE.innerHTML = `共解析 <strong>${parsedRows.length}</strong> 行 ｜ 🆕 常规新增: <strong class="text-green-600">${normalNewCount}</strong> ｜ 🔗 互补合并(原空补全): <strong class="text-blue-600">${pu.length}</strong> ｜ ⚡ 内容一致待确认: <strong class="text-teal-600">${pr.length}</strong> ｜ 🔀 真异码双保留: <strong class="text-amber-600">${distinctNewCount}</strong>`;
             
             let detailHtml = "";
             if (pu.length) {
@@ -1112,6 +1355,8 @@
                 });
                 globalBarcodes = cleanAdds.concat(globalBarcodes);
             }
+
+            autoHealBarcodeList(globalBarcodes);
 
             let updateCount = pendingUpdateBarcodes.length;
 
@@ -1562,9 +1807,11 @@
             });
         }
 
-        // ================= 精准渲染 69 码表格：严格区分【真互补可合并】与【多批次不同SKU】 =================
+        // ================= 精准渲染 69 码表格：渲染前自动执行静默纠偏 =================
         function renderBarcodeTable() {
             const tb=document.getElementById("barcode-table-body"); if(!tb)return; tb.innerHTML="";
+            autoHealBarcodeList(globalBarcodes);
+
             let kw=(document.getElementById("barcode-search-input")?.value||"").trim().toLowerCase(), mc=0;
             
             let groupByName = {};
@@ -1584,10 +1831,7 @@
                 let siblings = groupByName[nl] || [];
                 let isMultiVersion = siblings.length > 1;
 
-                // 严格检测：当前行是否存在一个【无SKU冲突且无69码冲突】的同名兄弟行（只有不冲突才叫“可互补合并”）
                 let canMergeWithSibling = isMultiVersion && siblings.some(sib => sib.idx !== i && canTwoItemsComplementMerge(b, sib.item));
-
-                // 检测：当前行如果有新SKU但缺69码（如K-D3016W的第一条），且同名兄弟行里有现成的69码，提供【📋沿用同品69码】按钮
                 let canInheritBarcode = isMultiVersion && !canMergeWithSibling && isValidValue(b.sapCode) && !isValidValue(b.barcode) && siblings.some(sib => sib.idx !== i && isValidValue(sib.item.barcode));
 
                 let hasDiffTag = (b.remark || '').includes('🔄批次异动');
@@ -1696,6 +1940,19 @@
             let n=prompt("产品名称:"); if(!n)return; 
             let s=prompt("SKU编码(选填):")||"", b=prompt("69码(选填):")||"", r=prompt("备注(选填):")||"";
             n=n.trim(); s=s.trim(); b=b.trim(); r=r.trim();
+
+            // 单条录入防错位自动纠偏：若把 69 码填进了 SKU 框或把 SKU 填进了 69 码框，自动归位
+            if (isStrict69Barcode(s) && !isStrict69Barcode(b)) {
+                let tmp = b; b = s; s = tmp;
+            } else if (isValidValue(b) && !isStrict69Barcode(b) && isStrictSapSkuCode(b, false) && !isValidValue(s)) {
+                s = b; b = "";
+            }
+            if (/^\d{8,14}$/.test(n) && !isValidValue(s)) {
+                s = n;
+                let inferred = inferProductNameFromSap(s, globalBarcodes);
+                if (inferred) n = inferred;
+            }
+
             let nl=n.toLowerCase(), hasSap=isValidValue(s), hasBar=isValidValue(b);
             let sl=hasSap?s.toLowerCase():"", bl=hasBar?b.toLowerCase():"";
             let nowStr = getNowString();
@@ -1767,6 +2024,12 @@
                 nc=document.getElementById("edit-bar-code").value.trim(), 
                 nr=document.getElementById("edit-bar-remark").value.trim(); 
             if(!nn)return alert("产品名为空"); 
+            // 保存修改时同样内置自动防错位纠偏
+            if (isStrict69Barcode(ns) && !isStrict69Barcode(nc)) {
+                let tmp = nc; nc = ns; ns = tmp;
+            } else if (isValidValue(nc) && !isStrict69Barcode(nc) && isStrictSapSkuCode(nc, false) && !isValidValue(ns)) {
+                ns = nc; nc = "";
+            }
             if (isValidValue(b.sapCode) && isValidValue(ns) && b.sapCode !== ns) {
                 if (!confirm(`⚠️ 您修改了已有记录的真实 SKU 编码（${b.sapCode} ➔ ${ns}）。\n\n• 点击【确定】：直接覆盖原记录\n• 如果想保留原记录并新增，请点【取消】然后点击左下角的【🔀 另存为新批次记录】按钮！`)) {
                     return;
@@ -1783,6 +2046,11 @@
                 nc=document.getElementById("edit-bar-code").value.trim(), 
                 nr=document.getElementById("edit-bar-remark").value.trim(); 
             if(!nn)return alert("产品名为空");
+            if (isStrict69Barcode(ns) && !isStrict69Barcode(nc)) {
+                let tmp = nc; nc = ns; ns = tmp;
+            } else if (isValidValue(nc) && !isStrict69Barcode(nc) && isStrictSapSkuCode(nc, false) && !isValidValue(ns)) {
+                ns = nc; nc = "";
+            }
             let nowStr = getNowString();
             let diffTag = `[🔄批次异动 ${nowStr.substring(0,16)} | 原SKU:${b.sapCode||'-'} ➔ 新SKU:${ns||'-'}]`;
             globalBarcodes.unshift({
