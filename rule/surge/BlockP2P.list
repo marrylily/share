@@ -212,9 +212,9 @@ DOMAIN,api.market.xiaomi.com
 # --- [新增：第三方 PCDN 节点与抖音后台重试日志] ---
 DOMAIN-SUFFIX,jspcdn.cn
 DOMAIN-WILDCARD,log*-misc-*.amemv.com
-# --- [拦截字节跳动全系后台错误上报与打点轮询] ---
-DOMAIN-WILDCARD,log*-misc-*.amemv.com
-DOMAIN-WILDCARD,log*.amemv.com
+# --- [字节跳动/抖音 后台异常日志与重试打点 (防止重试风暴)] ---
+DOMAIN-KEYWORD,misc-lf.amemv.com
+DOMAIN-KEYWORD,-misc-.amemv.com
 DOMAIN-SUFFIX,toblog.ctobsnssdk.com
 DOMAIN-KEYWORD,mon.snssdk.com
 
