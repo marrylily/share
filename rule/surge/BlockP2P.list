@@ -1,113 +1,157 @@
-# ==========================================================
-# Surge P2P / PCDN 深度阻断规则集 (Unified Safe Block List)
-# 最后更新时间: 2026-05-26
-# 建议策略: REJECT 或 REJECT-DROP
-# ==========================================================
+# =======================================================
+# Surge P2P / PCDN / STUN / BT 综合阻断规则集 (Rule-Set 格式)
+# 引用方式：RULE-SET,本地路径或URL,REJECT-DROP
+# =======================================================
 
 # --- [通用/暴力特征兜底] ---
 DOMAIN-KEYWORD,p2p
 DOMAIN-KEYWORD,pcdn
 DOMAIN-KEYWORD,mcdn
 DOMAIN-KEYWORD,p2p-pc
-URL-REGEX,psdk
-URL-REGEX,mcdn
+# 常见 HTTP Tracker 特征 (仅在非加密请求或开启 MitM 时生效)
 URL-REGEX,.*live.*p2p.*
-# 以下两条泛匹配规则带有轻微误伤风险，默认注释，如有强力阻断需求可自行取消注释
-# URL-REGEX,.*pcdn.*
-# URL-REGEX,.*mcdn.*
+URL-REGEX,announce\.php\?passkey=
+
+# --- [全局 HTTPDNS 拦截 (防 App 绕过系统 DNS 硬编码调度 PCDN)] ---
+DOMAIN-KEYWORD,httpdns
+DOMAIN,dig.bdurl.net
+DOMAIN,dig.snssdk.com
+DOMAIN,httpdns.alicdn.com
+DOMAIN,httpdns-api.aliyuncs.com
+DOMAIN,httpdns-sc.aliyuncs.com
+DOMAIN,httpdns.bilivideo.com
+DOMAIN,httpdns.c.cdnhwc2.com
+DOMAIN,httpdns.meituan.com
+DOMAIN,httpdns.n.netease.com
+DOMAIN,httpdns.ocloud.oppomobile.com
+DOMAIN,httpdns.push.oppomobile.com
+DOMAIN,httpdns.volcengineapi.com
+DOMAIN,httpdns.zybang.com
+DOMAIN,dns.jd.com
+DOMAIN,dns.weixin.qq.com.cn
+DOMAIN,dns.weibo.cn
 
 # --- [字节跳动 (抖音/西瓜视频/今日头条)] ---
 DOMAIN-SUFFIX,pcdn.douyin.com
 DOMAIN-SUFFIX,pcdn.ixigua.com
 DOMAIN-SUFFIX,v3-pcdn.ixigua.com
+DOMAIN-SUFFIX,bytep2p.com
+DOMAIN-SUFFIX,xycdn.n.shifen.com
 DOMAIN-KEYWORD,-v-tos
 DOMAIN-KEYWORD,volc-video
 DOMAIN-KEYWORD,p2p-mcdn
 DOMAIN-KEYWORD,pcdn-volc
 DOMAIN-KEYWORD,mcdn-volc
-# 拦截字节跳动/抖音的 HTTPDNS 服务，强制其降级回系统 DNS
-DOMAIN-KEYWORD,httpdns,REJECT
-DOMAIN,dig.bdurl.net,REJECT
-DOMAIN,dig.snssdk.com,REJECT
+DOMAIN-KEYWORD,bytetos-p2p
+
 # --- [快手 (Kuaishou)] ---
 DOMAIN-SUFFIX,p2p.kuaishou.com
 DOMAIN-SUFFIX,mcdn.kuaishou.com
+DOMAIN-SUFFIX,pcdn.yximgs.com
 DOMAIN-KEYWORD,kspcdn
 DOMAIN-KEYWORD,ksmcdn
 
-# --- [腾讯系 (腾讯视频/微信)] ---
+# --- [腾讯系 (腾讯视频/微信/QQ)] ---
 DOMAIN-SUFFIX,p2p.video.qq.com
+DOMAIN-SUFFIX,p2p.qq.com
+DOMAIN-SUFFIX,p2pupdate.gamedl.qq.com
+DOMAIN-SUFFIX,p2pupgrade.gamedl.qq.com
 DOMAIN-SUFFIX,cdn.dnsv1.com
 DOMAIN-SUFFIX,dkey.dnsv1.com
-# DOMAIN-KEYWORD,stun  # ⚠️ 已注释：避免误伤微信/QQ语音通话及网络游戏
+DOMAIN-SUFFIX,tp2p.kg.qq.com
 
 # --- [阿里系 (优酷/夸克/土豆/淘宝)] ---
+# 已移除 ykimg.com 防止优酷封面图裂开
 DOMAIN-SUFFIX,kuiniuca.com
 DOMAIN-SUFFIX,cibntv.net
-DOMAIN-SUFFIX,ykimg.com
 DOMAIN-SUFFIX,mmstat.com
 DOMAIN-SUFFIX,ibone.api.taobao.com
+DOMAIN-SUFFIX,p2p.alicdn.com
+DOMAIN-KEYWORD,youkup2p
 
 # --- [爱奇艺 (iQiyi)] ---
 DOMAIN-SUFFIX,cache.video.iqiyi.com
 DOMAIN-SUFFIX,ag.iqiyi.com
+DOMAIN-SUFFIX,p2p.iqiyi.com
 DOMAIN-KEYWORD,qyp2p
-# DOMAIN-SUFFIX,qy.net  # ⚠️ 已注释：误伤范围太大，会严重影响视频正常播放
 
 # --- [Bilibili (哔哩哔哩)] ---
-# 替换原有的 DOMAIN-WILDCARD 报错规则，改为 Surge 兼容的穷举写法
+# 已移除 bilivideo 与 upos 全局关键字，避免主站视频断流
+DOMAIN-WILDCARD,stun*.chat.bilibili.com
 DOMAIN,stun.chat.bilibili.com
-DOMAIN,stun1.chat.bilibili.com
-DOMAIN,stun2.chat.bilibili.com
-DOMAIN,stun3.chat.bilibili.com
-DOMAIN,stun4.chat.bilibili.com
-DOMAIN,stun5.chat.bilibili.com
 DOMAIN,pcdn.biliapi.net
 DOMAIN-SUFFIX,mcdn.bilivideo.cn
 DOMAIN-SUFFIX,mcdn.bilivideo.com
 DOMAIN-SUFFIX,cn-mcdn.bilivideo.com
-DOMAIN-SUFFIX,szbdyd.com
 DOMAIN-SUFFIX,p2p.bilivideo.com
-DOMAIN-KEYWORD,bilivideo
+DOMAIN-SUFFIX,szbdyd.com
+DOMAIN-SUFFIX,biliapi.com
+# B站第三方边缘计算 PCDN (PPIO / 派欧云 / 七牛边缘 / 伪装域名)
 DOMAIN-SUFFIX,nexusedgeio.com
 DOMAIN-SUFFIX,ahdohpiechei.com
 DOMAIN-SUFFIX,qrstuvwxyzab.com
-DOMAIN-KEYWORD,upos
+DOMAIN-SUFFIX,ppio.cloud
+DOMAIN-SUFFIX,pplive.cn
 DOMAIN,upos-sz-302ppio.bilivideo.com
 DOMAIN,upos-sz-302kodo.bilivideo.com
-# --- [百度系 (百度网盘/贴吧)] ---
+DOMAIN-WILDCARD,upos-sz-302*.bilivideo.com
+DOMAIN-WILDCARD,*-p2p-*.bilivideo.com
+
+# --- [百度系 (百度网盘/贴吧/爱奇艺联合节点)] ---
 DOMAIN-SUFFIX,pcdn.baidu.com
 DOMAIN-SUFFIX,p2p.baidu.com
-# --- [芒果 TV] ---
+DOMAIN-SUFFIX,baidupcs.p2p.com
+
+# --- [芒果 TV & 小红书 & 喜马拉雅] ---
 DOMAIN-SUFFIX,p2p.mgtv.com
 DOMAIN-SUFFIX,mcdn.mgtv.com
+DOMAIN-SUFFIX,pcdn.xmcdn.com
+DOMAIN-SUFFIX,p2p.xhscdn.com
+DOMAIN-SUFFIX,mcdn.xhscdn.com
 
-# --- [音乐类 (网易云音乐等)] ---
+# --- [音乐类 (网易云音乐/QQ音乐/酷狗)] ---
 DOMAIN-SUFFIX,tianwenca.com
 DOMAIN-SUFFIX,p2p.music.126.net
 DOMAIN-SUFFIX,hijack.music.126.net
 DOMAIN-SUFFIX,m-p2p.com
 DOMAIN,p2p.music.163.com
 DOMAIN,p2p-music.163.com
-# DOMAIN-SUFFIX,music.126.net  # ⚠️ 已注释：包含歌词和封面图，完全拦截会导致封面无法显示
+DOMAIN-SUFFIX,p2p.kugou.com
+DOMAIN-SUFFIX,p2p.kuwo.cn
 
-# --- [直播类 (斗鱼/虎牙)] ---
+# --- [直播类 (斗鱼/虎牙/YY)] ---
+# 已将 douyucdn.cn 细化为具体 P2P 子域，避免正常直播间黑屏
+DOMAIN-SUFFIX,p2p.douyucdn.cn
+DOMAIN-SUFFIX,p2pchunk-table.douyucdn.cn
+DOMAIN-SUFFIX,p2p-ali.douyucdn.cn
+DOMAIN-SUFFIX,p2pvod-ws.douyucdn.cn
+DOMAIN-SUFFIX,dyp2p-ali.douyucdn.cn
+DOMAIN-SUFFIX,dyp2p-hw.douyucdn.cn
 DOMAIN-SUFFIX,p2p.huya.com
 DOMAIN-SUFFIX,hcdn.huya.com
-DOMAIN-SUFFIX,douyucdn.cn
+DOMAIN-SUFFIX,pcdn.huya.com
 DOMAIN-SUFFIX,metric.huya.com
 DOMAIN-SUFFIX,ylog.huya.com
 DOMAIN-SUFFIX,e-ad-monitor.huya.com
-DOMAIN-SUFFIX,p2p.huya.com
 DOMAIN-SUFFIX,statwup.huya.com
 DOMAIN-SUFFIX,e-stat.huya.com
+DOMAIN-SUFFIX,p2p.yy.com
 
-# --- [PCDN 厂商/下载类 (网心云/迅雷/星球联盟等)] ---
+# --- [专业 PCDN 厂商/边缘云/下载类 (网心云/迅雷/点心云/PPIO/摯云等)] ---
 DOMAIN-SUFFIX,xinqiucc.com
 DOMAIN-SUFFIX,onethingpcs.com
+DOMAIN-SUFFIX,onething.net
 DOMAIN-SUFFIX,xycdn.com
 DOMAIN-SUFFIX,sandai.net
 DOMAIN-SUFFIX,n0808.com
+DOMAIN-SUFFIX,thundercdn.com
+DOMAIN-SUFFIX,xunlei.com
+DOMAIN-SUFFIX,peiluyou.com
+DOMAIN-SUFFIX,edgecloudapp.com
+DOMAIN-SUFFIX,bs58i.baishancdnx.com
+DOMAIN-SUFFIX,saxysec.com
+DOMAIN-SUFFIX,uhabo.com
+DOMAIN-SUFFIX,xycloud.com
 
 # --- [数据统计与追踪 (友盟/Firebase等)] ---
 DOMAIN,ulogs.umeng.com
@@ -115,11 +159,8 @@ DOMAIN-SUFFIX,umeng.com
 DOMAIN,app-analytics-services.com
 
 # --- [STUN / TURN 穿透公网公共服务器 (切断 P2P 握手)] ---
+DOMAIN-WILDCARD,stun*.l.google.com
 DOMAIN,stun.l.google.com
-DOMAIN,stun1.l.google.com
-DOMAIN,stun2.l.google.com
-DOMAIN,stun3.l.google.com
-DOMAIN,stun4.l.google.com
 DOMAIN,stun.services.mozilla.com
 DOMAIN,stun.stunprotocol.org
 DOMAIN,stun.voipstunt.com
@@ -137,22 +178,29 @@ DOMAIN,turn.anyfirewall.com
 DOMAIN,turn.bistri.com
 DOMAIN,turn.ipvideotalk.com
 DOMAIN,turn.metrix.com
-DOMAIN,turn1.turnserver.me
-DOMAIN,turn2.turnserver.me
+DOMAIN-WILDCARD,turn*.turnserver.me
 DOMAIN,relay.metered.ca
 DOMAIN,global.stun.twilio.com
 DOMAIN,stun.nextcloud.com
+DOMAIN,stun.qq.com
+DOMAIN,stun.miwifi.com
+DOMAIN,stun.bige0.com
+DOMAIN,stun.syncthing.net
 
 # --- [高危 P2P/STUN 端口阻断] ---
-DEST-PORT,19302
-DEST-PORT,3478
-DEST-PORT,5349
+# 建议仅阻断 UDP 协议的 STUN 端口，减少对普通 TCP 业务的误伤
+AND,((PROTOCOL,UDP), (DEST-PORT,3478))
+AND,((PROTOCOL,UDP), (DEST-PORT,3479))
+AND,((PROTOCOL,UDP), (DEST-PORT,5349))
+AND,((PROTOCOL,UDP), (DEST-PORT,5350))
+AND,((PROTOCOL,UDP), (DEST-PORT,19302))
 DEST-PORT,10000
-DEST-PORT,5350
+
 # --- [PT/BT 下载与 Tracker 通用特征] ---
+# 已移除 DOMAIN-KEYWORD,peer 防止日常网页误伤
 DOMAIN-KEYWORD,torrent
 DOMAIN-KEYWORD,tracker
-DOMAIN-KEYWORD,peer
+DOMAIN-KEYWORD,announce
 DEST-PORT,6881-6889
 DEST-PORT,51413
 DEST-PORT,22471
@@ -161,4 +209,3 @@ DEST-PORT,22471
 DOMAIN-KEYWORD,mimarket
 DOMAIN-SUFFIX,market.xiaomi.com
 DOMAIN,api.market.xiaomi.com
-
