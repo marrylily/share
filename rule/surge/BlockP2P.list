@@ -209,3 +209,7 @@ DEST-PORT,22471
 DOMAIN-KEYWORD,mimarket
 DOMAIN-SUFFIX,market.xiaomi.com
 DOMAIN,api.market.xiaomi.com
+# --- [新增：第三方 PCDN 节点与抖音后台重试日志] ---
+DOMAIN-SUFFIX,jspcdn.cn
+DOMAIN-WILDCARD,log*-misc-*.amemv.com
+
