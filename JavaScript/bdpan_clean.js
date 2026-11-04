@@ -22,7 +22,11 @@ if (!$response.body) {
         obj.data.has_more = false;
         obj.data.extra_info = "";
       }
-    } else if (url.includes("/aipic/conf/dynamicIsland") || url.includes("/recommend/searchbox/bottom") || url.includes("/buy/ad/get")) {
+    } else if (
+      url.includes("/aipic/conf/dynamicIsland") ||
+      url.includes("/recommend/searchbox/bottom") ||
+      url.includes("/buy/ad/get")
+    ) {
       obj.data = {};
     } else if (url.includes("/aipic/image/story/animationconf")) {
       obj.conf = {};
