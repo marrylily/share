@@ -1,0 +1,9 @@
+#!name=百度网盘首页净化
+#!desc=清空百度网盘首页回忆、推荐信息流、弹窗及推广卡片
+#!system=ios
+
+[Script]
+bdpan_clean = type=http-response,pattern=^https?:\/\/pan\.baidu\.com\/(api\/(getsyscfg|getconfig|notice\/list)|feed\/cardinfos|imagestory\/miner\/api\/v2\/picrecommend|aipic\/(online\/getcardlist|conf\/dynamicIsland|image\/story\/animationconf)|recommend\/searchbox\/bottom|act\/api\/activityentry|buy\/ad\/get|rest\/2\.0\/pcs\/adv),requires-body=1,max-size=524288,script-path=https://raw.githubusercontent.com/marrylily/share/main/JavaScript/bdpan_clean.js
+
+[MITM]
+hostname = %APPEND% pan.baidu.com
