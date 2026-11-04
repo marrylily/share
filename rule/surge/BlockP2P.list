@@ -217,4 +217,34 @@ DOMAIN-KEYWORD,misc-lf.amemv.com
 DOMAIN-KEYWORD,-misc-.amemv.com
 DOMAIN-SUFFIX,toblog.ctobsnssdk.com
 DOMAIN-KEYWORD,mon.snssdk.com
+# --- [新增：百度网盘 P2P 打洞 IP 与 IPv6 探测] ---
+DOMAIN-SUFFIX,alltbcsp2p.baidu.com
+DOMAIN,pop.pcsnetwork.netdisk.baidu.com
+IP-CIDR,111.20.4.14/32,no-resolve
+IP-CIDR,113.24.226.67/32,no-resolve
+IP-CIDR,116.179.34.69/32,no-resolve
 
+# --- [新增：伪装随机域名 PCDN 与白山云/边缘节点] ---
+DOMAIN-SUFFIX,wmzfylgdsz.com
+DOMAIN-SUFFIX,zzcdnx.com
+DOMAIN-SUFFIX,baishancdnx.com
+DOMAIN-SUFFIX,ydycdn.com
+DOMAIN-SUFFIX,dittocdn.com
+DOMAIN-SUFFIX,sjxydc.com
+DOMAIN-SUFFIX,cjjd14.com
+DOMAIN-SUFFIX,qtaeixd.com
+DOMAIN-SUFFIX,baixingyllh.com
+
+# --- [新增：漏网 HTTPDNS 与 GSLB 边缘调度 (防下发纯 IP:443 PCDN)] ---
+DOMAIN-SUFFIX,paydns.wechatpay.cn
+DOMAIN-SUFFIX,smtcdns.com
+DOMAIN-SUFFIX,tlivedns.com
+DOMAIN-SUFFIX,vegslb.com
+DOMAIN-SUFFIX,bdcgslb.com
+
+# --- [新增：腾讯直播边缘 & STUN 补全] ---
+DOMAIN-SUFFIX,qlivecdn.com
+DOMAIN-SUFFIX,tlivesource.com
+DOMAIN-SUFFIX,voipstunt.com
+# 如不使用乐播投屏可取消下一行注释：
+# DOMAIN-SUFFIX,hpplay.cn
