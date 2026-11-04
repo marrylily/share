@@ -1,9 +1,16 @@
-#!name=百度网盘首页净化
-#!desc=清空百度网盘首页回忆、推荐信息流、弹窗及推广卡片
+#!name=百度网盘首页净化 & 禁用P2P
+#!desc=清空百度网盘首页回忆、推荐信息流、弹窗及推广卡片，并从配置层与规则层彻底关闭百度网盘 P2P 上传与打洞
 #!system=ios
 
+[Rule]
+DOMAIN-SUFFIX,alltbcsp2p.baidu.com,REJECT-DROP,pre-matching,extended-matching
+DOMAIN,pop.pcsnetwork.netdisk.baidu.com,REJECT-DROP,pre-matching,extended-matching
+IP-CIDR,111.20.4.14/32,REJECT-DROP,pre-matching,no-resolve
+IP-CIDR,113.24.226.67/32,REJECT-DROP,pre-matching,no-resolve
+IP-CIDR,116.179.34.69/32,REJECT-DROP,pre-matching,no-resolve
+
 [Script]
-bdpan_clean = type=http-response,pattern=^https?:\/\/pan\.baidu\.com\/(api\/(getsyscfg|getconfig|notice\/list)|feed\/cardinfos|imagestory\/miner\/api\/v2\/picrecommend|aipic\/(online\/getcardlist|conf\/dynamicIsland|image\/story\/animationconf)|recommend\/searchbox\/bottom|act\/api\/activityentry|buy\/ad\/get|rest\/2\.0\/pcs\/adv),requires-body=1,max-size=524288,script-path=https://raw.githubusercontent.com/marrylily/share/main/JavaScript/bdpan_clean.js
+bdpan_clean = type=http-response,pattern=^https?:\/\/pan\.baidu\.com\/(api\/(getsyscfg|getconfig|notice\/list)|cms\/config|feed\/cardinfos|imagestory\/miner\/api\/v2\/picrecommend|aipic\/(online\/getcardlist|conf\/dynamicIsland|image\/story\/animationconf)|recommend\/searchbox\/bottom|act\/api\/activityentry|buy\/ad\/get|rest\/2\.0\/pcs\/adv),requires-body=1,max-size=524288,script-path=https://raw.githubusercontent.com/marrylily/share/main/JavaScript/bdpan_clean.js
 
 [MITM]
 hostname = %APPEND% pan.baidu.com
