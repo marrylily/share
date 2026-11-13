@@ -18,51 +18,114 @@
         .btn-export-excel:hover { background-color: #047857 !important; }
         .rich-note s, .rich-note del, .rich-note strike { text-decoration: line-through; color: #94a3b8; }
         .rich-note a { color: #2563eb; text-decoration: underline; word-break: break-all; }
+        .header-action { min-height: 36px; padding: 6px 10px; border-radius: 0.5rem; font-size: 12px; font-weight: 700; }
+        .nav-tab { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; border-radius: 0.5rem; padding: 8px 12px; font-size: 12px; font-weight: 700; color: #4b5563; background: #f3f4f6; }
+        .nav-tab-on { background: #2563eb; color: #fff; }
+        .nav-count { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; border-radius: 999px; padding: 1px 6px; background: rgba(255,255,255,.22); }
+        .nav-tab:not(.nav-tab-on) .nav-count { background: #e5e7eb; color: #374151; }
+        .sync-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; border: 1px solid transparent; max-width: 100%; line-height: 1.2; }
+        .sync-dot { width: 8px; height: 8px; border-radius: 999px; background: currentColor; flex: none; }
+        .sync-ok { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .sync-dirty { background: #fffbeb; color: #b45309; border-color: #fcd34d; cursor: pointer; }
+        .sync-syncing { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .sync-error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; cursor: pointer; }
+        .sync-local { background: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
+        .sync-syncing .sync-dot { animation: syncPulse 1s ease-in-out infinite; }
+        @keyframes syncPulse { 50% { opacity: .3; } }
+        details.panel-card > summary { list-style: none; cursor: pointer; }
+        details.panel-card > summary::-webkit-details-marker { display: none; }
+        .matrix-table { border-collapse: separate; border-spacing: 0; }
+        .matrix-scroll thead th { position: sticky; top: 0; z-index: 5; background: #f8fafc; }
+        .sticky-c1, .sticky-c2, .sticky-c3 { position: sticky; background: #fff; }
+        .sticky-c1 { left: 0; z-index: 6; width: 44px; min-width: 44px; max-width: 44px; }
+        .sticky-c2 { left: 44px; z-index: 6; width: 52px; min-width: 52px; max-width: 52px; }
+        .sticky-c3 { left: 96px; z-index: 6; min-width: 220px; box-shadow: 6px 0 8px -6px rgba(15,23,42,.28); }
+        .matrix-scroll thead .sticky-c1,
+        .matrix-scroll thead .sticky-c2,
+        .matrix-scroll thead .sticky-c3 { z-index: 7; background: #f8fafc; }
+        tr.row-hot .sticky-c1, tr.row-hot .sticky-c2, tr.row-hot .sticky-c3 { background: #fef2f2; }
+        tr.row-plain:hover .sticky-c1, tr.row-plain:hover .sticky-c2, tr.row-plain:hover .sticky-c3 { background: #eff6ff; }
+        .node-tap { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 2px 4px; cursor: pointer; }
+        .node-check { width: 16px; height: 16px; }
+        .node-remark-btn { min-width: 28px; min-height: 32px; font-size: 13px; line-height: 1; }
+        .today-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 1px 2px rgba(15,23,42,.04); padding: 14px; }
+        .today-btn { min-height: 40px; padding: 8px 12px; border-radius: 0.65rem; font-size: 12px; font-weight: 700; }
+        @media (max-width: 640px) {
+            .header-action { min-height: 40px; padding: 8px 12px; }
+            .nav-tab { min-height: 40px; }
+            .node-check { width: 20px; height: 20px; }
+            .node-tap { min-height: 44px; }
+            .matrix-scroll { max-height: none !important; height: auto !important; }
+            #module-matrix select, #module-matrix input[type="text"], #module-returns input[type="text"], #module-returns textarea { min-height: 40px; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen antialiased relative">
 
     <div class="w-full max-w-7xl mx-auto px-2 sm:px-6 py-3 sm:py-5">
         <!-- 头部导航与全局状态 -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
-            <div>
-                <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
-                    <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-0.5 rounded-lg text-xs tracking-wide">工作台</span>
-                    <span>电商运营超级工作台</span>
-                    <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
-                </h1>
-                <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">新品推进 · 老品回厂 · 69码联动库 · 双Token独立鉴权</p>
-            </div>
-            <div class="flex items-center space-x-2 flex-wrap w-full sm:w-auto justify-between sm:justify-end">
-                <span id="auth-tag" class="text-[10px] sm:text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2.5 sm:px-3 py-1 rounded-full font-medium flex items-center space-x-1">
-                    <span id="auth-dot" class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                    <span id="auth-tag-text">就绪</span>
-                </span>
-                <div class="flex items-center space-x-1.5">
-                    <button type="button" onclick="toggleAIChatDrawer()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition shadow-sm cursor-pointer">🤖 小助手</button>
-                    <button type="button" onclick="copyReadOnlyShareLink()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-indigo-200 font-bold cursor-pointer">🔗 只读链接</button>
-                    <button type="button" onclick="toggleConfigModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs border border-gray-300 font-medium cursor-pointer">⚙️ 云端配置</button>
+        <header class="mb-3 bg-white p-3 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-xl font-bold text-gray-900 flex items-center flex-wrap gap-1.5">
+                        <span class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-0.5 rounded-lg text-xs tracking-wide">工作台</span>
+                        <span>电商运营超级工作台</span>
+                        <span id="role-badge" class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 border border-blue-200 px-1.5 sm:px-2 py-0.5 rounded font-semibold">管理模式</span>
+                    </h1>
+                    <p class="text-[11px] sm:text-xs text-gray-500 mt-1">新品推进 · 老品回厂 · 69码联动库</p>
+                </div>
+                <button type="button" id="sync-indicator" onclick="onSyncIndicatorClick()" class="sync-pill sync-local self-start">
+                    <span class="sync-dot"></span>
+                    <span id="sync-indicator-text">仅本地</span>
+                    <span id="sync-indicator-time" class="font-medium opacity-80"></span>
+                </button>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span id="auth-tag" class="hidden" aria-hidden="true"><span id="auth-dot"></span><span id="auth-tag-text">就绪</span></span>
+                    <button type="button" id="btn-ai" onclick="toggleAIChatDrawer()" class="header-action bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm cursor-pointer">🤖 小助手</button>
+                    <button type="button" id="btn-share" onclick="openShareModal()" class="header-action bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 cursor-pointer">🔗 只读分享</button>
+                    <button type="button" id="btn-config" onclick="toggleConfigModal()" class="header-action bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 cursor-pointer">⚙️ 设置</button>
                 </div>
             </div>
         </header>
 
         <!-- 顶层主工作区切换导航 -->
-        <nav class="flex items-center space-x-2 mb-4 bg-white p-2 rounded-xl border border-gray-200 shadow-sm overflow-x-auto custom-scroll">
-            <button type="button" onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
-                <span>📊 新品排期矩阵</span><span id="nav-count-matrix" class="bg-blue-800 text-white text-[10px] px-1.5 py-0.5 rounded-full font-mono">0</span>
+        <nav class="flex items-center gap-2 mb-3 bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm overflow-x-auto custom-scroll">
+            <button type="button" onclick="switchMainView('TODAY')" id="nav-btn-today" class="nav-tab nav-tab-on">
+                <span>📌 今日要推进</span><span id="nav-count-today" class="nav-count">0</span>
             </button>
-            <button type="button" onclick="switchMainView('RETURNS')" id="nav-btn-returns" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
-                <span>🔄 老品回厂进度</span><span id="nav-count-returns" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full font-mono">0</span>
+            <button type="button" onclick="switchMainView('MATRIX')" id="nav-btn-matrix" class="nav-tab">
+                <span>📊 新品排期矩阵</span><span id="nav-count-matrix" class="nav-count">0</span>
             </button>
-            <button type="button" onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer">
-                <span>🏷️ 69码编码库</span><span id="nav-count-barcodes" class="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full font-mono">0</span>
+            <button type="button" onclick="switchMainView('RETURNS')" id="nav-btn-returns" class="nav-tab">
+                <span>🔄 老品回厂进度</span><span id="nav-count-returns" class="nav-count">0</span>
+            </button>
+            <button type="button" onclick="switchMainView('BARCODES')" id="nav-btn-barcodes" class="nav-tab">
+                <span>🏷️ 69码编码库</span><span id="nav-count-barcodes" class="nav-count">0</span>
             </button>
         </nav>
 
+        <!-- ================= 模块 0：今日要推进 ================= -->
+        <div id="module-today" class="space-y-3">
+            <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-gray-900">今日要推进</h2>
+                        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5">进行中的系列按紧急程度排列：已超期在前，然后是最近截点。点按钮即可把该节点标为全部完成。</p>
+                    </div>
+                    <div id="today-summary" class="text-[11px] sm:text-xs text-gray-600 font-medium"></div>
+                </div>
+            </div>
+            <div id="today-list" class="space-y-2.5"></div>
+        </div>
+
         <!-- ================= 模块 1：新品生命周期推进矩阵 ================= -->
-        <div id="module-matrix" class="space-y-4">
-            <div class="bg-white p-3.5 sm:p-5 rounded-xl border border-gray-200 shadow-sm admin-create-panel">
-                <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2">⚡ 批量粘贴 SKU 自动裂变生成 (内置防重检测 & 69码自动点亮)</h2>
+        <div id="module-matrix" class="space-y-4 hidden">
+            <details id="panel-new-sku" class="panel-card bg-white rounded-xl border border-gray-200 shadow-sm admin-create-panel">
+                <summary class="px-3.5 sm:px-5 py-3 flex items-center justify-between gap-2">
+                    <span class="text-xs sm:text-sm font-bold text-gray-800">⚡ 批量粘贴 SKU 新建系列</span>
+                    <span class="text-[11px] text-gray-400 shrink-0">展开 / 收起</span>
+                </summary>
+                <div class="px-3.5 sm:px-5 pb-4">
                 <div class="mb-2.5">
                     <label class="block text-gray-700 font-semibold mb-1 text-xs">子变体 / SKU 列表 <span class="text-red-500">*</span></label>
                     <textarea id="p-skus-batch" rows="2" placeholder="支持多行粘贴" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
@@ -78,9 +141,10 @@
                     </div>
                     <div><label class="block text-gray-600 mb-1">品类 / 渠道 <span class="text-red-500">*</span></label><input type="text" id="p-category" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div><label class="block text-gray-600 mb-1">量产大货截点 <span class="text-red-500">*</span></label><input type="text" id="p-prod-date" placeholder="可打 9.3 或 0903" onblur="this.value=normalizeDate(this.value)" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
-                    <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
+                    <div class="flex items-end"><button type="button" onclick="addProductWithBatchSkus()" class="w-full bg-blue-600 hover:bg-blue-700 text-white min-h-[40px] py-1.5 rounded-lg font-bold shadow-sm cursor-pointer">🚀 创建</button></div>
                 </div>
-            </div>
+                </div>
+            </details>
 
             <div class="flex items-center space-x-2">
                 <button type="button" onclick="switchTab('RUNNING')" id="tab-btn-running" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer"><span>⚡ 进行中看板</span><span id="tab-count-running" class="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">0</span></button>
@@ -118,22 +182,21 @@
                     <span>⚡ 进行中: <strong id="stat-running" class="text-blue-600">0</strong></span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button type="button" onclick="exportSelectedToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">📥 导出 Excel</button>
-                    <div id="sync-status" class="text-gray-500 font-medium text-[11px]">准备就绪</div>
+                    <button type="button" onclick="exportSelectedToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer min-h-[36px]">📥 导出 Excel</button>
                 </div>
             </div>
 
             <div class="desktop-table-view bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                <div class="overflow-auto custom-scroll w-full h-[calc(100vh-320px)] min-h-[400px]">
-                    <table class="w-full text-left text-xs text-gray-700 min-w-[1180px]">
-                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+                <div id="matrix-scroll" class="matrix-scroll overflow-auto custom-scroll w-full max-h-[72vh] min-h-[240px]">
+                    <table class="matrix-table w-full text-left text-xs text-gray-700 min-w-[1180px]">
+                        <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 shadow-sm">
                             <tr>
-                                <th class="p-3 w-8 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 cursor-pointer"></th>
-                                <th class="p-3 w-10 text-center">展开</th>
-                                <th class="p-3 min-w-[160px]">产品型号 / 系列</th>
+                                <th class="sticky-c1 px-1 py-3 text-center"><input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-blue-600 cursor-pointer"></th>
+                                <th class="sticky-c2 px-1 py-3 text-center">展开</th>
+                                <th class="sticky-c3 px-3 py-3">产品型号 / 系列</th>
                                 <th class="p-3 min-w-[70px]">品类</th>
                                 <th class="p-3 min-w-[140px]">排期与到货情况</th>
-                                <th class="p-3 min-w-[270px]">三大核心节点进度</th>
+                                <th class="p-3 min-w-[270px]">节点进度</th>
                                 <th class="p-3 min-w-[260px]">全局排期说明 / 大备注</th>
                                 <th class="p-3 min-w-[85px]">状态</th>
                                 <th class="p-3 text-right min-w-[170px]">操作与审计</th>
@@ -147,8 +210,12 @@
 
         <!-- ================= 模块 2：🔄 老品回厂进度 ================= -->
         <div id="module-returns" class="space-y-4 hidden">
-            <div class="bg-white p-3.5 sm:p-5 rounded-xl border border-gray-200 shadow-sm admin-create-panel">
-                <h2 class="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">🔄 新建老品回厂跟进任务</h2>
+            <details id="panel-new-return" class="panel-card bg-white rounded-xl border border-gray-200 shadow-sm admin-create-panel">
+                <summary class="px-3.5 sm:px-5 py-3 flex items-center justify-between gap-2">
+                    <span class="text-xs sm:text-sm font-bold text-gray-800">🔄 新建老品回厂跟进任务</span>
+                    <span class="text-[11px] text-gray-400 shrink-0">展开 / 收起</span>
+                </summary>
+                <div class="px-3.5 sm:px-5 pb-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs mb-2.5">
                     <div><label class="block text-gray-600 mb-1">产品名称 / 型号 <span class="text-red-500">*</span></label><input type="text" id="r-name" placeholder="如: Q60S" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
                     <div><label class="block text-gray-600 mb-1">预计整体截点 <span class="text-red-500">*</span></label><input type="text" id="r-eta-date" placeholder="可打 9.3 或 0903" onblur="this.value=normalizeDate(this.value)" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"></div>
@@ -158,7 +225,8 @@
                     <label class="block text-gray-600 mb-1 text-xs">包含的 SKU 规格与批次 (支持多行)</label>
                     <textarea id="r-skus" rows="2" placeholder="例如：&#10;红色 - 9/20到货&#10;蓝色 - 缺料待定" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 focus:outline-none font-mono text-xs"></textarea>
                 </div>
-            </div>
+                </div>
+            </details>
 
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2.5 text-xs text-gray-600 px-1">
                 <div class="flex items-center space-x-3 sm:space-x-4 flex-wrap text-[11px] sm:text-xs">
@@ -274,16 +342,30 @@
 
     <!-- ================= 全局弹窗层 ================= -->
     <div id="config-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3 sm:p-4" onclick="if(event.target===this) toggleConfigModal()">
-        <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-md shadow-2xl text-gray-800 text-xs space-y-3 relative">
-            <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold">⚙️ 多源云端独立配置</h2><button onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
+        <div class="bg-white border border-gray-200 p-5 rounded-xl w-full max-w-lg shadow-2xl text-gray-800 text-xs space-y-3 relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2"><h2 class="text-sm font-bold">⚙️ 云端与节点设置</h2><button onclick="toggleConfigModal()" class="text-gray-400 text-lg cursor-pointer">✕</button></div>
             <div class="space-y-2.5">
-                <div><label class="block text-gray-600 mb-1">GitHub 用户名</label><input type="text" id="cfg-owner" class="w-full border rounded p-1.5 focus:outline-none"></div>
-                <div><label class="block text-gray-600 mb-1">📊 新品私有仓库名</label><input type="text" id="cfg-repo" class="w-full border rounded p-1.5 focus:outline-none"></div>
-                <div><label class="block text-blue-700 font-bold mb-1">🔑 仓库专属 Token</label><input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-1.5 focus:outline-none font-mono"></div>
-                <div class="pt-2 border-t border-gray-100"><label class="block text-indigo-700 font-bold mb-1">🏷️ 69码 Gist ID</label><input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-1.5 focus:outline-none font-mono"></div>
-                <div><label class="block text-purple-700 font-bold mb-1">🔑 Gist 专属 Token</label><input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 focus:outline-none font-mono"></div>
+                <div><label class="block text-gray-600 mb-1">GitHub 用户名</label><input type="text" id="cfg-owner" class="w-full border rounded p-1.5 focus:outline-none" autocomplete="off"></div>
+                <div><label class="block text-gray-600 mb-1">📊 新品私有仓库名</label><input type="text" id="cfg-repo" class="w-full border rounded p-1.5 focus:outline-none" autocomplete="off"></div>
+                <div><label class="block text-blue-700 font-bold mb-1">🔑 仓库写入 Token</label><input type="password" id="cfg-token-repo" class="w-full border border-blue-300 rounded p-1.5 focus:outline-none font-mono" autocomplete="off"><p class="text-[11px] text-gray-500 mt-1">只保存在这台设备，用来同步新品矩阵。不会放进分享链接。</p></div>
+                <div class="pt-2 border-t border-gray-100"><label class="block text-indigo-700 font-bold mb-1">🏷️ 69码 Gist ID</label><input type="text" id="cfg-gist-barcodes" class="w-full border border-indigo-300 bg-indigo-50/20 rounded p-1.5 focus:outline-none font-mono" autocomplete="off"></div>
+                <div><label class="block text-purple-700 font-bold mb-1">🔑 Gist 写入 Token</label><input type="password" id="cfg-token-gist" class="w-full border border-purple-300 rounded p-1.5 focus:outline-none font-mono" autocomplete="off"></div>
+                <div class="pt-2 border-t border-gray-100">
+                    <label class="block text-emerald-800 font-bold mb-1">🔗 只读分享 Token（可选）</label>
+                    <input type="password" id="cfg-token-share" class="w-full border border-emerald-300 rounded p-1.5 focus:outline-none font-mono" placeholder="Fine-grained，仅 Contents: Read" autocomplete="off">
+                    <p class="text-[11px] text-gray-500 mt-1">单独创建一个 Fine-grained Token，权限只勾 Contents: Read。生成分享链接时只嵌入这一枚，且不能与上面的写入 Token 相同。</p>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <label class="block text-gray-800 font-bold mb-1">自定义节点列</label>
+                    <p class="text-[11px] text-gray-500 mb-1.5">财务BOM、详情页、69编码始终保留。追加的节点（如拍摄、上架）跟矩阵一起保存，旧数据仍按原字段读取。</p>
+                    <div id="custom-node-settings" class="space-y-1 mb-2"></div>
+                    <div class="flex gap-2">
+                        <input id="cfg-new-node" class="flex-1 border rounded p-1.5 focus:outline-none" placeholder="节点名称，如 拍摄" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomNodeFromSettings();}">
+                        <button type="button" onclick="addCustomNodeFromSettings()" class="px-3 py-1.5 bg-indigo-600 text-white rounded font-bold cursor-pointer">添加</button>
+                    </div>
+                </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100"><button onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 text-white rounded cursor-pointer">保存同步</button></div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100"><button onclick="toggleConfigModal()" class="px-3.5 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button><button onclick="saveDualTokenConfigAndSync()" class="px-4 py-1.5 bg-blue-600 text-white rounded cursor-pointer font-bold">保存同步</button></div>
         </div>
     </div>
 
@@ -412,7 +494,52 @@
     </div>
 
     <div id="readonly-share-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3" onclick="if(event.target===this) closeReadonlyModal()">
-        <div class="bg-white p-5 rounded-2xl w-full max-w-md text-xs relative"><h2 class="font-bold text-sm mb-2">🔗 只读分享链接 (已启用短码防截断保护)</h2><textarea id="readonly-url-textarea" rows="3" readonly class="w-full border p-2 rounded mb-3 select-all font-mono"></textarea><div class="flex justify-end gap-2"><button onclick="closeReadonlyModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">关闭</button><button onclick="confirmCopyReadonlyUrl()" class="px-3 py-1.5 bg-blue-600 text-white rounded cursor-pointer">复制</button></div></div>
+        <div class="bg-white p-5 rounded-2xl w-full max-w-lg text-xs relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start gap-2 mb-2">
+                <h2 class="font-bold text-sm">🔗 只读分享</h2>
+                <button type="button" onclick="closeReadonlyModal()" class="text-gray-400 text-lg cursor-pointer">✕</button>
+            </div>
+            <div class="bg-amber-50 border border-amber-300 text-amber-950 rounded-xl p-3 mb-3 leading-relaxed">
+                <div class="font-bold mb-1">安全提示</div>
+                分享链接<b>不会</b>包含仓库写入 Token 或 Gist 写入 Token。只读打开时，本页也不会尝试写入。以前复制过的旧版「只读链接」里可能带有写入权限，请到 GitHub 吊销旧 Token 并更换。
+            </div>
+            <div class="space-y-2 mb-3">
+                <div class="font-bold text-gray-800">方式一 · 只读 Token 链接（数据实时）</div>
+                <p class="text-gray-500">只嵌入设置里的「只读分享 Token」（Fine-grained，Contents: Read）。对方能看仓库里的最新矩阵，不能改。</p>
+                <button type="button" onclick="fillShareLink('ro')" class="today-btn bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">生成只读 Token 链接</button>
+            </div>
+            <div class="space-y-2 mb-3 pt-2 border-t">
+                <div class="font-bold text-gray-800">方式二 · 快照链接（不含任何 Token）</div>
+                <p class="text-gray-500">把当前页面上的数据打进链接。对方无需 Token，看到的是这一刻的副本，不能写，也不会随后更新。</p>
+                <label class="flex items-center gap-2 text-gray-700"><input type="checkbox" id="share-include-barcodes" class="w-4 h-4"> 快照包含 69 码库（数据多时链接会很长）</label>
+                <button type="button" onclick="fillShareLink('snapshot')" class="today-btn bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">生成快照链接</button>
+            </div>
+            <textarea id="readonly-url-textarea" rows="4" readonly class="w-full border p-2 rounded mb-2 select-all font-mono text-[11px]" placeholder="先选择上面的一种方式"></textarea>
+            <div id="share-link-hint" class="text-[11px] text-red-600 mb-2 min-h-[1em]"></div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeReadonlyModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">关闭</button>
+                <button type="button" onclick="confirmCopyReadonlyUrl()" class="px-3 py-1.5 bg-blue-600 text-white rounded cursor-pointer font-bold">复制链接</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="remark-modal" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center hidden p-3" onclick="if(event.target===this) closeRemarkModal()">
+        <div class="bg-white p-5 rounded-2xl w-full max-w-sm text-xs relative">
+            <div class="font-bold text-sm mb-2" id="remark-modal-title">节点备注</div>
+            <p class="text-gray-500 mb-2">备注是可选的，不会改变节点的完成状态。</p>
+            <input type="text" id="node-remark-input" class="w-full border p-2 rounded mb-4" placeholder="审核备注（选填）">
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeRemarkModal()" class="px-3 py-1.5 bg-gray-100 rounded cursor-pointer">取消</button>
+                <button type="button" onclick="saveNodeRemark()" class="px-4 py-1.5 bg-blue-600 text-white rounded cursor-pointer font-bold">保存备注</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="undo-toast" class="fixed left-1/2 -translate-x-1/2 z-[10000] hidden" style="bottom: max(16px, env(safe-area-inset-bottom));">
+        <div class="bg-gray-900 text-white rounded-full shadow-lg pl-4 pr-2 py-1.5 flex items-center gap-3 text-xs max-w-[92vw]">
+            <span id="undo-toast-msg">已更新</span>
+            <button type="button" onclick="runUndo()" class="font-bold text-amber-300 min-h-[36px] px-3">撤销</button>
+        </div>
     </div>
 
     <div id="ai-chat-drawer" class="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex justify-end hidden" onclick="if(event.target===this) toggleAIChatDrawer()">
@@ -464,9 +591,14 @@
     <!-- ================= JAVASCRIPT 核心逻辑 ================= -->
     <script>
         let products=[], globalReturns=[], globalMemos=[], globalBarcodes=[];
-        let fileSha="", expandedRows={}, expandedReturnRows={}, selectedProductIds=new Set();
+        var fileSha="";
+        let expandedRows={}, expandedReturnRows={}, selectedProductIds=new Set();
         let currentEditingId=null, currentBigNoteId=null, currentEditingBarcodeIdx=null, currentBatchProdId=null;
-        let isReadOnlyMode=false, isMemoPanelOpen=true, currentTab='RUNNING', currentMainView='MATRIX';
+        let isReadOnlyMode=false, isMemoPanelOpen=true, currentTab='RUNNING', currentMainView='TODAY';
+        let customNodes=[];
+        let matrixDirty=false, barcodeDirty=false, cloudDebounceTimer=null, flushRunning=false;
+        let lastSyncedAt="", syncVisual="local", lastGistUpdatedAt="", pendingRemarkEdit=null, lastReadOnlyArgs=null;
+        let undoTimer=null, undoAction=null, nodeLongTimer=null, nodeLongFired=false;
         
         let barcodeBatchQueryList=[], barcodeMissingList=[], pendingImportBarcodes=[], pendingUpdateBarcodes=[], pendingRefreshBarcodes=[], pendingCheck={};
         let detectedOverwrittenList = [];
@@ -723,7 +855,6 @@
                 (p.skus || []).forEach(s => {
                     if (!s.sapOk) {
                         let mb = matchBarcodeForProductSku(p.name, s.name);
-                        // 只有匹配到的记录拥有真实有效的 69 条码时，才自动点亮「69编码」节点
                         if (mb && isValidValue(mb.barcode)) {
                             s.sapOk = true;
                             s.nodeRecords = s.nodeRecords || {};
@@ -736,10 +867,7 @@
                 });
             });
 
-            if (autoLitCount > 0) {
-                localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
-                if (triggerCloudSync) syncMatrixToCloud();
-            }
+            if (autoLitCount > 0) scheduleMatrixSync();
             return autoLitCount;
         }
 
@@ -756,37 +884,112 @@
             return times.length ? Math.min(...times) : Infinity;
         }
 
+        function isBuiltinNodeKey(k) { return k === "bomOk" || k === "detailOk" || k === "sapOk"; }
+        function isCustomNodeKey(k) { return /^x_[A-Za-z0-9_]+$/.test(String(k || "")); }
+        function builtinNodeDefs() {
+            return [
+                { key: "bomOk", label: "财务BOM", short: "BOM" },
+                { key: "detailOk", label: "详情页", short: "详情" },
+                { key: "sapOk", label: "69编码", short: "69码" }
+            ];
+        }
+        function allNodeDefs() {
+            return builtinNodeDefs().concat((customNodes || []).map(n => ({ key: n.key, label: n.label, short: n.label })));
+        }
+        function skuNodeOn(s, key) {
+            if (!s) return false;
+            if (isBuiltinNodeKey(key)) return !!s[key];
+            return !!(s.extraNodes && s.extraNodes[key]);
+        }
+        function applyNodeToSku(s, key, val, remark, timeStr) {
+            let on = !!val;
+            if (isBuiltinNodeKey(key)) s[key] = on;
+            else if (isCustomNodeKey(key)) {
+                s.extraNodes = s.extraNodes || {};
+                s.extraNodes[key] = on;
+            } else return;
+            s.nodeRecords = s.nodeRecords || {};
+            s.nodeRecords[key] = { status: on, time: timeStr || getNowString(), remark: remark || "" };
+        }
+        function normalizeExtraNodes(extra, records) {
+            let out = {};
+            if (extra && typeof extra === "object" && !Array.isArray(extra)) {
+                Object.keys(extra).forEach(k => { if (isCustomNodeKey(k)) out[k] = !!extra[k]; });
+            }
+            if (records && typeof records === "object") {
+                Object.keys(records).forEach(k => {
+                    if (isCustomNodeKey(k) && out[k] === undefined) out[k] = !!(records[k] && records[k].status);
+                });
+            }
+            return out;
+        }
+        function sanitizeCustomNodes(list) {
+            if (!Array.isArray(list)) return [];
+            let seen = new Set(), out = [];
+            list.forEach(n => {
+                let key = String((n && n.key) || "");
+                let label = String((n && (n.label || n.name)) || "").trim();
+                if (!isCustomNodeKey(key) || !label || seen.has(key)) return;
+                seen.add(key);
+                out.push({ key, label });
+            });
+            return out;
+        }
+        function collectCustomNodes(declared, productList) {
+            let nodes = sanitizeCustomNodes(declared);
+            let seen = new Set(nodes.map(n => n.key));
+            (productList || []).forEach(p => (p.skus || []).forEach(s => {
+                Object.keys(s.extraNodes || {}).concat(Object.keys(s.nodeRecords || {})).forEach(k => {
+                    if (isCustomNodeKey(k) && !seen.has(k)) {
+                        seen.add(k);
+                        nodes.push({ key: k, label: k.replace(/^x_/, "") });
+                    }
+                });
+            }));
+            return nodes;
+        }
+
         function normalizeMatrixData(raw) {
-            let p=[],m=[],r=[]; if(Array.isArray(raw))p=raw; else if(raw&&typeof raw==='object'){p=raw.products||raw.items||raw.data||[];m=raw.memos||[];r=raw.oldReturns||[];}
+            let p = [], m = [], r = [], cn = [];
+            if (Array.isArray(raw)) p = raw;
+            else if (raw && typeof raw === "object") {
+                p = raw.products || raw.items || raw.data || [];
+                m = raw.memos || [];
+                r = raw.oldReturns || [];
+                cn = raw.customNodes || [];
+            }
+            let productsOut = p.map(x => ({
+                id: String(x.id || ("P_" + Math.random())),
+                name: x.name || "未命名",
+                sourceType: x.sourceType || "自研",
+                category: x.category || "常规",
+                prodDate: normalizeDate(x.prodDate),
+                remark: x.remark || "",
+                bigNote: x.bigNote || "",
+                status: x.status || "进行中",
+                archivedAt: x.archivedAt || null,
+                createdAt: x.createdAt || "",
+                historyLogs: x.historyLogs || [],
+                skus: (x.skus || []).map((s, i) => ({
+                    id: String(s.id || ("S_" + i)),
+                    name: s.name || "标配",
+                    shopInfo: s.shopInfo || "",
+                    skuRemark: s.skuRemark || "",
+                    bomOk: !!s.bomOk,
+                    detailOk: !!s.detailOk,
+                    sapOk: !!s.sapOk,
+                    nodeRecords: (s.nodeRecords && typeof s.nodeRecords === "object") ? s.nodeRecords : {},
+                    extraNodes: normalizeExtraNodes(s.extraNodes, s.nodeRecords)
+                }))
+            }));
             return {
-                products: p.map(x=>({
-                    id: String(x.id||"P_"+Math.random()), 
-                    name: x.name||"未命名", 
-                    sourceType: x.sourceType || "自研",
-                    category: x.category||"常规", 
-                    prodDate: normalizeDate(x.prodDate), 
-                    remark: x.remark||"", 
-                    bigNote: x.bigNote||"", 
-                    status: x.status||"进行中", 
-                    archivedAt: x.archivedAt||null, 
-                    createdAt: x.createdAt||"", 
-                    historyLogs: x.historyLogs||[], 
-                    skus: (x.skus||[]).map((s,i)=>({
-                        id: String(s.id||"S_"+i), 
-                        name: s.name||"标配", 
-                        shopInfo: s.shopInfo||"", 
-                        skuRemark: s.skuRemark||"", 
-                        bomOk: !!s.bomOk, 
-                        detailOk: !!s.detailOk, 
-                        sapOk: !!s.sapOk, 
-                        nodeRecords: s.nodeRecords||{}
-                    }))
-                })),
-                oldReturns: r.map(x=>({id:String(x.id||"R_"+Math.random()), name:x.name||"未命名", etaDate:normalizeDate(x.etaDate), skus:x.skus||"", status:x.status||"进行中", bigNote:x.bigNote||"", createdAt:x.createdAt||"", historyLogs:x.historyLogs||[]})),
-                memos: m
+                products: productsOut,
+                oldReturns: r.map(x => ({ id: String(x.id || ("R_" + Math.random())), name: x.name || "未命名", etaDate: normalizeDate(x.etaDate), skus: x.skus || "", status: x.status || "进行中", bigNote: x.bigNote || "", createdAt: x.createdAt || "", historyLogs: x.historyLogs || [] })),
+                memos: m,
+                customNodes: collectCustomNodes(cn, productsOut)
             };
         }
-        
+
         function normalizeBarcodesData(raw){
             let list = (Array.isArray(raw)?raw:(raw?.barcodes||raw?.items||[])).map(x=>({
                 ...x,
@@ -802,127 +1005,593 @@
             })).filter(x=>x.name||x.barcode||x.sapCode);
             return autoHealBarcodeList(list);
         }
-        
+
         function findGlobalItem(id){ return products.find(x=>x.id===id)||globalReturns.find(x=>x.id===id); }
+        function applyLoadedMatrix(n) {
+            products = n.products || [];
+            globalReturns = n.oldReturns || [];
+            globalMemos = n.memos || [];
+            customNodes = n.customNodes || [];
+        }
+        function currentMatrixState() {
+            return { products, oldReturns: globalReturns, memos: globalMemos, customNodes };
+        }
+        function buildMatrixPayload() {
+            return { products, oldReturns: globalReturns, memos: globalMemos, customNodes };
+        }
+        function persistMatrixLocal() {
+            try { localStorage.setItem("wb_local_matrix", JSON.stringify(buildMatrixPayload())); } catch (e) {}
+        }
+        function persistBarcodesLocal() {
+            try { localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes)); } catch (e) {}
+        }
+        function hasCloudMatrixConfig() {
+            return !!(cleanConfigString(localStorage.getItem("wb_owner")) && cleanConfigString(localStorage.getItem("wb_repo")) && (localStorage.getItem("wb_token_repo") || "").trim());
+        }
+        function hasCloudBarcodeConfig() {
+            return !!(cleanConfigString(localStorage.getItem("wb_gist_barcodes")) && (localStorage.getItem("wb_token_gist") || "").trim());
+        }
+        function cloudDebounceMs() {
+            return (typeof window.__SYNC_DEBOUNCE_MS === "number") ? window.__SYNC_DEBOUNCE_MS : 1800;
+        }
+        function setSyncVisual(state) {
+            syncVisual = state;
+            const textEl = document.getElementById("sync-indicator-text");
+            const timeEl = document.getElementById("sync-indicator-time");
+            const btn = document.getElementById("sync-indicator");
+            if (!textEl || !btn) return;
+            let label = "仅本地", cls = "sync-pill sync-local";
+            if (state === "dirty") { label = "未保存更改"; cls = "sync-pill sync-dirty"; }
+            else if (state === "syncing") { label = "同步中…"; cls = "sync-pill sync-syncing"; }
+            else if (state === "error") { label = "同步失败·点击重试"; cls = "sync-pill sync-error"; }
+            else if (state === "synced") { label = "已同步"; cls = "sync-pill sync-ok"; }
+            else if (state === "readonly") { label = "只读"; cls = "sync-pill sync-local"; }
+            textEl.textContent = label;
+            let showTime = !!lastSyncedAt && (state === "synced" || state === "dirty" || state === "error" || state === "local");
+            timeEl.textContent = showTime ? lastSyncedAt.substring(5, 16) : "";
+            btn.className = cls;
+        }
+        function onSyncIndicatorClick() {
+            if (syncVisual !== "error" && syncVisual !== "dirty") return;
+            if (isReadOnlyMode) {
+                if (lastReadOnlyArgs) fetchFromDualTokenCustom.apply(null, lastReadOnlyArgs);
+                return;
+            }
+            flushCloudSync();
+        }
+        function armDebounce() {
+            clearTimeout(cloudDebounceTimer);
+            cloudDebounceTimer = setTimeout(() => { flushCloudSync(); }, cloudDebounceMs());
+        }
+        function scheduleMatrixSync() {
+            if (isReadOnlyMode) return;
+            persistMatrixLocal();
+            if (!hasCloudMatrixConfig()) {
+                matrixDirty = false;
+                if (!flushRunning && !barcodeDirty) setSyncVisual("local");
+                return;
+            }
+            matrixDirty = true;
+            if (!flushRunning) setSyncVisual("dirty");
+            armDebounce();
+        }
+        function scheduleBarcodeSync() {
+            if (isReadOnlyMode) return;
+            persistBarcodesLocal();
+            if (!hasCloudBarcodeConfig()) return;
+            barcodeDirty = true;
+            if (!flushRunning) setSyncVisual("dirty");
+            armDebounce();
+        }
+        function syncMatrixToCloud() { scheduleMatrixSync(); }
+        function syncBarcodesToGist() {
+            if (isReadOnlyMode) return;
+            autoSyncBarcodesToMatrixNodes(false);
+            scheduleBarcodeSync();
+        }
+
+        async function flushCloudSync() {
+            if (isReadOnlyMode) return;
+            clearTimeout(cloudDebounceTimer);
+            if (flushRunning) return;
+            if (!(matrixDirty && hasCloudMatrixConfig()) && !(barcodeDirty && hasCloudBarcodeConfig())) {
+                matrixDirty = false;
+                barcodeDirty = false;
+                setSyncVisual(hasCloudMatrixConfig() || hasCloudBarcodeConfig() ? "synced" : "local");
+                return;
+            }
+            flushRunning = true;
+            setSyncVisual("syncing");
+            let failed = null;
+            try {
+                let guard = 0;
+                while (guard < 6 && ((matrixDirty && hasCloudMatrixConfig()) || (barcodeDirty && hasCloudBarcodeConfig()))) {
+                    guard++;
+                    if (matrixDirty && hasCloudMatrixConfig()) {
+                        matrixDirty = false;
+                        try { await pushMatrixWithMerge(); }
+                        catch (e) { matrixDirty = true; throw e; }
+                    }
+                    if (barcodeDirty && hasCloudBarcodeConfig()) {
+                        barcodeDirty = false;
+                        try { await pushBarcodesWithMerge(); }
+                        catch (e) { barcodeDirty = true; throw e; }
+                    }
+                }
+            } catch (e) {
+                failed = e;
+            } finally {
+                flushRunning = false;
+            }
+            if (failed) {
+                setSyncVisual("error");
+                return;
+            }
+            if ((matrixDirty && hasCloudMatrixConfig()) || (barcodeDirty && hasCloudBarcodeConfig())) {
+                armDebounce();
+                setSyncVisual("dirty");
+                return;
+            }
+            lastSyncedAt = getNowString();
+            try { localStorage.setItem("wb_last_synced_at", lastSyncedAt); } catch (e) {}
+            setSyncVisual("synced");
+        }
+
+        function logTime(logs) {
+            let best = 0;
+            (logs || []).forEach(l => {
+                let t = Date.parse(String((l && l.time) || "").replace(" ", "T"));
+                if (!isNaN(t) && t > best) best = t;
+            });
+            return best;
+        }
+        function unionLogs(a, b) {
+            let map = new Map();
+            [].concat(a || [], b || []).forEach(l => {
+                if (!l) return;
+                let k = `${l.time}|${l.type}|${l.desc}`;
+                if (!map.has(k)) map.set(k, { time: l.time, type: l.type, desc: l.desc });
+            });
+            return Array.from(map.values()).sort((x, y) => String(y.time).localeCompare(String(x.time)));
+        }
+        function nodeRecTime(rec) {
+            if (!rec || !rec.time) return 0;
+            let t = Date.parse(String(rec.time).replace(" ", "T"));
+            return isNaN(t) ? 0 : t;
+        }
+        function mergeSku(localS, remoteS) {
+            if (!localS) return remoteS;
+            if (!remoteS) return localS;
+            let keys = new Set(["bomOk", "detailOk", "sapOk"]);
+            [localS, remoteS].forEach(s => {
+                Object.keys(s.extraNodes || {}).forEach(k => keys.add(k));
+                Object.keys(s.nodeRecords || {}).forEach(k => keys.add(k));
+            });
+            let extra = {}, records = {}, builtinVals = { bomOk: false, detailOk: false, sapOk: false };
+            keys.forEach(k => {
+                if (!isBuiltinNodeKey(k) && !isCustomNodeKey(k)) return;
+                let lr = (localS.nodeRecords || {})[k];
+                let rr = (remoteS.nodeRecords || {})[k];
+                let lt = nodeRecTime(lr), rt = nodeRecTime(rr);
+                let useLocal = (lt || rt) ? lt >= rt : true;
+                if (!lt && rt) useLocal = false;
+                if (lt && !rt) useLocal = true;
+                let rec = useLocal ? lr : rr;
+                let val = useLocal ? skuNodeOn(localS, k) : skuNodeOn(remoteS, k);
+                if (rec && (lt || rt)) val = !!rec.status;
+                if (isBuiltinNodeKey(k)) builtinVals[k] = val;
+                else extra[k] = val;
+                if (rec) records[k] = JSON.parse(JSON.stringify(rec));
+            });
+            let localMax = Math.max(0, ...Object.values(localS.nodeRecords || {}).map(nodeRecTime));
+            let remoteMax = Math.max(0, ...Object.values(remoteS.nodeRecords || {}).map(nodeRecTime));
+            let base = localMax >= remoteMax ? localS : remoteS;
+            return {
+                id: String(localS.id || remoteS.id),
+                name: base.name || localS.name || remoteS.name,
+                shopInfo: base.shopInfo || "",
+                skuRemark: base.skuRemark || "",
+                bomOk: !!builtinVals.bomOk,
+                detailOk: !!builtinVals.detailOk,
+                sapOk: !!builtinVals.sapOk,
+                nodeRecords: records,
+                extraNodes: extra
+            };
+        }
+        function mergeProduct(localP, remoteP) {
+            if (!localP) return remoteP;
+            if (!remoteP) return localP;
+            let newer = logTime(localP.historyLogs) >= logTime(remoteP.historyLogs) ? localP : remoteP;
+            let byId = new Map();
+            (remoteP.skus || []).forEach(s => byId.set(String(s.id), { remote: s }));
+            (localP.skus || []).forEach(s => {
+                let e = byId.get(String(s.id)) || {};
+                e.local = s;
+                byId.set(String(s.id), e);
+            });
+            let skus = [], seen = new Set();
+            (localP.skus || []).forEach(s => {
+                seen.add(String(s.id));
+                let e = byId.get(String(s.id));
+                skus.push(mergeSku(e.local, e.remote));
+            });
+            (remoteP.skus || []).forEach(s => {
+                if (seen.has(String(s.id))) return;
+                skus.push(mergeSku(null, s));
+            });
+            return {
+                id: localP.id,
+                name: newer.name,
+                sourceType: newer.sourceType || "自研",
+                category: newer.category,
+                prodDate: newer.prodDate,
+                remark: newer.remark || "",
+                bigNote: newer.bigNote || "",
+                status: newer.status,
+                archivedAt: newer.archivedAt || null,
+                createdAt: localP.createdAt || remoteP.createdAt || "",
+                historyLogs: unionLogs(localP.historyLogs, remoteP.historyLogs),
+                skus
+            };
+        }
+        function mergeReturn(localR, remoteR) {
+            if (!localR) return remoteR;
+            if (!remoteR) return localR;
+            let newer = logTime(localR.historyLogs) >= logTime(remoteR.historyLogs) ? localR : remoteR;
+            return {
+                id: localR.id,
+                name: newer.name,
+                etaDate: newer.etaDate,
+                skus: newer.skus || "",
+                status: newer.status,
+                bigNote: newer.bigNote || "",
+                createdAt: localR.createdAt || remoteR.createdAt || "",
+                historyLogs: unionLogs(localR.historyLogs, remoteR.historyLogs)
+            };
+        }
+        function mergeMatrixState(local, remote) {
+            let pmap = new Map();
+            (remote.products || []).forEach(p => pmap.set(String(p.id), { remote: p }));
+            (local.products || []).forEach(p => {
+                let e = pmap.get(String(p.id)) || {};
+                e.local = p;
+                pmap.set(String(p.id), e);
+            });
+            let productsOut = [], seen = new Set();
+            (local.products || []).forEach(p => {
+                seen.add(String(p.id));
+                let e = pmap.get(String(p.id));
+                productsOut.push(mergeProduct(e.local, e.remote));
+            });
+            (remote.products || []).forEach(p => {
+                if (!seen.has(String(p.id))) productsOut.push(mergeProduct(null, p));
+            });
+            let rmap = new Map();
+            (remote.oldReturns || []).forEach(r => rmap.set(String(r.id), { remote: r }));
+            (local.oldReturns || []).forEach(r => {
+                let e = rmap.get(String(r.id)) || {};
+                e.local = r;
+                rmap.set(String(r.id), e);
+            });
+            let returns = [], rseen = new Set();
+            (local.oldReturns || []).forEach(r => {
+                rseen.add(String(r.id));
+                let e = rmap.get(String(r.id));
+                returns.push(mergeReturn(e.local, e.remote));
+            });
+            (remote.oldReturns || []).forEach(r => { if (!rseen.has(String(r.id))) returns.push(r); });
+            let memos = [], mseen = new Set();
+            (local.memos || []).forEach(m => { if (!m || mseen.has(m.id)) return; mseen.add(m.id); memos.push(m); });
+            (remote.memos || []).forEach(m => { if (!m || mseen.has(m.id)) return; mseen.add(m.id); memos.push(m); });
+            let cmap = new Map();
+            (remote.customNodes || []).forEach(n => { if (n && n.key) cmap.set(n.key, n); });
+            (local.customNodes || []).forEach(n => { if (n && n.key) cmap.set(n.key, n); });
+            return { products: productsOut, oldReturns: returns, memos, customNodes: sanitizeCustomNodes(Array.from(cmap.values())) };
+        }
+        function barcodeMergeKey(b) {
+            return [String(b.name || "").trim().toLowerCase(), String(b.sapCode || "").trim().toLowerCase(), String(b.barcode || "").trim().toLowerCase()].join("|");
+        }
+        function pickNewerBarcode(a, b) {
+            if (!a) return b;
+            if (!b) return a;
+            let ta = Date.parse(String(a.createdAt || "").replace(" ", "T")) || 0;
+            let tb = Date.parse(String(b.createdAt || "").replace(" ", "T")) || 0;
+            return ta >= tb ? a : b;
+        }
+        function mergeBarcodes(localList, remoteList) {
+            let map = new Map();
+            (remoteList || []).forEach(b => {
+                let k = barcodeMergeKey(b);
+                if (!map.has(k)) map.set(k, {});
+                map.get(k).remote = b;
+            });
+            (localList || []).forEach(b => {
+                let k = barcodeMergeKey(b);
+                if (!map.has(k)) map.set(k, {});
+                map.get(k).local = b;
+            });
+            let out = [], seen = new Set();
+            (localList || []).forEach(b => {
+                let k = barcodeMergeKey(b);
+                if (seen.has(k)) return;
+                seen.add(k);
+                out.push(pickNewerBarcode(map.get(k).local, map.get(k).remote));
+            });
+            (remoteList || []).forEach(b => {
+                let k = barcodeMergeKey(b);
+                if (seen.has(k)) return;
+                seen.add(k);
+                out.push(b);
+            });
+            return out;
+        }
+
+        async function pushMatrixWithMerge() {
+            if (isReadOnlyMode) return;
+            const o = cleanConfigString(localStorage.getItem("wb_owner"));
+            const repo = cleanConfigString(localStorage.getItem("wb_repo"));
+            const tR = (localStorage.getItem("wb_token_repo") || "").trim();
+            if (!o || !repo || !tR) return;
+            const headers = { "Authorization": `Bearer ${tR}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
+            const url = `https://api.github.com/repos/${o}/${repo}/contents/products_matrix.json`;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                let sha;
+                let res = await fetch(url, { headers });
+                if (res.status === 404) sha = undefined;
+                else if (!res.ok) throw new Error("读取云端失败 " + res.status);
+                else {
+                    let cd = await res.json();
+                    sha = cd.sha;
+                    if (sha && sha !== fileSha && cd.content) {
+                        let remoteNorm = normalizeMatrixData(JSON.parse(safeBase64Decode(cd.content)));
+                        applyLoadedMatrix(mergeMatrixState(currentMatrixState(), remoteNorm));
+                        persistMatrixLocal();
+                        refreshActiveView();
+                    }
+                }
+                let b64 = safeBase64Encode(JSON.stringify(buildMatrixPayload(), null, 2));
+                let body = { message: "Update", content: b64 };
+                if (sha) body.sha = sha;
+                let put = await fetch(url, { method: "PUT", headers, body: JSON.stringify(body) });
+                if (put.ok) {
+                    let ud = await put.json();
+                    fileSha = (ud.content && ud.content.sha) || sha || "";
+                    return;
+                }
+                if (put.status === 409 || put.status === 422) {
+                    fileSha = "";
+                    continue;
+                }
+                throw new Error("写入云端失败 " + put.status);
+            }
+            throw new Error("云端冲突，多次重试仍失败");
+        }
+
+        async function pushBarcodesWithMerge() {
+            if (isReadOnlyMode) return;
+            const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
+            const tG = (localStorage.getItem("wb_token_gist") || "").trim();
+            if (!gB || !tG) return;
+            const headers = { "Authorization": `Bearer ${tG}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" };
+            for (let attempt = 0; attempt < 3; attempt++) {
+                let res = await fetch(`https://api.github.com/gists/${gB}`, { headers });
+                if (!res.ok) throw new Error("读取条码库失败 " + res.status);
+                let gd = await res.json();
+                let fn = (gd.files && gd.files["69code_data.json"]) ? "69code_data.json" : Object.keys(gd.files || {})[0];
+                if (!fn || !gd.files[fn]) throw new Error("条码库文件不存在");
+                let remoteUpdated = gd.updated_at || "";
+                let shouldMerge = (!lastGistUpdatedAt && gd.files[fn].content) || (!!lastGistUpdatedAt && remoteUpdated && remoteUpdated !== lastGistUpdatedAt) || attempt > 0;
+                if (shouldMerge && gd.files[fn].content) {
+                    let remoteList = normalizeBarcodesData(JSON.parse(gd.files[fn].content));
+                    globalBarcodes = mergeBarcodes(globalBarcodes, remoteList);
+                    persistBarcodesLocal();
+                    if (currentMainView === "BARCODES") renderBarcodeTable();
+                }
+                let put = await fetch(`https://api.github.com/gists/${gB}`, {
+                    method: "PATCH",
+                    headers,
+                    body: JSON.stringify({ files: { [fn]: { content: JSON.stringify(globalBarcodes, null, 2) } } })
+                });
+                if (put.ok) {
+                    let updated = await put.json().catch(() => null);
+                    lastGistUpdatedAt = (updated && updated.updated_at) || remoteUpdated || lastGistUpdatedAt;
+                    return;
+                }
+                if (put.status === 409 || put.status === 422) {
+                    lastGistUpdatedAt = "";
+                    continue;
+                }
+                throw new Error("条码库写入失败 " + put.status);
+            }
+            throw new Error("条码库冲突，多次重试仍失败");
+        }
+
+        function enterReadOnlyChrome() {
+            isReadOnlyMode = true;
+            let badge = document.getElementById("role-badge");
+            if (badge) {
+                badge.innerText = "只读模式";
+                badge.className = "text-[10px] sm:text-xs bg-amber-100 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-semibold";
+            }
+            document.querySelectorAll(".admin-create-panel").forEach(e => e.classList.add("hidden"));
+            let shareBtn = document.getElementById("btn-share");
+            let cfgBtn = document.getElementById("btn-config");
+            if (shareBtn) shareBtn.classList.add("hidden");
+            if (cfgBtn) cfgBtn.classList.add("hidden");
+            setSyncVisual("readonly");
+        }
+        function bindPanelMemory(id) {
+            let el = document.getElementById(id);
+            if (!el) return;
+            let key = "wb_panel_" + id;
+            try { if (sessionStorage.getItem(key) === "1") el.open = true; } catch (e) {}
+            el.addEventListener("toggle", () => { try { sessionStorage.setItem(key, el.open ? "1" : "0"); } catch (e) {} });
+        }
 
         window.onload = function() {
             ['search-input', 'search-returns-input', 'barcode-search-input'].forEach(id => {
                 let el = document.getElementById(id);
                 if (el) el.value = "";
             });
+            bindPanelMemory("panel-new-sku");
+            bindPanelMemory("panel-new-return");
+            try { lastSyncedAt = localStorage.getItem("wb_last_synced_at") || ""; } catch (e) {}
 
-            try {
-                let cm=localStorage.getItem("wb_local_matrix"), cb=localStorage.getItem("wb_local_barcodes");
-                if(cm){let n=normalizeMatrixData(JSON.parse(cm)); products=n.products; globalReturns=n.oldReturns; globalMemos=n.memos;}
-                if(cb) globalBarcodes=normalizeBarcodesData(JSON.parse(cb));
-                autoSyncBarcodesToMatrixNodes(false);
-            } catch(e){}
-            
-            const up=new URLSearchParams(window.location.search);
-            // 兼容短码加密分享链接 (?share=xxx) 与旧版明文只读链接
-            let shareCode = up.get('share');
-            if (shareCode) {
-                try {
-                    let cfg = JSON.parse(safeBase64Decode(shareCode));
-                    isReadOnlyMode=true;
-                    document.getElementById("role-badge").innerText="只读模式";
-                    document.getElementById("role-badge").className="text-[10px] bg-amber-100 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded font-semibold";
-                    document.querySelectorAll('.admin-create-panel').forEach(e=>e.classList.add('hidden'));
-                    fetchFromDualTokenCustom(cfg.o, cfg.r, cfg.gb, cfg.tr, cfg.tg);
-                } catch(e){}
-            } else if(up.get('mode')==='readonly'||(!localStorage.getItem("wb_token_repo")&&up.get('token_repo'))){
-                isReadOnlyMode=true; document.getElementById("role-badge").innerText="只读模式"; document.getElementById("role-badge").className="text-[10px] bg-amber-100 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded font-semibold";
-                document.querySelectorAll('.admin-create-panel').forEach(e=>e.classList.add('hidden'));
-                fetchFromDualTokenCustom(up.get('owner'),up.get('repo'),up.get('gist_bar'),up.get('token_repo'),up.get('token_gist'));
+            const up = new URLSearchParams(window.location.search);
+            let shareCode = up.get("share");
+            let legacyRO = up.get("mode") === "readonly" || (!localStorage.getItem("wb_token_repo") && up.get("token_repo"));
+            if (shareCode || legacyRO) {
+                enterReadOnlyChrome();
+                if (shareCode) {
+                    try {
+                        let cfg = JSON.parse(safeBase64Decode(shareCode));
+                        if (cfg && cfg.v === 2 && cfg.mode === "snapshot") {
+                            applyLoadedMatrix(normalizeMatrixData(cfg.matrix || {}));
+                            if (Array.isArray(cfg.barcodes)) globalBarcodes = normalizeBarcodesData(cfg.barcodes);
+                            setSyncVisual("readonly");
+                        } else if (cfg && cfg.v === 2 && cfg.mode === "ro") {
+                            fetchFromDualTokenCustom(cfg.o, cfg.r, cfg.gb, cfg.ts, "");
+                        } else {
+                            fetchFromDualTokenCustom(cfg.o, cfg.r, cfg.gb, cfg.tr, cfg.tg);
+                        }
+                    } catch (e) { setSyncVisual("error"); }
+                } else {
+                    fetchFromDualTokenCustom(up.get("owner"), up.get("repo"), up.get("gist_bar"), up.get("token_repo"), up.get("token_gist"));
+                }
             } else {
-                if(localStorage.getItem("wb_token_repo")||localStorage.getItem("wb_token_gist")) fetchAllDualTokenData();
+                try {
+                    let cm = localStorage.getItem("wb_local_matrix"), cb = localStorage.getItem("wb_local_barcodes");
+                    if (cm) applyLoadedMatrix(normalizeMatrixData(JSON.parse(cm)));
+                    if (cb) globalBarcodes = normalizeBarcodesData(JSON.parse(cb));
+                } catch (e) {}
+                if (localStorage.getItem("wb_token_repo") || localStorage.getItem("wb_token_gist")) fetchAllDualTokenData();
+                else {
+                    autoSyncBarcodesToMatrixNodes(false);
+                    setSyncVisual("local");
+                }
             }
-            switchMainView('MATRIX');
+            switchMainView("TODAY");
         };
 
         function switchMainView(v) {
-            currentMainView=v;
-            document.getElementById("module-matrix").classList.toggle("hidden",v!=='MATRIX'); document.getElementById("module-returns").classList.toggle("hidden",v!=='RETURNS'); document.getElementById("module-barcodes").classList.toggle("hidden",v!=='BARCODES');
-            const act="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
-            const ina="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:text-gray-900 transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer";
-            document.getElementById("nav-btn-matrix").className=(v==='MATRIX')?act:ina; document.getElementById("nav-btn-returns").className=(v==='RETURNS')?act:ina; document.getElementById("nav-btn-barcodes").className=(v==='BARCODES')?act:ina;
-            
-            let anc=document.getElementById("global-memo-box-anchor"); if(anc){ anc.innerHTML=document.getElementById("memo-panel-template").innerHTML; if(isReadOnlyMode)document.querySelectorAll('.admin-create-panel').forEach(e=>e.classList.add('hidden')); renderMemos(); }
-            if(v==='MATRIX')renderTable(); if(v==='RETURNS')renderReturnsTable(); if(v==='BARCODES')renderBarcodeTable();
+            currentMainView = v;
+            document.getElementById("module-today").classList.toggle("hidden", v !== "TODAY");
+            document.getElementById("module-matrix").classList.toggle("hidden", v !== "MATRIX");
+            document.getElementById("module-returns").classList.toggle("hidden", v !== "RETURNS");
+            document.getElementById("module-barcodes").classList.toggle("hidden", v !== "BARCODES");
+            const map = { TODAY: "nav-btn-today", MATRIX: "nav-btn-matrix", RETURNS: "nav-btn-returns", BARCODES: "nav-btn-barcodes" };
+            Object.keys(map).forEach(key => {
+                let el = document.getElementById(map[key]);
+                if (el) el.className = (v === key) ? "nav-tab nav-tab-on" : "nav-tab";
+            });
+            let anc = document.getElementById("global-memo-box-anchor");
+            if (anc) {
+                anc.innerHTML = document.getElementById("memo-panel-template").innerHTML;
+                if (isReadOnlyMode) document.querySelectorAll(".admin-create-panel").forEach(e => e.classList.add("hidden"));
+                renderMemos();
+            }
+            if (v === "TODAY") renderToday();
+            if (v === "MATRIX") renderTable();
+            if (v === "RETURNS") renderReturnsTable();
+            if (v === "BARCODES") renderBarcodeTable();
         }
-        function switchTab(t) { currentTab=t; document.getElementById("tab-btn-running").className=(t==='RUNNING')?"px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("tab-btn-archived").className=(t==='ARCHIVED')?"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("filter-health-box").style.display=(t==='RUNNING')?"block":"none"; renderTable(); }
+        function switchTab(t) { currentTab=t; document.getElementById("tab-btn-running").className=(t==='RUNNING')?"px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("tab-btn-archived").className=(t==='ARCHIVED')?"px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition flex items-center space-x-1.5 cursor-pointer":"px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200 shadow-sm transition flex items-center space-x-1.5 cursor-pointer"; document.getElementById("filter-health-box").style.display=(t==='RUNNING')?"block":"none"; renderTable(); }
 
         async function fetchAllDualTokenData() {
-            const o=cleanConfigString(localStorage.getItem("wb_owner")), r=cleanConfigString(localStorage.getItem("wb_repo")), tR=(localStorage.getItem("wb_token_repo")||"").trim(), gB=cleanConfigString(localStorage.getItem("wb_gist_barcodes")), tG=(localStorage.getItem("wb_token_gist")||"").trim();
-            document.getElementById("sync-status").innerText="拉取数据..."; let ts=[];
-            if(o&&r&&tR) ts.push(fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:{"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json"}}).then(r=>r.json()).then(d=>{if(d.content){let n=normalizeMatrixData(JSON.parse(safeBase64Decode(d.content)));products=n.products;globalReturns=n.oldReturns;globalMemos=n.memos;fileSha=d.sha;localStorage.setItem("wb_local_matrix",JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos}));}}));
-            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{
-                let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0];
-                _needsSilentGistSync = false;
-                globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));
-                localStorage.setItem("wb_local_barcodes",JSON.stringify(globalBarcodes));
-                if (_needsSilentGistSync && !isReadOnlyMode) {
-                    _needsSilentGistSync = false;
-                    syncBarcodesToGist();
-                }
-            }));
-            await Promise.all(ts);
-            let lit = autoSyncBarcodesToMatrixNodes(true);
-            document.getElementById("sync-status").innerText = lit > 0 ? `已同步 (自动点亮${lit}个69码) ✅` : "已同步 ✅";
-            document.getElementById("auth-dot").className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block";
-            document.getElementById("auth-tag-text").innerText="双源连接";
-            switchMainView(currentMainView);
-        }
-        
-        async function fetchFromDualTokenCustom(o,r,gB,tR,tG) {
-            document.getElementById("sync-status").innerText="拉取只读数据..."; let ts=[];
-            if(o&&r&&tR) ts.push(fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:{"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json"}}).then(r=>r.json()).then(d=>{let n=normalizeMatrixData(JSON.parse(safeBase64Decode(d.content)));products=n.products;globalReturns=n.oldReturns;globalMemos=n.memos;}));
-            if(gB&&tG) ts.push(fetch(`https://api.github.com/gists/${gB}`,{headers:{"Authorization":`Bearer ${tG}`}}).then(r=>r.json()).then(d=>{let f=d.files["69code_data.json"] ? "69code_data.json" : Object.keys(d.files)[0]; globalBarcodes=normalizeBarcodesData(JSON.parse(d.files[f].content));}));
-            await Promise.all(ts); document.getElementById("sync-status").innerText="只读模式加载毕"; switchMainView(currentMainView);
-        }
-        
-        async function syncMatrixToCloud() {
-            if(isReadOnlyMode)return; const o=cleanConfigString(localStorage.getItem("wb_owner")), r=cleanConfigString(localStorage.getItem("wb_repo")), tR=(localStorage.getItem("wb_token_repo")||"").trim();
-            localStorage.setItem("wb_local_matrix",JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos})); if(!o||!r||!tR)return;
-            try{ let h={"Authorization":`Bearer ${tR}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"}; let c=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{headers:h}); if(c.ok){let cd=await c.json();fileSha=cd.sha;} let b64=btoa(unescape(encodeURIComponent(JSON.stringify({products,oldReturns:globalReturns,memos:globalMemos},null,2)))); let u=await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`,{method:"PUT",headers:h,body:JSON.stringify({message:`Update`,content:b64,sha:fileSha})}); if(u.ok){let ud=await u.json();fileSha=ud.content.sha;} }catch(e){}
-        }
-
-        async function syncBarcodesToGist() {
             if (isReadOnlyMode) return;
-            const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes")),
-                  tG = (localStorage.getItem("wb_token_gist") || "").trim();
-            localStorage.setItem("wb_local_barcodes", JSON.stringify(globalBarcodes));
-            // 每次 69 码库更新时，自动巡检点亮新品矩阵里的 69 码节点
-            autoSyncBarcodesToMatrixNodes(true);
-            if (!gB || !tG) return;
-            
-            try { 
-                let h = {
-                    "Authorization": `Bearer ${tG}`,
-                    "Accept": "application/vnd.github+json",
-                    "Content-Type": "application/json"
-                }; 
-                let gd = await fetch(`https://api.github.com/gists/${gB}`, { headers: h }).then(r => r.json()); 
-                let fn = (gd.files && gd.files["69code_data.json"]) ? "69code_data.json" : Object.keys(gd.files)[0];
-                
-                await fetch(`https://api.github.com/gists/${gB}`, {
-                    method: "PATCH",
-                    headers: h,
-                    body: JSON.stringify({
-                        files: {
-                            [fn]: { content: JSON.stringify(globalBarcodes, null, 2) }
+            const o = cleanConfigString(localStorage.getItem("wb_owner"));
+            const r = cleanConfigString(localStorage.getItem("wb_repo"));
+            const tR = (localStorage.getItem("wb_token_repo") || "").trim();
+            const gB = cleanConfigString(localStorage.getItem("wb_gist_barcodes"));
+            const tG = (localStorage.getItem("wb_token_gist") || "").trim();
+            setSyncVisual("syncing");
+            try {
+                if (o && r && tR) {
+                    let res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tR}`, "Accept": "application/vnd.github+json" } });
+                    if (res.status === 404) fileSha = "";
+                    else if (!res.ok) throw new Error("新品仓库 " + res.status);
+                    else {
+                        let d = await res.json();
+                        if (d.content) {
+                            applyLoadedMatrix(normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))));
+                            fileSha = d.sha || "";
+                            persistMatrixLocal();
                         }
-                    })
-                });
-                document.getElementById("sync-status").innerText = "条码库已同步 ✅";
+                    }
+                }
+                if (gB && tG) {
+                    let res = await fetch(`https://api.github.com/gists/${gB}`, { headers: { "Authorization": `Bearer ${tG}`, "Accept": "application/vnd.github+json" } });
+                    if (!res.ok) throw new Error("条码库 " + res.status);
+                    let d = await res.json();
+                    lastGistUpdatedAt = d.updated_at || "";
+                    let f = (d.files && d.files["69code_data.json"]) ? "69code_data.json" : Object.keys(d.files || {})[0];
+                    if (f && d.files[f] && d.files[f].content) {
+                        _needsSilentGistSync = false;
+                        globalBarcodes = normalizeBarcodesData(JSON.parse(d.files[f].content));
+                        persistBarcodesLocal();
+                        if (_needsSilentGistSync) {
+                            _needsSilentGistSync = false;
+                            scheduleBarcodeSync();
+                        }
+                    }
+                }
+                document.getElementById("auth-tag-text").innerText = "双源连接";
+                autoSyncBarcodesToMatrixNodes(false);
+                if (!matrixDirty && !barcodeDirty) {
+                    lastSyncedAt = getNowString();
+                    try { localStorage.setItem("wb_last_synced_at", lastSyncedAt); } catch (e) {}
+                    setSyncVisual("synced");
+                }
             } catch (e) {
-                console.error("Gist 同步失败:", e);
-                document.getElementById("sync-status").innerText = "条码库同步失败 ❌";
+                setSyncVisual("error");
             }
+            switchMainView(currentMainView || "TODAY");
         }
 
-        function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
-        function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
+        async function fetchFromDualTokenCustom(o, r, gB, tR, tG) {
+            lastReadOnlyArgs = [o, r, gB, tR, tG];
+            setSyncVisual("syncing");
+            try {
+                if (o && r && tR) {
+                    let res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/products_matrix.json`, { headers: { "Authorization": `Bearer ${tR}`, "Accept": "application/vnd.github+json" } });
+                    if (!res.ok) throw new Error("只读仓库 " + res.status);
+                    let d = await res.json();
+                    if (!d.content) throw new Error("只读仓库没有矩阵文件");
+                    applyLoadedMatrix(normalizeMatrixData(JSON.parse(safeBase64Decode(d.content))));
+                }
+                if (gB && tG) {
+                    let res = await fetch(`https://api.github.com/gists/${gB}`, { headers: { "Authorization": `Bearer ${tG}`, "Accept": "application/vnd.github+json" } });
+                    if (!res.ok) throw new Error("只读条码库 " + res.status);
+                    let d = await res.json();
+                    let f = (d.files && d.files["69code_data.json"]) ? "69code_data.json" : Object.keys(d.files || {})[0];
+                    if (f && d.files[f]) globalBarcodes = normalizeBarcodesData(JSON.parse(d.files[f].content));
+                } else if (gB) {
+                    try {
+                        let res = await fetch(`https://api.github.com/gists/${gB}`);
+                        if (res.ok) {
+                            let d = await res.json();
+                            let f = (d.files && d.files["69code_data.json"]) ? "69code_data.json" : Object.keys(d.files || {})[0];
+                            if (f && d.files[f] && d.files[f].content) globalBarcodes = normalizeBarcodesData(JSON.parse(d.files[f].content));
+                        }
+                    } catch (e) {}
+                }
+                setSyncVisual("readonly");
+            } catch (e) {
+                setSyncVisual("error");
+            }
+            switchMainView(currentMainView || "TODAY");
+        }
+
+        window.addEventListener("beforeunload", function (e) {
+            if (isReadOnlyMode) return;
+            let pending = (matrixDirty && hasCloudMatrixConfig()) || (barcodeDirty && hasCloudBarcodeConfig()) || syncVisual === "syncing" || syncVisual === "error" || syncVisual === "dirty";
+            if (!pending) return;
+            e.preventDefault();
+            e.returnValue = "还有未同步到云端的更改";
+        });
+
+        function toggleConfigModal(){ let m=document.getElementById("config-modal"); if(m.classList.contains("hidden")){ document.getElementById("cfg-owner").value=localStorage.getItem("wb_owner")||""; document.getElementById("cfg-repo").value=localStorage.getItem("wb_repo")||""; document.getElementById("cfg-token-repo").value=localStorage.getItem("wb_token_repo")||""; document.getElementById("cfg-gist-barcodes").value=localStorage.getItem("wb_gist_barcodes")||""; document.getElementById("cfg-token-gist").value=localStorage.getItem("wb_token_gist")||""; document.getElementById("cfg-token-share").value=localStorage.getItem("wb_token_share")||""; renderCustomNodeSettings(); } m.classList.toggle("hidden"); lockBodyScroll(!m.classList.contains("hidden")); }
+        function saveDualTokenConfigAndSync(){ localStorage.setItem("wb_owner",document.getElementById("cfg-owner").value.trim()); localStorage.setItem("wb_repo",document.getElementById("cfg-repo").value.trim()); localStorage.setItem("wb_token_repo",document.getElementById("cfg-token-repo").value.trim()); localStorage.setItem("wb_gist_barcodes",document.getElementById("cfg-gist-barcodes").value.trim()); localStorage.setItem("wb_token_gist",document.getElementById("cfg-token-gist").value.trim()); localStorage.setItem("wb_token_share",document.getElementById("cfg-token-share").value.trim()); toggleConfigModal(); fetchAllDualTokenData(); }
 
         // ================= 防错位单行解析函数 =================
         function smartParseBarcodeLine(line, index, contextParsed = []) {
@@ -1793,103 +2462,525 @@
             }
         }
 
-        function renderTable() {
-            const tb=document.getElementById("product-table-body"); if(!tb)return; tb.innerHTML="";
-            autoSyncBarcodesToMatrixNodes(false);
-            updateGlobalStatsUI('MATRIX');
-            
-            let kw=(document.getElementById("search-input")?.value||"").trim().toLowerCase(), fc=document.getElementById("filter-category")?.value||"ALL", fh=document.getElementById("filter-health")?.value||"ALL", fb=document.getElementById("filter-bignote")?.value||"ALL";
-            let so=document.getElementById("sort-order")?.value||"DEFAULT";
-            
-            const cs=document.getElementById("filter-category"); if(cs){let cats = Array.from(new Set(products.map(p=>p.category).filter(Boolean))); cs.innerHTML='<option value="ALL">全部品类</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join(""); if(cats.includes(fc)||fc==='ALL') cs.value=fc;}
-            let tD = getLocalDateString();
-
-            let displayList = products.filter(p => {
-                let arc=(p.status==="已归档"); 
-                if((currentTab==='RUNNING'&&arc)||(currentTab==='ARCHIVED'&&!arc))return false;
-                
-                let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999, dly=(!arc&&p.prodDate&&df<0);
-                if(fc!=="ALL"&&p.category!==fc)return false;
-                if(currentTab==='RUNNING'){
-                    if(fh==="FOCUS_TODAY" && !(dly || df<=3 || p.status==='紧急重要')) return false;
-                    if(fh==="DELAY"&&!dly)return false;
-                    if(fh==="URGENT_DAYS"&&(dly||df>7))return false;
-                    if(fh==="INCOMPLETE_NODES" && (p.skus||[]).every(s=>s.bomOk&&s.detailOk&&s.sapOk)) return false;
-                    if(fh==="MISSING_BOM" && (p.skus||[]).every(s=>s.bomOk)) return false;
-                    if(fh==="MISSING_DETAIL" && (p.skus||[]).every(s=>s.detailOk)) return false;
-                    if(fh==="MISSING_SAP" && (p.skus||[]).every(s=>s.sapOk)) return false;
+        function productUrgencyDays(p) {
+            let t = extractEarliestTime(p);
+            if (t === Infinity || isNaN(t)) return null;
+            return Math.ceil((t - new Date(getLocalDateString()).getTime()) / 86400000);
+        }
+        function daysUntilDate(dateStr) {
+            if (!dateStr) return null;
+            let t = new Date(dateStr).getTime();
+            if (isNaN(t)) return null;
+            return Math.ceil((t - new Date(getLocalDateString()).getTime()) / 86400000);
+        }
+        function daysLabel(days) {
+            if (days === null || days === undefined) return "未设截点";
+            if (days < 0) return `超期 ${Math.abs(days)} 天`;
+            if (days === 0) return "今天截止";
+            return `剩 ${days} 天`;
+        }
+        function isReturnDone(r) {
+            return !r || r.status === "已完成" || r.status === "✅ 已完成";
+        }
+        function seriesProgress(p) {
+            let defs = allNodeDefs();
+            let skus = p.skus || [];
+            let parts = defs.map(d => {
+                let done = skus.filter(s => skuNodeOn(s, d.key)).length;
+                return { key: d.key, label: d.label, short: d.short, done, miss: skus.length - done, total: skus.length };
+            });
+            let doneTypes = parts.filter(x => x.total > 0 && x.miss === 0).length;
+            let totalTypes = defs.length || 1;
+            let pairTotal = defs.length * skus.length;
+            let pairDone = parts.reduce((a, x) => a + x.done, 0);
+            let days = productUrgencyDays(p);
+            return {
+                parts, doneTypes, totalTypes: defs.length, ratio: pairTotal ? pairDone / pairTotal : 0,
+                days, overdue: p.status !== "已归档" && days !== null && days < 0,
+                allDone: skus.length > 0 && doneTypes === defs.length
+            };
+        }
+        function progressHtml(prog) {
+            let tone = prog.allDone ? "ok" : (prog.overdue ? "bad" : "mid");
+            let color = tone === "ok" ? "#059669" : (tone === "bad" ? "#dc2626" : "#d97706");
+            let textCls = tone === "ok" ? "text-emerald-700" : (tone === "bad" ? "text-red-600" : "text-amber-700");
+            return `<div class="mb-1.5 min-w-[108px]"><div class="text-[10px] font-bold ${textCls} mb-0.5">${prog.doneTypes}/${prog.totalTypes} 节点</div><div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${Math.round(prog.ratio * 100)}%;background:${color}"></div></div></div>`;
+        }
+        function buildTodayItems() {
+            let items = [];
+            products.filter(p => p.status !== "已归档").forEach(p => {
+                let days = productUrgencyDays(p);
+                items.push({ kind: "product", id: p.id, name: p.name, days, p });
+            });
+            globalReturns.filter(r => !isReturnDone(r) && r.etaDate && daysUntilDate(r.etaDate) !== null && daysUntilDate(r.etaDate) < 0).forEach(r => {
+                items.push({ kind: "return", id: r.id, name: r.name, days: daysUntilDate(r.etaDate), r });
+            });
+            items.sort((a, b) => {
+                let ga = a.days === null ? 2 : (a.days < 0 ? 0 : 1);
+                let gb = b.days === null ? 2 : (b.days < 0 ? 0 : 1);
+                if (ga !== gb) return ga - gb;
+                let da = a.days === null ? 99999 : a.days;
+                let db = b.days === null ? 99999 : b.days;
+                if (da !== db) return da - db;
+                return String(a.name).localeCompare(String(b.name), "zh");
+            });
+            return items;
+        }
+        function updateTodayCount() {
+            let el = document.getElementById("nav-count-today");
+            if (el) el.innerText = String(buildTodayItems().length);
+        }
+        function refreshActiveView() {
+            if (currentMainView === "TODAY") renderToday();
+            else if (currentMainView === "MATRIX") renderTable();
+            else if (currentMainView === "RETURNS") renderReturnsTable();
+            else if (currentMainView === "BARCODES") renderBarcodeTable();
+            updateTodayCount();
+        }
+        function renderToday() {
+            const box = document.getElementById("today-list");
+            if (!box) return;
+            updateGlobalStatsUI("MATRIX");
+            updateGlobalStatsUI("RETURNS");
+            let items = buildTodayItems();
+            updateTodayCount();
+            let overdueP = items.filter(x => x.kind === "product" && x.days !== null && x.days < 0).length;
+            let overdueR = items.filter(x => x.kind === "return").length;
+            let sum = document.getElementById("today-summary");
+            if (sum) sum.textContent = `进行中 ${products.filter(p => p.status !== "已归档").length} · 新品超期 ${overdueP} · 回厂超期 ${overdueR}`;
+            if (!items.length) {
+                box.innerHTML = `<div class="today-card text-center text-gray-400 py-8">暂无需要推进的进行中系列</div>`;
+                return;
+            }
+            box.innerHTML = items.map(item => {
+                if (item.kind === "return") {
+                    let r = item.r;
+                    let preview = escapeHtml((r.skus || "").split("\n").filter(Boolean).slice(0, 3).join(" · "));
+                    let btn = isReadOnlyMode ? "" : `<button type="button" class="today-btn bg-blue-600 text-white" data-id="${escapeHtml(r.id)}" onclick="completeReturnFromToday(this.dataset.id)">标记完成</button>`;
+                    return `<article class="today-card border-amber-200">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-bold text-amber-700">老品回厂</div>
+                                <div class="font-bold text-sm text-gray-900 mt-0.5">${escapeHtml(r.name)}</div>
+                                ${preview ? `<div class="text-[11px] text-gray-500 mt-1 truncate">${preview}</div>` : ""}
+                            </div>
+                            <div class="text-xs font-bold text-red-600 shrink-0">${daysLabel(item.days)}</div>
+                        </div>
+                        <div class="mt-2.5 flex flex-wrap gap-2">${btn}<button type="button" class="today-btn bg-gray-100 text-gray-700" onclick="switchMainView('RETURNS')">查看回厂</button></div>
+                    </article>`;
                 }
-                if(fb==="HAS_NOTE"&&!p.bigNote)return false; if(fb==="NO_NOTE"&&p.bigNote)return false;
-                if(kw&&!(p.name.toLowerCase().includes(kw)||p.category.toLowerCase().includes(kw)||(p.remark||"").toLowerCase().includes(kw)||(p.bigNote||"").toLowerCase().includes(kw)||p.skus.some(s=>s.name.toLowerCase().includes(kw)||(s.skuRemark||"").toLowerCase().includes(kw))))return false;
+                let p = item.p;
+                let prog = seriesProgress(p);
+                let dayCls = item.days !== null && item.days < 0 ? "text-red-600" : (item.days !== null && item.days <= 7 ? "text-amber-600" : "text-gray-500");
+                let missing = prog.parts.filter(part => part.miss > 0).map(part => `<span class="inline-flex items-center bg-gray-50 border border-gray-200 rounded-full px-2 py-1 text-[11px]">缺${escapeHtml(part.label)} <b class="ml-1">${part.miss}</b></span>`).join("");
+                let buttons = "";
+                if (!isReadOnlyMode) {
+                    buttons = prog.parts.filter(part => part.miss > 0).map(part => `<button type="button" class="today-btn bg-blue-600 text-white" data-pid="${escapeHtml(p.id)}" data-key="${escapeHtml(part.key)}" onclick="completeSeriesNode(this.dataset.pid, this.dataset.key)">完成全部${escapeHtml(part.short)} · ${part.miss}</button>`).join("");
+                }
+                let doneHint = prog.allDone ? `<div class="text-[11px] text-emerald-700 font-bold mt-1">节点已齐</div>` : "";
+                return `<article class="today-card ${prog.overdue ? "border-red-200" : ""}">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <button type="button" class="font-bold text-sm text-gray-900 text-left" data-pid="${escapeHtml(p.id)}" onclick="focusProduct(this.dataset.pid)">${escapeHtml(p.name)}</button>
+                            <div class="text-[11px] text-gray-500 mt-0.5">${escapeHtml(p.category || "")} · ${p.sourceType === "代发" ? "代发" : "自研"}${p.prodDate ? " · 截点 " + escapeHtml(p.prodDate) : ""}</div>
+                        </div>
+                        <div class="text-xs font-bold shrink-0 ${dayCls}">${daysLabel(item.days)}</div>
+                    </div>
+                    <div class="mt-2">${progressHtml(prog)}</div>
+                    <div class="flex flex-wrap gap-1.5">${missing}</div>
+                    ${doneHint}
+                    <div class="mt-2.5 flex flex-wrap gap-2">${buttons}</div>
+                </article>`;
+            }).join("");
+        }
+        function focusProduct(pid) {
+            expandedRows[pid] = true;
+            switchMainView("MATRIX");
+            switchTab("RUNNING");
+            setTimeout(() => {
+                let el = document.getElementById("row-" + pid);
+                if (el) el.scrollIntoView({ block: "center" });
+            }, 40);
+        }
+        function completeSeriesNode(pid, key) {
+            if (isReadOnlyMode) return;
+            let p = products.find(x => x.id === pid);
+            let def = allNodeDefs().find(d => d.key === key);
+            if (!p || !def || p.status === "已归档") return;
+            let targets = (p.skus || []).filter(s => !skuNodeOn(s, key));
+            if (!targets.length) return;
+            commitNodeChange(p, targets, key, def.label, true, "", true);
+        }
+        function completeReturnFromToday(id) {
+            if (isReadOnlyMode) return;
+            let r = globalReturns.find(x => x.id === id);
+            if (!r || isReturnDone(r)) return;
+            let prev = r.status;
+            r.status = "已完成";
+            r.historyLogs = r.historyLogs || [];
+            let log = { time: getNowString(), type: "STATUS", desc: "状态改:已完成" };
+            r.historyLogs.unshift(log);
+            syncMatrixToCloud();
+            renderToday();
+            showUndoToast(`已完成回厂【${r.name}】`, function () {
+                let r2 = globalReturns.find(x => x.id === id);
+                if (!r2) return;
+                r2.status = prev;
+                let idx = (r2.historyLogs || []).findIndex(l => l.time === log.time && l.desc === log.desc);
+                if (idx >= 0) r2.historyLogs.splice(idx, 1);
+                syncMatrixToCloud();
+                renderToday();
+            });
+        }
+        function ensureCustomHealthFilters() {
+            let sel = document.getElementById("filter-health");
+            if (!sel) return;
+            let current = sel.value;
+            sel.querySelectorAll("[data-custom-filter]").forEach(o => o.remove());
+            customNodes.forEach(n => {
+                let o = document.createElement("option");
+                o.value = "MISSING_" + n.key;
+                o.textContent = "❌ 仅看缺" + n.label;
+                o.setAttribute("data-custom-filter", "1");
+                sel.appendChild(o);
+            });
+            if ([...sel.options].some(o => o.value === current)) sel.value = current;
+        }
+        function nodeBadgeHtml(p, prog, arc) {
+            return prog.parts.map(part => {
+                let done = part.done, skC = part.total;
+                let st = (skC > 0 && done === skC) ? "bg-emerald-50 text-emerald-700 border-emerald-200" : (prog.overdue ? "bg-red-50 text-red-600 border-red-300 font-bold" : (done === 0 ? "bg-gray-50 text-gray-400 border-gray-200" : "bg-amber-50 text-amber-800 border-amber-200"));
+                let icon = (skC > 0 && done === skC) ? "✅" : (done === 0 ? "⚪" : "⏳");
+                let clickable = !isReadOnlyMode && !arc;
+                return `<div ${clickable ? `data-pid="${escapeHtml(p.id)}" data-key="${escapeHtml(part.key)}" data-label="${escapeHtml(part.label)}" onclick="onBatchBadgeClick(this)"` : ""} class="inline-flex items-center border px-1.5 py-1 rounded text-[10px] min-h-[28px] ${st} ${clickable ? "cursor-pointer" : ""}">${icon} ${escapeHtml(part.short)}(${done}/${skC})</div>`;
+            }).join("");
+        }
+        function nodeControlsHtml(p, s, arc) {
+            let dis = isReadOnlyMode || arc;
+            return allNodeDefs().map(def => {
+                let on = skuNodeOn(s, def.key);
+                return `<span class="inline-flex items-center mr-1">
+                    <label class="node-tap">
+                        <input type="checkbox" class="node-check" ${on ? "checked" : ""} ${dis ? "disabled" : ""}
+                            data-pid="${escapeHtml(p.id)}" data-sid="${escapeHtml(s.id)}" data-key="${escapeHtml(def.key)}" data-label="${escapeHtml(def.label)}"
+                            onpointerdown="nodePressStart(this)" onpointerup="nodePressEnd()" onpointercancel="nodePressEnd()"
+                            onchange="onSkuNodeInput(this)">
+                        <span class="text-[11px] ${on ? "text-green-700 font-bold" : "text-gray-600"}">${escapeHtml(def.short)}</span>
+                    </label>
+                    ${dis ? "" : `<button type="button" class="node-remark-btn" title="备注，长按勾选框也可以" data-pid="${escapeHtml(p.id)}" data-sid="${escapeHtml(s.id)}" data-key="${escapeHtml(def.key)}" data-label="${escapeHtml(def.label)}" onclick="openNodeRemarkEditor(this.dataset.pid,this.dataset.sid,this.dataset.key,this.dataset.label)">📝</button>`}
+                </span>`;
+            }).join("");
+        }
+
+        function renderTable() {
+            const tb = document.getElementById("product-table-body");
+            if (!tb) return;
+            tb.innerHTML = "";
+            autoSyncBarcodesToMatrixNodes(false);
+            updateGlobalStatsUI("MATRIX");
+            updateTodayCount();
+            ensureCustomHealthFilters();
+
+            let kw = (document.getElementById("search-input")?.value || "").trim().toLowerCase();
+            let fc = document.getElementById("filter-category")?.value || "ALL";
+            let fh = document.getElementById("filter-health")?.value || "ALL";
+            let fb = document.getElementById("filter-bignote")?.value || "ALL";
+            let so = document.getElementById("sort-order")?.value || "DEFAULT";
+            const cs = document.getElementById("filter-category");
+            if (cs) {
+                let cats = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+                cs.innerHTML = '<option value="ALL">全部品类</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+                if (cats.includes(fc) || fc === "ALL") cs.value = fc;
+            }
+            let tD = getLocalDateString();
+            let displayList = products.filter(p => {
+                let arc = (p.status === "已归档");
+                if ((currentTab === "RUNNING" && arc) || (currentTab === "ARCHIVED" && !arc)) return false;
+                let df = p.prodDate ? Math.ceil((new Date(p.prodDate) - new Date(tD)) / 86400000) : 999;
+                let dly = (!arc && p.prodDate && df < 0);
+                if (fc !== "ALL" && p.category !== fc) return false;
+                if (currentTab === "RUNNING") {
+                    if (fh === "FOCUS_TODAY" && !(dly || df <= 3 || p.status === "紧急重要")) return false;
+                    if (fh === "DELAY" && !dly) return false;
+                    if (fh === "URGENT_DAYS" && (dly || df > 7)) return false;
+                    if (fh === "INCOMPLETE_NODES" && seriesProgress(p).allDone) return false;
+                    if (fh === "MISSING_BOM" && (p.skus || []).every(s => skuNodeOn(s, "bomOk"))) return false;
+                    if (fh === "MISSING_DETAIL" && (p.skus || []).every(s => skuNodeOn(s, "detailOk"))) return false;
+                    if (fh === "MISSING_SAP" && (p.skus || []).every(s => skuNodeOn(s, "sapOk"))) return false;
+                    if (fh.indexOf("MISSING_x_") === 0) {
+                        let key = fh.slice("MISSING_".length);
+                        if ((p.skus || []).every(s => skuNodeOn(s, key))) return false;
+                    }
+                }
+                if (fb === "HAS_NOTE" && !p.bigNote) return false;
+                if (fb === "NO_NOTE" && p.bigNote) return false;
+                if (kw && !(p.name.toLowerCase().includes(kw) || p.category.toLowerCase().includes(kw) || (p.remark || "").toLowerCase().includes(kw) || (p.bigNote || "").toLowerCase().includes(kw) || (p.skus || []).some(s => s.name.toLowerCase().includes(kw) || (s.skuRemark || "").toLowerCase().includes(kw)))) return false;
                 return true;
             });
-
-            if (so === 'URGENT') {
-                displayList.sort((a, b) => extractEarliestTime(a) - extractEarliestTime(b));
-            }
+            if (so === "URGENT") displayList.sort((a, b) => extractEarliestTime(a) - extractEarliestTime(b));
 
             displayList.forEach(p => {
-                let arc=(p.status==="已归档"); 
-                let df=p.prodDate?Math.ceil((new Date(p.prodDate)-new Date(tD))/86400000):999;
-                
-                let effTime = extractEarliestTime(p);
-                let effDf = (effTime !== Infinity) ? Math.ceil((effTime - new Date(tD).getTime())/86400000) : 999;
-                let isUrgent = (!arc && effDf <= 7);
-
-                let skC=p.skus.length, bD=0,dD=0,sD=0; p.skus.forEach(s=>{if(s.bomOk)bD++; if(s.detailOk)dD++; if(s.sapOk)sD++;});
-                
-                const bG = (t,c,k,l) => {
-                    let stClass = '';
-                    if (skC > 0 && c === skC) {
-                        stClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                    } else if (c === 0) {
-                        stClass = isUrgent ? 'bg-red-50 text-red-600 border-red-300 font-bold shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200';
-                    } else {
-                        stClass = isUrgent ? 'bg-red-50 text-red-600 border-red-300 font-bold shadow-sm' : 'bg-amber-50 text-amber-800 border-amber-200';
-                    }
-                    return `<div ${!isReadOnlyMode&&!arc?`onclick="event.stopPropagation();triggerBatchColumnCheck('${p.id}','${k}','${l}')" class="cursor-pointer"`:''} class="inline-flex border px-1.5 py-0.5 rounded text-[10px] ${stClass}">${(skC>0&&c===skC)?'✅':(c===0?'⚪':'⏳')} ${t}(${c}/${skC})</div>`;
-                };
-
-                let hB=p.prodDate?(arc?p.prodDate:(df<0?`<span class="text-red-600 font-bold">${p.prodDate} 🚨超${Math.abs(df)}天</span>`:(df<=7?`<span class="text-amber-600 font-bold">${p.prodDate} ⚠️剩${df}天</span>`:`<span class="text-green-700">${p.prodDate}</span>`))):'-';
-                
-                let subRemarksHtml = p.skus.filter(s => s.skuRemark).map(s => `<div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded text-[9px] w-max max-w-[200px] truncate shadow-sm" title="${escapeHtml(s.skuRemark)}">${escapeHtml(s.name)}: ${escapeHtml(s.skuRemark)}</div>`).join('');
-                if (subRemarksHtml) {
-                    hB += `<div class="mt-1.5 flex flex-col gap-1">${subRemarksHtml}</div>`;
-                }
-
-                let exp=!!expandedRows[p.id];
-
-                let tr=document.createElement("tr"); tr.className=`hover:bg-blue-50/40 border-b ${p.status==='紧急重要'?'bg-red-50/60':''}`;
-                tr.innerHTML=`<td class="p-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id)?'checked':''} class="w-4 h-4 text-blue-600 cursor-pointer"></td><td class="p-3 text-center"><button onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer">${exp?'▼':'▶'}</button></td><td class="p-3 font-bold">${escapeHtml(p.name)} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-normal ${p.sourceType==='代发'?'bg-purple-100 text-purple-700':'bg-blue-100 text-blue-700'}">${p.sourceType==='代发'?'📦 代发':'🏭 自研'}</span> ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>`:''}</td><td class="p-3">${escapeHtml(p.category)}</td><td class="p-3 align-top min-w-[140px]">${hB}</td><td class="p-3"><div class="flex gap-1 flex-wrap">${bG('BOM',bD,'bomOk','财务BOM')}${bG('详情',dD,'detailOk','详情页')}${bG('69码',sD,'sapOk','69编码')}</div></td><td class="p-3 space-y-1">${p.remark?`<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>`:''}${p.bigNote?`<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>`:`${!isReadOnlyMode?`<button onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>`:''}`}</td><td class="p-3">${isReadOnlyMode||arc?p.status:`<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-0.5"><option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option><option value="紧急重要" ${p.status==='紧急重要'?'selected':''}>🔥紧急</option><option value="已归档">归档</option></select>`}</td><td class="p-3 text-right"><button onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer">追溯</button> ${!isReadOnlyMode&&!arc?`| <button onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer">编辑</button> | <button onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer">删除</button>`:''}</td>`; tb.appendChild(tr);
-                
-                if(exp){
-                    let st=document.createElement("tr"); st.className="bg-gray-50/90";
-                    let sh=`<td colspan="9" class="p-3 pl-12"><div class="bg-white rounded-xl p-3 shadow-sm border"><div class="flex justify-between mb-2"><span class="font-bold text-gray-700">规格明细</span>${!isReadOnlyMode&&!arc?`<div class="space-x-2"><button onclick="openBatchNodeModal('${p.id}')" class="bg-blue-50 text-blue-700 px-2 py-1 rounded cursor-pointer">⚡ 批量节点</button><button onclick="addNewSkuToProd('${p.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded cursor-pointer">+ 新规格</button></div>`:''}</div><div class="space-y-1.5">`;
-                    
-                    p.skus.forEach(s=>{
+                let arc = (p.status === "已归档");
+                let df = p.prodDate ? Math.ceil((new Date(p.prodDate) - new Date(tD)) / 86400000) : 999;
+                let prog = seriesProgress(p);
+                let hot = p.status === "紧急重要" || prog.overdue;
+                let hB = p.prodDate ? (arc ? p.prodDate : (df < 0 ? `<span class="text-red-600 font-bold">${p.prodDate} 🚨超${Math.abs(df)}天</span>` : (df <= 7 ? `<span class="text-amber-600 font-bold">${p.prodDate} ⚠️剩${df}天</span>` : `<span class="text-green-700">${p.prodDate}</span>`))) : "-";
+                let subRemarksHtml = (p.skus || []).filter(s => s.skuRemark).map(s => `<div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded text-[9px] w-max max-w-[200px] truncate shadow-sm" title="${escapeHtml(s.skuRemark)}">${escapeHtml(s.name)}: ${escapeHtml(s.skuRemark)}</div>`).join("");
+                if (subRemarksHtml) hB += `<div class="mt-1.5 flex flex-col gap-1">${subRemarksHtml}</div>`;
+                let exp = !!expandedRows[p.id];
+                let tr = document.createElement("tr");
+                tr.id = "row-" + p.id;
+                tr.className = `border-b ${hot ? "row-hot bg-red-50/70" : "row-plain"}`;
+                tr.innerHTML = `<td class="sticky-c1 px-1 py-3 text-center"><input type="checkbox" onchange="toggleProductSelect('${p.id}',this.checked)" ${selectedProductIds.has(p.id) ? "checked" : ""} class="w-4 h-4 text-blue-600 cursor-pointer"></td>
+                    <td class="sticky-c2 px-1 py-3 text-center"><button type="button" onclick="toggleExpand('${p.id}')" class="text-gray-500 font-bold cursor-pointer min-h-[36px] min-w-[32px]">${exp ? "▼" : "▶"}</button></td>
+                    <td class="sticky-c3 px-3 py-3 font-bold">${escapeHtml(p.name)} <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-normal ${p.sourceType === "代发" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}">${p.sourceType === "代发" ? "📦 代发" : "🏭 自研"}</span> ${!isReadOnlyMode && !arc ? `<button type="button" onclick="quickEditSeriesName('${p.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button>` : ""}</td>
+                    <td class="p-3">${escapeHtml(p.category)}</td>
+                    <td class="p-3 align-top min-w-[140px]">${hB}</td>
+                    <td class="p-3">${progressHtml(prog)}<div class="flex gap-1 flex-wrap">${nodeBadgeHtml(p, prog, arc)}</div></td>
+                    <td class="p-3 space-y-1">${p.remark ? `<div class="bg-amber-50 text-amber-800 border-amber-200 px-1.5 py-0.5 rounded text-[10px] w-max">📝 ${escapeHtml(p.remark)}</div>` : ""}${p.bigNote ? `<div class="bg-indigo-50/50 p-1.5 rounded text-[11px]"><div class="max-h-20 overflow-y-auto custom-scroll rich-note pr-1">${renderFormattedText(p.bigNote)}</div><button type="button" onclick="openBigNoteModal('${p.id}')" class="text-indigo-600 cursor-pointer mt-1">编辑备忘</button></div>` : `${!isReadOnlyMode ? `<button type="button" onclick="openBigNoteModal('${p.id}')" class="text-gray-400 border border-dashed px-2 py-1 text-[10px] rounded cursor-pointer">+ 备忘</button>` : ""}`}</td>
+                    <td class="p-3">${isReadOnlyMode || arc ? escapeHtml(p.status) : `<select onchange="changeProdStatus('${p.id}',this.value)" class="border rounded text-xs px-1 py-1 min-h-[32px]"><option value="进行中" ${p.status === "进行中" ? "selected" : ""}>进行中</option><option value="紧急重要" ${p.status === "紧急重要" ? "selected" : ""}>🔥紧急</option><option value="已归档">归档</option></select>`}</td>
+                    <td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="openLogsModal('${p.id}')" class="text-blue-600 cursor-pointer min-h-[32px] px-1">追溯</button> ${!isReadOnlyMode && !arc ? `<button type="button" onclick="openEditModal('${p.id}')" class="text-gray-600 cursor-pointer min-h-[32px] px-1">编辑</button> <button type="button" onclick="removeProduct('${p.id}')" class="text-red-500 cursor-pointer min-h-[32px] px-1">删除</button>` : ""}</td>`;
+                tb.appendChild(tr);
+                if (exp) {
+                    let st = document.createElement("tr");
+                    st.className = "bg-gray-50/90";
+                    let sh = `<td colspan="9" class="p-3"><div class="bg-white rounded-xl p-3 shadow-sm border"><div class="flex justify-between mb-2 gap-2"><span class="font-bold text-gray-700">规格明细</span>${!isReadOnlyMode && !arc ? `<div class="space-x-2"><button type="button" onclick="openBatchNodeModal('${p.id}')" class="bg-blue-50 text-blue-700 px-2 py-1.5 rounded cursor-pointer min-h-[36px]">⚡ 批量节点</button><button type="button" onclick="addNewSkuToProd('${p.id}')" class="bg-indigo-50 text-indigo-700 px-2 py-1.5 rounded cursor-pointer min-h-[36px]">+ 新规格</button></div>` : ""}</div><div class="space-y-1.5">`;
+                    (p.skus || []).forEach(s => {
                         let mb = matchBarcodeForProductSku(p.name, s.name);
-                        let mbText = mb ? (isValidValue(mb.barcode) ? `🏷️ ${mb.barcode}` : `SKU:${mb.sapCode}(缺69码)`) : '';
-                        let al=mb&&isValidValue(mb.barcode)&&!s.sapOk&&!isReadOnlyMode&&!arc?`<button onclick="quickApplyMatchedBarcode('${p.id}','${s.id}')" class="bg-emerald-50 text-emerald-700 px-1 rounded text-[10px] cursor-pointer">匹配: ${mb.barcode}</button>`:(mbText?`<span class="text-gray-400 text-[10px] font-mono">${escapeHtml(mbText)}</span>`:'');
-                        let rb=(k,l,o)=>`<label class="flex items-center space-x-1 cursor-pointer"><input type="checkbox" ${isReadOnlyMode||arc?'disabled':`onchange="triggerSkuNodeCheck('${p.id}','${s.id}','${k}','${l}',this)"`} ${o?'checked':''} class="w-3 h-3 text-blue-600"><span class="text-[11px] ${o?'text-green-700 font-bold':'text-gray-500'}">${l}</span></label>`;
-                        
-                        sh+=`<div class="flex items-center justify-between bg-gray-50 p-2 rounded border hover:bg-white">
-                                <div class="font-semibold flex items-center gap-2 w-1/4">${escapeHtml(s.name)} ${!isReadOnlyMode&&!arc?`<button onclick="quickEditSkuName('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button><button onclick="removeSku('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">🗑️</button>`:''} ${al}</div>
-                                <div class="w-1/2 flex gap-2 items-center">
-                                    <div class="flex items-center gap-1 w-1/2"><span class="text-[10px] text-gray-500 shrink-0">分铺:</span><input type="text" ${isReadOnlyMode?'disabled':''} value="${escapeHtml(s.shopInfo||'')}" onblur="updateSkuField('${p.id}','${s.id}','shopInfo',this.value)" class="border rounded px-1 text-[10px] w-full"></div>
-                                    <div class="flex items-center gap-1 w-1/2"><span class="text-[10px] text-gray-500 shrink-0">排期/备注:</span><input type="text" placeholder="例: 9/20到货" ${isReadOnlyMode?'disabled':''} value="${escapeHtml(s.skuRemark||'')}" onblur="updateSkuField('${p.id}','${s.id}','skuRemark',this.value)" class="border rounded border-amber-200 bg-amber-50 px-1 text-[10px] w-full"></div>
-                                </div>
-                                <div class="flex space-x-4">${rb('bomOk','BOM',s.bomOk)}${rb('detailOk','详情页',s.detailOk)}${rb('sapOk','69码',s.sapOk)}</div>
-                            </div>`;
+                        let mbText = mb ? (isValidValue(mb.barcode) ? `🏷️ ${mb.barcode}` : `SKU:${mb.sapCode}(缺69码)`) : "";
+                        let al = mb && isValidValue(mb.barcode) && !s.sapOk && !isReadOnlyMode && !arc ? `<button type="button" onclick="quickApplyMatchedBarcode('${p.id}','${s.id}')" class="bg-emerald-50 text-emerald-700 px-1 rounded text-[10px] cursor-pointer">匹配: ${escapeHtml(mb.barcode)}</button>` : (mbText ? `<span class="text-gray-400 text-[10px] font-mono">${escapeHtml(mbText)}</span>` : "");
+                        sh += `<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-gray-50 p-2 rounded border">
+                            <div class="font-semibold flex items-center gap-2 min-w-0">${escapeHtml(s.name)} ${!isReadOnlyMode && !arc ? `<button type="button" onclick="quickEditSkuName('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">✏️</button><button type="button" onclick="removeSku('${p.id}','${s.id}')" class="text-gray-400 text-[10px] cursor-pointer">🗑️</button>` : ""} ${al}</div>
+                            <div class="flex gap-2 items-center flex-1 min-w-[220px]">
+                                <div class="flex items-center gap-1 flex-1"><span class="text-[10px] text-gray-500 shrink-0">分铺</span><input type="text" ${isReadOnlyMode ? "disabled" : ""} value="${escapeHtml(s.shopInfo || "")}" onblur="updateSkuField('${p.id}','${s.id}','shopInfo',this.value)" class="border rounded px-1 py-1 text-[11px] w-full min-h-[32px]"></div>
+                                <div class="flex items-center gap-1 flex-1"><span class="text-[10px] text-gray-500 shrink-0">排期</span><input type="text" placeholder="例: 9/20到货" ${isReadOnlyMode ? "disabled" : ""} value="${escapeHtml(s.skuRemark || "")}" onblur="updateSkuField('${p.id}','${s.id}','skuRemark',this.value)" class="border rounded border-amber-200 bg-amber-50 px-1 py-1 text-[11px] w-full min-h-[32px]"></div>
+                            </div>
+                            <div class="flex flex-wrap items-center">${nodeControlsHtml(p, s, arc)}</div>
+                        </div>`;
                     });
-                    sh+=`</div></div></td>`; st.innerHTML=sh; tb.appendChild(st);
+                    sh += `</div></div></td>`;
+                    st.innerHTML = sh;
+                    tb.appendChild(st);
                 }
             });
             updateSelectAllCheckboxState();
         }
 
+        function showUndoToast(message, fn) {
+            undoAction = fn;
+            let box = document.getElementById("undo-toast");
+            let msg = document.getElementById("undo-toast-msg");
+            if (msg) msg.textContent = message;
+            if (box) box.classList.remove("hidden");
+            clearTimeout(undoTimer);
+            undoTimer = setTimeout(hideUndoToast, 5000);
+        }
+        function hideUndoToast() {
+            clearTimeout(undoTimer);
+            let box = document.getElementById("undo-toast");
+            if (box) box.classList.add("hidden");
+            undoAction = null;
+        }
+        function runUndo() {
+            let fn = undoAction;
+            hideUndoToast();
+            if (fn) fn();
+        }
+        function commitNodeChange(p, skuList, key, label, targetVal, remark, allowUndo) {
+            if (isReadOnlyMode || !p || !skuList || !skuList.length) return;
+            let pid = p.id;
+            let snapshots = skuList.map(s => ({
+                id: s.id,
+                prevOn: skuNodeOn(s, key),
+                prevRec: s.nodeRecords && s.nodeRecords[key] ? JSON.parse(JSON.stringify(s.nodeRecords[key])) : null
+            }));
+            let time = getNowString();
+            skuList.forEach(s => applyNodeToSku(s, key, targetVal, remark, time));
+            let desc = skuList.length > 1
+                ? `【${label}】状态变 ${targetVal ? "完成" : "取消"} ${skuList.length}个规格${remark ? " " + remark : ""}`
+                : `[${skuList[0].name}] 【${label}】状态变 ${targetVal ? "完成" : "取消"}${remark ? " " + remark : ""}`;
+            p.historyLogs = p.historyLogs || [];
+            let log = { time, type: "NODE", desc };
+            p.historyLogs.unshift(log);
+            syncMatrixToCloud();
+            refreshActiveView();
+            if (allowUndo) {
+                showUndoToast(`${targetVal ? "已完成" : "已取消"}【${label}】`, function () {
+                    let p2 = products.find(x => x.id === pid);
+                    if (!p2) return;
+                    snapshots.forEach(snap => {
+                        let s2 = (p2.skus || []).find(x => x.id === snap.id);
+                        if (!s2) return;
+                        if (isBuiltinNodeKey(key)) s2[key] = snap.prevOn;
+                        else {
+                            s2.extraNodes = s2.extraNodes || {};
+                            s2.extraNodes[key] = snap.prevOn;
+                        }
+                        s2.nodeRecords = s2.nodeRecords || {};
+                        if (snap.prevRec) s2.nodeRecords[key] = snap.prevRec;
+                        else delete s2.nodeRecords[key];
+                    });
+                    let idx = (p2.historyLogs || []).findIndex(l => l.time === log.time && l.type === "NODE" && l.desc === log.desc);
+                    if (idx >= 0) p2.historyLogs.splice(idx, 1);
+                    syncMatrixToCloud();
+                    refreshActiveView();
+                });
+            }
+        }
+        function nodePressStart(el) {
+            if (!el || el.disabled) return;
+            nodeLongFired = false;
+            clearTimeout(nodeLongTimer);
+            nodeLongTimer = setTimeout(() => {
+                nodeLongFired = true;
+                openNodeRemarkEditor(el.dataset.pid, el.dataset.sid, el.dataset.key, el.dataset.label);
+            }, 550);
+        }
+        function nodePressEnd() { clearTimeout(nodeLongTimer); }
+        function onSkuNodeInput(el) {
+            if (nodeLongFired) {
+                el.checked = !el.checked;
+                nodeLongFired = false;
+                return;
+            }
+            triggerSkuNodeCheck(el.dataset.pid, el.dataset.sid, el.dataset.key, el.dataset.label, el);
+        }
+        function onBatchBadgeClick(el) {
+            triggerBatchColumnCheck(el.dataset.pid, el.dataset.key, el.dataset.label);
+        }
+        function openNodeRemarkEditor(pid, sid, key, label) {
+            if (isReadOnlyMode) return;
+            let p = products.find(x => x.id === pid);
+            let s = p && (p.skus || []).find(x => x.id === sid);
+            if (!s) return;
+            pendingRemarkEdit = { pid, sid, key, label };
+            document.getElementById("remark-modal-title").innerText = `备注 · ${label} · ${s.name}`;
+            let rec = s.nodeRecords && s.nodeRecords[key];
+            document.getElementById("node-remark-input").value = (rec && rec.remark) || "";
+            document.getElementById("remark-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+            setTimeout(() => { let input = document.getElementById("node-remark-input"); if (input) input.focus(); }, 30);
+        }
+        function closeRemarkModal() {
+            document.getElementById("remark-modal").classList.add("hidden");
+            lockBodyScroll(false);
+        }
+        function saveNodeRemark() {
+            if (!pendingRemarkEdit || isReadOnlyMode) return closeRemarkModal();
+            let { pid, sid, key, label } = pendingRemarkEdit;
+            let p = products.find(x => x.id === pid);
+            let s = p && (p.skus || []).find(x => x.id === sid);
+            let rm = document.getElementById("node-remark-input").value.trim();
+            if (s && p) {
+                s.nodeRecords = s.nodeRecords || {};
+                let prev = s.nodeRecords[key] || { status: skuNodeOn(s, key), time: getNowString(), remark: "" };
+                s.nodeRecords[key] = { status: skuNodeOn(s, key), time: prev.time || getNowString(), remark: rm };
+                p.historyLogs = p.historyLogs || [];
+                p.historyLogs.unshift({ time: getNowString(), type: "NODE", desc: `[${s.name}] 【${label}】备注：${rm || "（清空）"}` });
+                syncMatrixToCloud();
+                refreshActiveView();
+            }
+            closeRemarkModal();
+        }
+        function renderCustomNodeSettings() {
+            let box = document.getElementById("custom-node-settings");
+            if (!box) return;
+            if (!customNodes.length) {
+                box.innerHTML = '<div class="text-[11px] text-gray-400">尚未添加。财务BOM、详情页、69编码不用在这里添加。</div>';
+                return;
+            }
+            box.innerHTML = customNodes.map((n, i) => `<div class="flex items-center justify-between bg-gray-50 border rounded px-2 py-1"><span class="font-medium">${escapeHtml(n.label)}</span><button type="button" class="text-red-500 font-bold cursor-pointer min-h-[32px] px-2" onclick="removeCustomNode(${i})">移除</button></div>`).join("");
+        }
+        function addCustomNodeFromSettings() {
+            if (isReadOnlyMode) return;
+            let input = document.getElementById("cfg-new-node");
+            let label = (input && input.value || "").trim();
+            if (!label) return;
+            if (allNodeDefs().some(d => d.label === label)) return alert("已有同名节点");
+            customNodes.push({ key: "x_" + Date.now().toString(36), label });
+            input.value = "";
+            renderCustomNodeSettings();
+            syncMatrixToCloud();
+            refreshActiveView();
+        }
+        function removeCustomNode(i) {
+            if (isReadOnlyMode) return;
+            let n = customNodes[i];
+            if (!n) return;
+            if (!confirm(`移除节点「${n.label}」？已勾选记录会留在数据里，只是不再显示这一列。`)) return;
+            customNodes.splice(i, 1);
+            renderCustomNodeSettings();
+            syncMatrixToCloud();
+            refreshActiveView();
+        }
+        function readWriteTokens() {
+            return [localStorage.getItem("wb_token_repo") || "", localStorage.getItem("wb_token_gist") || ""].map(s => String(s).trim()).filter(t => t.length >= 8);
+        }
+        function assertSharePayloadSafe(obj) {
+            if (!obj || typeof obj !== "object") throw new Error("无效分享内容");
+            if ("tr" in obj || "tg" in obj || "token_repo" in obj || "token_gist" in obj) throw new Error("拒绝写入字段");
+            let s = JSON.stringify(obj);
+            for (let t of readWriteTokens()) {
+                if (s.indexOf(t) !== -1) throw new Error("拒绝嵌入写入 Token");
+            }
+        }
+        function sharePageUrl(payload) {
+            assertSharePayloadSafe(payload);
+            return window.location.origin + window.location.pathname + "?share=" + encodeURIComponent(safeBase64Encode(JSON.stringify(payload)));
+        }
+        function buildReadOnlyTokenLink() {
+            let o = localStorage.getItem("wb_owner") || "";
+            let r = localStorage.getItem("wb_repo") || "";
+            let gb = localStorage.getItem("wb_gist_barcodes") || "";
+            let ts = (localStorage.getItem("wb_token_share") || "").trim();
+            let tr = (localStorage.getItem("wb_token_repo") || "").trim();
+            let tg = (localStorage.getItem("wb_token_gist") || "").trim();
+            if (!ts) return { error: "请先在设置里填写「只读分享 Token」（Fine-grained，仅 Contents: Read）。写入 Token 不会放进链接。" };
+            if ((tr && ts === tr) || (tg && ts === tg)) return { error: "只读分享 Token 不能和仓库写入 Token 或 Gist 写入 Token 相同。请单独创建一个仅 Contents: Read 的 Fine-grained Token。" };
+            if (!o || !r) return { error: "请先填写 GitHub 用户名和仓库名。" };
+            try { return { url: sharePageUrl({ v: 2, mode: "ro", o, r, gb, ts }) }; }
+            catch (e) { return { error: "已阻止生成链接：检测到写入 Token。" }; }
+        }
+        function buildSnapshotLink(includeBarcodes) {
+            let snap = { v: 2, mode: "snapshot", at: getNowString(), matrix: buildMatrixPayload() };
+            if (includeBarcodes) snap.barcodes = globalBarcodes;
+            try {
+                let encoded = safeBase64Encode(JSON.stringify(snap));
+                if (encoded.length > 80000) return { error: "快照太大，浏览器可能打不开。请改用只读 Token 链接，或取消勾选 69 码库。" };
+                return { url: sharePageUrl(snap) };
+            } catch (e) { return { error: "已阻止生成链接：检测到写入 Token。" }; }
+        }
+        function openShareModal() {
+            if (isReadOnlyMode) return;
+            let box = document.getElementById("readonly-url-textarea");
+            let hint = document.getElementById("share-link-hint");
+            if (box) box.value = "";
+            if (hint) { hint.textContent = ""; hint.className = "text-[11px] text-red-600 mb-2 min-h-[1em]"; }
+            document.getElementById("readonly-share-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
+        function fillShareLink(kind) {
+            let result = kind === "snapshot"
+                ? buildSnapshotLink(!!(document.getElementById("share-include-barcodes") && document.getElementById("share-include-barcodes").checked))
+                : buildReadOnlyTokenLink();
+            let hint = document.getElementById("share-link-hint");
+            let box = document.getElementById("readonly-url-textarea");
+            if (result.error) {
+                if (box) box.value = "";
+                if (hint) { hint.className = "text-[11px] text-red-600 mb-2 min-h-[1em]"; hint.textContent = result.error; }
+                return;
+            }
+            if (hint) {
+                hint.className = "text-[11px] text-emerald-700 mb-2 min-h-[1em]";
+                hint.textContent = kind === "snapshot" ? "此链接不含任何 Token，对方看到的是当前快照。" : "此链接只含只读分享 Token，不含写入 Token。";
+            }
+            if (box) { box.value = result.url; box.focus(); box.select(); }
+        }
+
         function renderReturnsTable() {
             const tb=document.getElementById("returns-table-body"); if(!tb)return; tb.innerHTML="";
             updateGlobalStatsUI('RETURNS');
+            updateTodayCount();
             let kw=(document.getElementById("search-returns-input")?.value||"").trim().toLowerCase(), tD=getLocalDateString();
             
             globalReturns.forEach(r=>{
@@ -2021,7 +3112,7 @@
             let vs=ls.filter(s=>!em[s.toLowerCase()]); 
             if(!vs.length)return alert("SKU已存在"); 
             let mn=document.getElementById("p-name").value.trim()||vs[0].replace(/[\s\-_].*/,''), t=getNowString(); 
-            products.unshift({id:"P_"+Date.now(),name:mn,sourceType:srcType,category:cat,prodDate:normalizeDate(pd),remark:"",bigNote:"",status:"进行中",createdAt:t,historyLogs:[{time:t,type:"CREATE",desc:"新建"}],skus:vs.map((s,i)=>({id:"S_"+Date.now()+"_"+i,name:s,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}))}); 
+            products.unshift({id:"P_"+Date.now(),name:mn,sourceType:srcType,category:cat,prodDate:normalizeDate(pd),remark:"",bigNote:"",status:"进行中",createdAt:t,historyLogs:[{time:t,type:"CREATE",desc:"新建"}],skus:vs.map((s,i)=>({id:"S_"+Date.now()+"_"+i,name:s,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{},extraNodes:{}}))}); 
             document.getElementById("p-skus-batch").value=""; 
             document.getElementById("p-name").value=""; 
             autoSyncBarcodesToMatrixNodes(false);
@@ -2040,7 +3131,7 @@
         function closeEditModal(){ document.getElementById("edit-modal").classList.add("hidden"); lockBodyScroll(false); }
         function saveEditChanges(){ let p=products.find(x=>x.id===currentEditingId); p.name=document.getElementById("edit-name").value; p.sourceType=document.getElementById("edit-source-type").value; p.category=document.getElementById("edit-category").value; p.prodDate=normalizeDate(document.getElementById("edit-prod-date").value); p.remark=document.getElementById("edit-reason").value; p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新排期"}); closeEditModal(); renderTable(); syncMatrixToCloud(); }
 
-        function addNewSkuToProd(pid){ let p=products.find(x=>x.id===pid), n=prompt("新规格:"); if(n){p.skus.push({id:"S_"+Date.now(),name:n,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{}}); autoSyncBarcodesToMatrixNodes(false); renderTable(); syncMatrixToCloud();} }
+        function addNewSkuToProd(pid){ let p=products.find(x=>x.id===pid), n=prompt("新规格:"); if(n){p.skus.push({id:"S_"+Date.now(),name:n,shopInfo:"",skuRemark:"",bomOk:false,detailOk:false,sapOk:false,nodeRecords:{},extraNodes:{}}); autoSyncBarcodesToMatrixNodes(false); renderTable(); syncMatrixToCloud();} }
         function quickEditSkuName(pid,sid){ let s=products.find(x=>x.id===pid)?.skus.find(x=>x.id===sid), n=prompt("规格名称:",s.name); if(n&&n!==s.name){s.name=n; autoSyncBarcodesToMatrixNodes(false); renderTable(); syncMatrixToCloud();} }
         function removeSku(pid,sid){ if(confirm("删除规格？")){let p=products.find(x=>x.id===pid); p.skus=p.skus.filter(x=>x.id!==sid); renderTable(); syncMatrixToCloud();} }
 
@@ -2048,9 +3139,7 @@
             let s = products.find(x => x.id === pid)?.skus.find(x => x.id === sid);
             if (s && s[field] !== v.trim()) {
                 s[field] = v.trim();
-                localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
-                clearTimeout(syncTimer);
-                syncTimer = setTimeout(() => { syncMatrixToCloud(); renderTable(); }, 1500);
+                syncMatrixToCloud();
             }
         }
         
@@ -2058,22 +3147,66 @@
             let r = globalReturns.find(x => x.id === id);
             if (r && r.skus !== v) {
                 r.skus = v;
-                localStorage.setItem("wb_local_matrix", JSON.stringify({products, oldReturns: globalReturns, memos: globalMemos}));
-                clearTimeout(syncTimer);
-                syncTimer = setTimeout(() => { syncMatrixToCloud(); }, 1500);
+                syncMatrixToCloud();
             }
         }
 
         function quickApplyMatchedBarcode(pid,sid){ let p=products.find(x=>x.id===pid), s=p?.skus.find(x=>x.id===sid); if(s){s.sapOk=true; s.nodeRecords.sapOk={status:true,time:getNowString(),remark:"自动点亮"}; p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`[${s.name}]联动点亮69码`}); renderTable(); syncMatrixToCloud();} }
 
-        function triggerSkuNodeCheck(pid,sid,k,lbl,el){ if(isReadOnlyMode){el.checked=!el.checked;return;} let targetVal=el.checked; el.checked=!targetVal; pendingCheck={prodId:pid,skuIds:[sid],key:k,label:lbl,targetVal:targetVal}; document.getElementById("check-action-icon").innerText=pendingCheck.targetVal?"✅":"↩️"; document.getElementById("check-modal-title").innerText=`${pendingCheck.targetVal?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`单个操作`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
-        function triggerBatchColumnCheck(pid,k,lbl){ if(isReadOnlyMode)return; let p=products.find(x=>x.id===pid), tg=!p.skus.every(s=>s[k]); pendingCheck={prodId:pid,skuIds:p.skus.map(s=>s.id),key:k,label:lbl,targetVal:tg}; document.getElementById("check-action-icon").innerText=tg?"⚡":"↩️"; document.getElementById("check-modal-title").innerText=`批量${tg?'完成':'取消'}【${lbl}】`; document.getElementById("check-modal-subtitle").innerText=`影响 ${p.skus.length} 项`; document.getElementById("check-remark-input").value=""; document.getElementById("check-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function triggerSkuNodeCheck(pid,sid,k,lbl,el){
+            if(isReadOnlyMode){ if(el) el.checked=!el.checked; return; }
+            let p=products.find(x=>x.id===pid);
+            let s=p && (p.skus||[]).find(x=>x.id===sid);
+            if(!p || !s || p.status==="已归档"){ if(el && s) el.checked=skuNodeOn(s,k); return; }
+            let targetVal = el ? !!el.checked : !skuNodeOn(s,k);
+            commitNodeChange(p, [s], k, lbl, targetVal, "", true);
+        }
+        function triggerBatchColumnCheck(pid,k,lbl){
+            if(isReadOnlyMode)return;
+            let p=products.find(x=>x.id===pid);
+            if(!p || p.status==="已归档") return;
+            let tg=!(p.skus||[]).every(s=>skuNodeOn(s,k));
+            pendingCheck={prodId:pid,skuIds:(p.skus||[]).map(s=>s.id),key:k,label:lbl,targetVal:tg};
+            document.getElementById("check-action-icon").innerText=tg?"⚡":"↩️";
+            document.getElementById("check-modal-title").innerText=`批量${tg?'完成':'取消'}【${lbl}】`;
+            document.getElementById("check-modal-subtitle").innerText=`影响 ${p.skus.length} 项。确认后才会改动，可填写统一备注。`;
+            document.getElementById("check-remark-input").value="";
+            document.getElementById("check-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
         function closeCheckModal(){ document.getElementById("check-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmNodeCheckChange(){ let p=products.find(x=>x.id===pendingCheck.prodId), rm=document.getElementById("check-remark-input").value; p.skus.forEach(s=>{if(pendingCheck.skuIds.includes(s.id)){s[pendingCheck.key]=pendingCheck.targetVal;s.nodeRecords[pendingCheck.key]={status:pendingCheck.targetVal,time:getNowString(),remark:rm};}}); p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`【${pendingCheck.label}】状态变 ${rm}`}); closeCheckModal(); renderTable(); syncMatrixToCloud(); }
+        function confirmNodeCheckChange(){
+            let p=products.find(x=>x.id===pendingCheck.prodId);
+            let rm=document.getElementById("check-remark-input").value;
+            if(!p){ closeCheckModal(); return; }
+            let skus=(p.skus||[]).filter(s=>pendingCheck.skuIds.includes(s.id));
+            let key=pendingCheck.key, label=pendingCheck.label, targetVal=pendingCheck.targetVal;
+            closeCheckModal();
+            commitNodeChange(p, skus, key, label, targetVal, rm, true);
+        }
 
-        function openBatchNodeModal(id){ currentBatchProdId=id; let p=products.find(x=>x.id===id); document.getElementById("batch-node-sku-list").innerHTML=p.skus.map(s=>`<label class="flex items-center space-x-2"><input type="checkbox" value="${s.id}" class="batch-sku-checkbox w-4 h-4"><span>${escapeHtml(s.name)}</span></label>`).join(''); document.getElementById("batch-node-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function openBatchNodeModal(id){
+            currentBatchProdId=id;
+            let p=products.find(x=>x.id===id);
+            document.getElementById("batch-node-sku-list").innerHTML=p.skus.map(s=>`<label class="flex items-center space-x-2 min-h-[32px]"><input type="checkbox" value="${s.id}" class="batch-sku-checkbox w-4 h-4"><span>${escapeHtml(s.name)}</span></label>`).join('');
+            let sel=document.getElementById("batch-node-type");
+            if(sel) sel.innerHTML=allNodeDefs().map(d=>`<option value="${escapeHtml(d.key)}">${escapeHtml(d.label)}</option>`).join("");
+            document.getElementById("batch-node-modal").classList.remove("hidden");
+            lockBodyScroll(true);
+        }
         function closeBatchNodeModal(){ document.getElementById("batch-node-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmBatchNode(){ let p=products.find(x=>x.id===currentBatchProdId), cbs=Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(c=>c.value); if(!cbs.length)return alert("请勾选SKU"); let k=document.getElementById("batch-node-type").value, tv=document.getElementById("batch-node-status").value==="true", rm=document.getElementById("batch-node-remark").value; p.skus.forEach(s=>{if(cbs.includes(s.id)){s[k]=tv;s.nodeRecords[k]={status:tv,time:getNowString(),remark:rm};}}); p.historyLogs.unshift({time:getNowString(),type:"NODE",desc:`批量操作`}); closeBatchNodeModal(); renderTable(); syncMatrixToCloud(); }
+        function confirmBatchNode(){
+            let p=products.find(x=>x.id===currentBatchProdId);
+            let cbs=Array.from(document.querySelectorAll(".batch-sku-checkbox:checked")).map(c=>c.value);
+            if(!cbs.length)return alert("请勾选SKU");
+            let k=document.getElementById("batch-node-type").value;
+            let tv=document.getElementById("batch-node-status").value==="true";
+            let rm=document.getElementById("batch-node-remark").value;
+            let def=allNodeDefs().find(d=>d.key===k);
+            let skus=(p.skus||[]).filter(s=>cbs.includes(s.id));
+            closeBatchNodeModal();
+            commitNodeChange(p, skus, k, def?def.label:k, tv, rm, true);
+        }
 
         function addReturnTask(){ if(isReadOnlyMode)return; let n=document.getElementById("r-name").value.trim(), e=document.getElementById("r-eta-date").value, s=document.getElementById("r-skus").value.trim(); if(!n||!e)return alert("信息不全"); globalReturns.unshift({id:"R_"+Date.now(),name:n,etaDate:normalizeDate(e),skus:s,status:"进行中",bigNote:"",createdAt:getNowString(),historyLogs:[{time:getNowString(),type:"CREATE",desc:"建立老品回厂"}]}); document.getElementById("r-name").value=""; document.getElementById("r-skus").value=""; renderReturnsTable(); syncMatrixToCloud(); }
         function changeReturnStatus(id,v){ let r=globalReturns.find(x=>x.id===id); if(r&&r.status!==v){r.status=v; r.historyLogs.unshift({time:getNowString(),type:"STATUS",desc:`状态改:${v}`}); renderReturnsTable(); syncMatrixToCloud();} }
@@ -2223,7 +3356,7 @@
         }
 
         function openBigNoteModal(id) { currentBigNoteId=id; let p=findGlobalItem(id); if(!p)return; document.getElementById("big-note-prod-name").innerText=`【${p.name}】`; document.getElementById("big-note-textarea").value=p.bigNote||""; updateBigNoteLivePreview(); document.getElementById("big-note-modal").classList.remove("hidden"); lockBodyScroll(true); }
-        function saveBigNoteChanges() { let p=findGlobalItem(currentBigNoteId); if(p){p.bigNote=document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新大备注"}); closeBigNoteModal(); if(currentMainView==='MATRIX')renderTable();else if(currentMainView==='RETURNS')renderReturnsTable(); syncMatrixToCloud(); } }
+        function saveBigNoteChanges() { let p=findGlobalItem(currentBigNoteId); if(p){p.bigNote=document.getElementById("big-note-textarea").value.trim(); p.historyLogs.unshift({time:getNowString(),type:"UPDATE",desc:"更新大备注"}); closeBigNoteModal(); refreshActiveView(); syncMatrixToCloud(); } }
         function updateBigNoteLivePreview() { document.getElementById("big-note-preview").innerHTML=renderFormattedText(document.getElementById("big-note-textarea").value); }
         function insertStrikeThrough() { let ta=document.getElementById("big-note-textarea"), s=ta.selectionStart, e=ta.selectionEnd, v=ta.value; ta.value=(s!==e)?v.substring(0,s)+`~~${v.substring(s,e)}~~`+v.substring(e):v+`~~作废内容~~`; updateBigNoteLivePreview(); }
         function insertFileLinkPrompt() { let l=prompt("文档链接:"); if(l){document.getElementById("big-note-textarea").value+=` 🔗链接: ${l.trim()} `; updateBigNoteLivePreview();} }
@@ -2237,20 +3370,36 @@
             let tp=products.filter(p=>currentTab==='RUNNING'?p.status!=='已归档':p.status==='已归档');
             let sel=selectedProductIds.size>0?tp.filter(p=>selectedProductIds.has(p.id)):tp;
             if(!sel.length) return alert("无数据");
-            let rows=["系列,研发类型,子规格,排期与备注,分铺,品类,量产截点,状态,财务BOM,详情页,69编码,全局备注,大备注"];
-            sel.forEach(p=>(p.skus||[]).forEach(s=>{rows.push(`"${p.name}","${p.sourceType||'自研'}","${s.name}","${s.skuRemark||''}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${s.bomOk?'是':'否'}","${s.detailOk?'是':'否'}","${s.sapOk?'是':'否'}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);}));
+            let defs=allNodeDefs();
+            let rows=["系列,研发类型,子规格,排期与备注,分铺,品类,量产截点,状态,"+defs.map(d=>d.label).join(",")+",全局备注,大备注"];
+            sel.forEach(p=>(p.skus||[]).forEach(s=>{
+                let nodes=defs.map(d=>skuNodeOn(s,d.key)?'是':'否').join('","');
+                rows.push(`"${p.name}","${p.sourceType||'自研'}","${s.name}","${s.skuRemark||''}","${s.shopInfo}","${p.category}","${p.prodDate}","${p.status}","${nodes}","${p.remark}","${(p.bigNote||'').replace(/"/g,'""')}"`);
+            }));
             let blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
             let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`新品矩阵_${getLocalDateString()}.csv`; a.click();
         }
-        function copyReadOnlyShareLink() {
-            let o=localStorage.getItem("wb_owner")||"", r=localStorage.getItem("wb_repo")||"", gb=localStorage.getItem("wb_gist_barcodes")||"", tr=localStorage.getItem("wb_token_repo")||"", tg=localStorage.getItem("wb_token_gist")||"";
-            let payload = safeBase64Encode(JSON.stringify({ o, r, gb, tr, tg }));
-            let u=`${window.location.origin+window.location.pathname}?share=${encodeURIComponent(payload)}`;
-            if(navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(u).then(()=>openReadonlyModal(u)).catch(()=>openReadonlyModal(u)); } else openReadonlyModal(u);
-        }
-        function openReadonlyModal(u) { document.getElementById("readonly-url-textarea").value=u; document.getElementById("readonly-share-modal").classList.remove("hidden"); lockBodyScroll(true); }
+        function copyReadOnlyShareLink() { openShareModal(); }
         function closeReadonlyModal() { document.getElementById("readonly-share-modal").classList.add("hidden"); lockBodyScroll(false); }
-        function confirmCopyReadonlyUrl() { let t=document.getElementById("readonly-url-textarea"); t.select(); try{document.execCommand('copy'); alert("已复制！");}catch(e){} closeReadonlyModal(); }
+        function confirmCopyReadonlyUrl() {
+            let t=document.getElementById("readonly-url-textarea");
+            let hint=document.getElementById("share-link-hint");
+            if(!t.value){ if(hint){ hint.className="text-[11px] text-red-600 mb-2 min-h-[1em]"; hint.textContent="请先生成链接。"; } return; }
+            try {
+                let raw=decodeURIComponent((t.value.split("share=")[1]||"").split("#")[0]);
+                assertSharePayloadSafe(JSON.parse(safeBase64Decode(raw)));
+            } catch(e) {
+                t.value="";
+                if(hint){ hint.className="text-[11px] text-red-600 mb-2 min-h-[1em]"; hint.textContent="链接未通过安全检查，已取消复制。"; }
+                return;
+            }
+            t.select();
+            let copied=false;
+            try { copied=document.execCommand("copy"); } catch(e) {}
+            if(navigator.clipboard && window.isSecureContext){
+                navigator.clipboard.writeText(t.value).then(()=>alert("已复制！")).catch(()=>{ if(copied) alert("已复制！"); });
+            } else if(copied) alert("已复制！");
+        }
 
         // ================= 🤖 智能小助手：实时数据引擎（诊断卡点 / 催办话术 / 周报生成 / 全库对话检索） =================
         function toggleAIChatDrawer() { let d=document.getElementById("ai-chat-drawer"); d.classList.toggle("hidden"); lockBodyScroll(!d.classList.contains("hidden")); }
